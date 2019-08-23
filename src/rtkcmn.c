@@ -260,7 +260,8 @@ static unsigned char obsfreqs[]={
 static char codepris[7][MAXFREQ][16]={  /* code priority table */
    
    /* L1/E1      L2/B1        L5/E5a/L3 L6/LEX/B3 E5b/B2    E5(a+b)  S */
-    {"CPYWMNSL","PYWCMNDSLX","IQX"     ,""       ,""       ,""      ,""    }, /* GPS */
+    {"PWCSLXYMN","PWCSLXYMN","IQX"     ,""       ,""       ,""      ,""    }, /* GPS */
+	//PWCSLXYMN old one: CPYWMNSL, PYWCMNDSLX
     {"PC"      ,"PC"        ,"IQX"     ,""       ,""       ,""      ,""    }, /* GLO */
     {"CABXZ"   ,""          ,"IQX"     ,"ABCXZ"  ,"IQX"    ,"IQX"   ,""    }, /* GAL */
     {"CSLXZ"   ,"SLX"       ,"IQX"     ,"SLX"    ,""       ,""      ,""    }, /* QZS */

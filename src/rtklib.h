@@ -218,10 +218,10 @@ extern "C" {
 #define MAXSTA      255
 
 #ifndef MAXOBS
-#define MAXOBS      64                  /* max number of obs in an epoch */
+#define MAXOBS      128                  /* max number of obs in an epoch */
 #endif
 #define MAXRCV      64                  /* max receiver number (1 to MAXRCV) */
-#define MAXOBSTYPE  64                  /* max number of obs type in RINEX */
+#define MAXOBSTYPE  128                  /* max number of obs type in RINEX */
 #ifdef OBS_100HZ
 #define DTTOL       0.005               /* tolerance of time difference (s) */
 #else

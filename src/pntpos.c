@@ -87,7 +87,7 @@ static double prange(const obsd_t *obs, const nav_t *nav, const double *azel,
     
     /* L1-L2 for GPS/GLO/QZS, L1-L5 for GAL/SBS/BDS */
 	if (NFREQ >= 3 && (sys&(SYS_GAL | SYS_SBS | SYS_CMP))) j = 2;
-	if (sys&(SYS_CMP)) i = 1;//use the C2I for spp
+
 
     if (NFREQ<2||lam[i]==0.0||lam[j]==0.0) return 0.0;
     

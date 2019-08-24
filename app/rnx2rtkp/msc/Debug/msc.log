@@ -1,5 +1,5 @@
-﻿Build started 8/24/2019 11:01:06 AM.
-     1>Project "C:\Users\yan xiang\Documents\rtklib_2.4.3\remote\RTKLIB\app\rnx2rtkp\msc\msc.vcxproj" on node 2 (Rebuild target(s)).
+﻿Build started 8/24/2019 1:03:39 PM.
+     1>Project "C:\Users\yan xiang\Documents\rtklib_2.4.3\remote\RTKLIB\app\rnx2rtkp\msc\msc.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W0 /WX- /sdl /Od /Oy- /D WIN32 /D _CRT_SECURE_NO_WARNINGS /D _DEBUG /D _CONSOLE /D _LIB /D _CRT_SECURE_NO_DEPRECATE /D TRACE /D ENAGLO /D ENAGAL /D ENAQZS /D ENACMP /D ENALEO /D NFREQ=3 /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt ..\..\..\src\ephemeris.c ..\..\..\src\geoid.c ..\..\..\src\ionex.c ..\..\..\src\lambda.c ..\..\..\src\options.c ..\..\..\src\pntpos.c ..\..\..\src\postpos.c ..\..\..\src\ppp.c ..\..\..\src\ppp_ar.c ..\..\..\src\ppp_corr.c ..\..\..\src\preceph.c ..\..\..\src\qzslex.c ..\..\..\src\rinex.c ..\..\..\src\rnx2rtkp.c ..\..\..\src\rtcm.c ..\..\..\src\rtcm2.c ..\..\..\src\rtcm3.c ..\..\..\src\rtcm3e.c ..\..\..\src\rtkcmn.c ..\..\..\src\rtkpos.c ..\..\..\src\sbas.c ..\..\..\src\solution.c ..\..\..\src\tides.c
          tides.c
@@ -53,8 +53,8 @@
          Debug\solution.obj
          Debug\tides.obj
          msc.vcxproj -> C:\Users\yan xiang\Documents\rtklib_2.4.3\remote\RTKLIB\app\rnx2rtkp\msc\Debug\msc.exe
-     1>Done Building Project "C:\Users\yan xiang\Documents\rtklib_2.4.3\remote\RTKLIB\app\rnx2rtkp\msc\msc.vcxproj" (Rebuild target(s)).
+     1>Done Building Project "C:\Users\yan xiang\Documents\rtklib_2.4.3\remote\RTKLIB\app\rnx2rtkp\msc\msc.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:12.86
+Time Elapsed 00:00:21.65

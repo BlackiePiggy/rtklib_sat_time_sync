@@ -129,7 +129,7 @@ extern "C" {
 #define NFREQGLO    2                   /* number of carrier frequencies of GLONASS */
 
 #ifndef NEXOBS
-#define NEXOBS      0                   /* number of extended obs codes */
+#define NEXOBS      3                   /* number of extended obs codes */
 #endif
 
 #define MINPRNGPS   1                   /* min satellite PRN number of GPS */

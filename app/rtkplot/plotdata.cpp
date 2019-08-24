@@ -5,7 +5,6 @@
 #include "plotmain.h"
 #include "mapdlg.h"
 #include "pntdlg.h"
-#include "geview.h"
 
 #define HEADXML "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 #define HEADGPX "<gpx version=\"1.1\" creator=\"%s\" xmlns=\"%s\">\n"
@@ -1210,7 +1209,7 @@ void __fastcall TPlot::UpdateMp(void)
                 if      (f1==5) f1=2; /* B2 */
                 else if (f1==4) f1=3; /* B3 */
             }
-            if      (sys==SYS_GAL) f2=f1==1?3:1; /* E1/E5a */
+            if      (sys==SYS_GAL) f2=f1==1?2:1; /* E1/E5b */
             else if (sys==SYS_SBS) f2=f1==1?3:1; /* L1/L5 */
             else if (sys==SYS_CMP) f2=f1==1?2:1; /* B1/B2 */
             else                   f2=f1==1?2:1; /* L1/L2 */
@@ -1367,8 +1366,7 @@ void __fastcall TPlot::Clear(void)
         initsolbuf(SolData  ,1,RtBuffSize+1);
         initsolbuf(SolData+1,1,RtBuffSize+1);
     }
-    GoogleEarthView->Clear();
-    
+
     for (i=0;i<=360;i++) ElMaskData[i]=0.0;
     
     UpdateTime();

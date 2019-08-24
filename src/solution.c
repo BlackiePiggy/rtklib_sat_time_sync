@@ -521,7 +521,24 @@ static int decode_solenu(char *buff, const solopt_t *opt, sol_t *sol)
     }
     if (i<n) sol->age  =(float)val[i++];
     if (i<n) sol->ratio=(float)val[i++];
-    
+
+    if (i+3<=n) { /* velocity */
+        for (j=0;j<3;j++) {
+            sol->rr[j+3]=val[i++]; /* vel-enu */
+        }
+    }
+    if (i+3<=n) {
+        for (j=0;j<9;j++) Q[j]=0.0;
+        Q[0]=val[i]*val[i]; i++; /* sde */
+        Q[4]=val[i]*val[i]; i++; /* sdn */
+        Q[8]=val[i]*val[i]; i++; /* sdu */
+        if (i+3<=n) {
+            Q[1]=Q[3]=SQR(val[i]); i++; /* sden */
+            Q[5]=Q[7]=SQR(val[i]); i++; /* sdnu */
+            Q[2]=Q[6]=SQR(val[i]); i++; /* sdue */
+        }
+        covtosol_vel(Q,sol);
+    }
     sol->type=1; /* postion type = enu */
     
     if (MAXSOLQ<sol->stat) sol->stat=SOLQ_NONE;
@@ -1084,6 +1101,7 @@ extern int readsolstatt(char *files[], int nfile, gtime_t ts, gtime_t te,
         else {
             sprintf(path,"%s.stat",files[i]);
         }
+        
         if (!(fp=fopen(path,"r"))) {
             trace(2,"readsolstatt: file open error %s\n",path);
             continue;
@@ -1111,7 +1129,7 @@ static int outecef(unsigned char *buff, const char *s, const sol_t *sol,
     const char *sep=opt2sep(opt);
     char *p=(char *)buff;
     
-    trace(3,"outecef:\n");
+    trace(3,"outecef:\n\n");
     
     p+=sprintf(p,"%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f",
                s,sep,sol->rr[0],sep,sol->rr[1],sep,sol->rr[2],sep,sol->stat,sep,
@@ -1137,7 +1155,7 @@ static int outpos(unsigned char *buff, const char *s, const sol_t *sol,
     const char *sep=opt2sep(opt);
     char *p=(char *)buff;
     
-    trace(3,"outpos  :\n");
+    trace(3,"outpos  :\n\n");
     
     ecef2pos(sol->rr,pos);
     soltocov(sol,P);
@@ -1176,22 +1194,32 @@ static int outpos(unsigned char *buff, const char *s, const sol_t *sol,
 static int outenu(unsigned char *buff, const char *s, const sol_t *sol,
                   const double *rb, const solopt_t *opt)
 {
-    double pos[3],rr[3],enu[3],P[9],Q[9];
+    double pos[3],vel[3],rr[3],enu[3],P[9],Q[9];
     int i;
     const char *sep=opt2sep(opt);
     char *p=(char *)buff;
     
-    trace(3,"outenu  :\n");
+    trace(3,"outenu  :\n\n");
     
     for (i=0;i<3;i++) rr[i]=sol->rr[i]-rb[i];
     ecef2pos(rb,pos);
     soltocov(sol,P);
     covenu(pos,P,Q);
     ecef2enu(pos,rr,enu);
-    p+=sprintf(p,"%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f\n",
+    p+=sprintf(p,"%s%s%14.4f%s%14.4f%s%14.4f%s%3d%s%3d%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%8.4f%s%6.2f%s%6.1f",
                s,sep,enu[0],sep,enu[1],sep,enu[2],sep,sol->stat,sep,sol->ns,sep,
                SQRT(Q[0]),sep,SQRT(Q[4]),sep,SQRT(Q[8]),sep,sqvar(Q[1]),
                sep,sqvar(Q[5]),sep,sqvar(Q[2]),sep,sol->age,sep,sol->ratio);
+    if (opt->outvel) { /* output velocity */
+        soltocov_vel(sol,P);
+        ecef2enu(pos,sol->rr+3,vel);
+        covenu(pos,P,Q);
+        p+=sprintf(p,"%s%10.5f%s%10.5f%s%10.5f%s%9.5f%s%8.5f%s%8.5f%s%8.5f%s%8.5f%s%8.5f",
+                   sep,vel[0],sep,vel[1],sep,vel[2],sep,SQRT(Q[0]),sep,
+                   SQRT(Q[4]),sep,SQRT(Q[8]),sep,sqvar(Q[1]),sep,sqvar(Q[5]),
+                   sep,sqvar(Q[2]));
+    }
+    p+=sprintf(p,"\n");
     return p-(char *)buff;
 }
 /* output solution in the form of nmea RMC sentence --------------------------*/
@@ -1378,7 +1406,7 @@ extern int outnmea_gsv(unsigned char *buff, const sol_t *sol,
                 if (satsys(sats[k],&prn)==SYS_SBS) prn+=33-MINPRNSBS;
                 az =ssat[sats[k]-1].azel[0]*R2D; if (az<0.0) az+=360.0;
                 el =ssat[sats[k]-1].azel[1]*R2D;
-                snr=ssat[sats[k]-1].snr[0]*0.25;
+                snr=ssat[sats[k]-1].snr_rover[0]*0.25;
                 p+=sprintf(p,",%02d,%02.0f,%03.0f,%02.0f",prn,el,az,snr);
             }
             else p+=sprintf(p,",,,,");
@@ -1403,7 +1431,7 @@ extern int outnmea_gsv(unsigned char *buff, const sol_t *sol,
                 satsys(sats[k],&prn); prn+=64; /* 65-99 */
                 az =ssat[sats[k]-1].azel[0]*R2D; if (az<0.0) az+=360.0;
                 el =ssat[sats[k]-1].azel[1]*R2D;
-                snr=ssat[sats[k]-1].snr[0]*0.25;
+                snr=ssat[sats[k]-1].snr_rover[0]*0.25;
                 p+=sprintf(p,",%02d,%02.0f,%03.0f,%02.0f",prn,el,az,snr);
             }
             else p+=sprintf(p,",,,,");
@@ -1428,7 +1456,7 @@ extern int outnmea_gsv(unsigned char *buff, const sol_t *sol,
                 satsys(sats[k],&prn); /* 1-36 */
                 az =ssat[sats[k]-1].azel[0]*R2D; if (az<0.0) az+=360.0;
                 el =ssat[sats[k]-1].azel[1]*R2D;
-                snr=ssat[sats[k]-1].snr[0]*0.25;
+                snr=ssat[sats[k]-1].snr_rover[0]*0.25;
                 p+=sprintf(p,",%02d,%02.0f,%03.0f,%02.0f",prn,el,az,snr);
             }
             else p+=sprintf(p,",,,,");
@@ -1448,10 +1476,9 @@ extern int outnmea_gsv(unsigned char *buff, const sol_t *sol,
 extern int outprcopts(unsigned char *buff, const prcopt_t *opt)
 {
     const int sys[]={SYS_GPS,SYS_GLO,SYS_GAL,SYS_QZS,SYS_CMP,SYS_IRN,SYS_SBS,0};
-    const char *s1[]={"single","dgps","kinematic","static","moving-base","fixed",
+    const char *s1[]={"single","dgps","kinematic","static","static-start","moving-base","fixed",
                  "ppp-kinematic","ppp-static","ppp-fixed",""};
-    const char *s2[]={"L1","L1+L2","L1+L2+L5","L1+L2+L5+L6","L1+L2+L5+L6+L7",
-                      "L1+L2+L5+L6+L7+L8",""};
+    const char *s2[]={"L1","L1+L2/E5b","L1+L2/E5b+L5","L1+L2/E5b+L5+L6"};
     const char *s3[]={"forward","backward","combined"};
     const char *s4[]={"off","broadcast","sbas","iono-free","estimation",
                       "ionex tec","qzs","lex","vtec_sf","vtec_ef","gtec",""};
@@ -1460,7 +1487,7 @@ extern int outprcopts(unsigned char *buff, const prcopt_t *opt)
                       "broadcast+ssr com","qzss lex",""};
     const char *s7[]={"gps","glonass","galileo","qzss","beidou","irnss","sbas",""};
     const char *s8[]={"off","continuous","instantaneous","fix and hold",""};
-    const char *s9[]={"off","on","auto calib","external calib",""};
+    const char *s9[]={"off","on","auto calib","fix and hold","external calib",""};
     int i;
     char *p=(char *)buff;
     
@@ -1575,6 +1602,11 @@ extern int outsolheads(unsigned char *buff, const solopt_t *opt)
                    "e-baseline(m)",sep,"n-baseline(m)",sep,"u-baseline(m)",sep,
                    "Q",sep,"ns",sep,"sde(m)",sep,"sdn(m)",sep,"sdu(m)",sep,
                    "sden(m)",sep,"sdnu(m)",sep,"sdue(m)",sep,"age(s)",sep,"ratio");
+        if (opt->outvel) {
+            p+=sprintf(p,"%s%10s%s%10s%s%10s%s%9s%s%8s%s%8s%s%8s%s%8s%s%8s",
+                       sep,"ve(m/s)",sep,"vn(m/s)",sep,"vu(m/s)",sep,"sdve",sep,
+                       "sdvn",sep,"sdvu",sep,"sdven",sep,"sdvnu",sep,"sdvue");
+        }
     }
     p+=sprintf(p,"\n");
     return p-(char *)buff;
@@ -1587,6 +1619,7 @@ static double sol_std(const sol_t *sol)
     if (sol->qr[1]>sol->qr[2]) return SQRT(sol->qr[1]);
     return SQRT(sol->qr[2]);
 }
+
 /* output solution body --------------------------------------------------------
 * output solution body to buffer
 * args   : unsigned char *buff IO output buffer

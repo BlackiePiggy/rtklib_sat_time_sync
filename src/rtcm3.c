@@ -1366,8 +1366,8 @@ static const int codes_qzs[]={
     CODE_L5X,CODE_L6S,CODE_L6L,CODE_L6X,CODE_L1X
 };
 static const int codes_bds[]={
-    CODE_L1I,CODE_L1Q,CODE_L1X,CODE_L7I,CODE_L7Q,CODE_L7X,CODE_L6I,CODE_L6Q,
-    CODE_L6X
+    CODE_L1I,CODE_L1Q,CODE_L1X,CODE_L2I,CODE_L2Q,CODE_L2X,
+    CODE_L7I,CODE_L7Q,CODE_L7X,CODE_L6I,CODE_L6Q,CODE_L6X
 };
 static const int codes_sbs[]={
     CODE_L1C,CODE_L5I,CODE_L5Q,CODE_L5X
@@ -1483,7 +1483,7 @@ static int decode_ssr3(rtcm_t *rtcm, int sys)
         case SYS_GLO: np=5; offp=  0; codes=codes_glo; ncode= 4; break;
         case SYS_GAL: np=6; offp=  0; codes=codes_gal; ncode=19; break;
         case SYS_QZS: np=4; offp=192; codes=codes_qzs; ncode=13; break;
-        case SYS_CMP: np=6; offp=  1; codes=codes_bds; ncode= 9; break;
+        case SYS_CMP: np=6; offp=  1; codes=codes_bds; ncode=12; break;
         case SYS_SBS: np=6; offp=120; codes=codes_sbs; ncode= 4; break;
         default: return sync?0:10;
     }
@@ -1499,7 +1499,7 @@ static int decode_ssr3(rtcm_t *rtcm, int sys)
                 cbias[codes[mode]-1]=(float)bias;
             }
             else {
-                trace(2,"rtcm3 %d not supported mode: mode=%d\n",type,mode);
+                trace(2,"rtcm3 %d not supported code: mode=%d\n",type,mode);
             }
         }
         if (!(sat=satno(sys,prn))) {
@@ -1708,7 +1708,7 @@ static int decode_ssr7(rtcm_t *rtcm, int sys)
         case SYS_GLO: np=5; offp=  0; codes=codes_glo; ncode= 4; break;
         case SYS_GAL: np=6; offp=  0; codes=codes_gal; ncode=19; break;
         case SYS_QZS: np=4; offp=192; codes=codes_qzs; ncode=13; break;
-        case SYS_CMP: np=6; offp=  1; codes=codes_bds; ncode= 9; break;
+        case SYS_CMP: np=6; offp=  1; codes=codes_bds; ncode=12; break;
         default: return sync?0:10;
     }
     for (j=0;j<nsat&&i+5+17+np<=rtcm->len*8;j++) {

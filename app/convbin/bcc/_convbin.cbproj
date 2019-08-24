@@ -5,7 +5,11 @@
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Release</Config>
         <FrameworkType>None</FrameworkType>
+<<<<<<< HEAD
         <ProjectVersion>18.6</ProjectVersion>
+=======
+        <ProjectVersion>18.4</ProjectVersion>
+>>>>>>> ee508088368eba60dcdba4ead6f85da07522592d
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Console</AppType>
@@ -204,12 +208,15 @@
             <BuildOrder>6</BuildOrder>
             <BuildOrder>13</BuildOrder>
         </CppCompile>
-        <CppCompile Include="..\..\..\src\rcv\ss2.c">
+        <CppCompile Include="..\..\..\src\rcv\swiftnav.c">
             <BuildOrder>6</BuildOrder>
             <BuildOrder>15</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\src\rcv\tersus.c">
             <BuildOrder>28</BuildOrder>
+        </CppCompile>
+        <CppCompile Include="..\..\..\src\rcv\comnav.c">
+            <BuildOrder>29</BuildOrder>
         </CppCompile>
         <CppCompile Include="..\..\..\src\rcv\ublox.c">
             <BuildOrder>7</BuildOrder>
@@ -358,7 +365,11 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+<<<<<<< HEAD
                 <DeployFile Condition="'$(UsingDelphiRTL)'=='true'" LocalName="$(BDS)\bin\borlndmm.dll" Class="DependencyModule">
+=======
+                <DeployFile LocalName="..\..\..\src\rcv\swiftnav.c" Configuration="Release" Class="ProjectFile">
+>>>>>>> ee508088368eba60dcdba4ead6f85da07522592d
                     <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
                     </Platform>
@@ -573,12 +584,22 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+<<<<<<< HEAD
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin64\cc64260.dll" Class="DependencyModule">
                     <Platform Name="Win64">
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
                 <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'=='true'" LocalName="$(BDS)\bin\cc32c260mt.dll" Class="DependencyModule">
+=======
+                <DeployFile LocalName="..\..\..\src\rcv\comnav.c" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile Condition="'$(DynamicRTL)'=='true' And '$(Multithreaded)'!='true'" LocalName="$(BDS)\bin\cc32250.dll" Class="DependencyModule">
+>>>>>>> ee508088368eba60dcdba4ead6f85da07522592d
                     <Platform Name="Win32">
                         <Overwrite>true</Overwrite>
                     </Platform>

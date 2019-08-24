@@ -2,14 +2,19 @@
 BINDIR  = /usr/local/bin
 SRC     = ../../../src
 
-#OPTS    = -DTRACE -DENAGLO -DENAQZS -DENAGAL -DENACMP -DENAIRN -DNFREQ=3
-OPTS    = -DTRACE -DENAGLO -DENAQZS -DENAGAL -DENACMP -DENAIRN -DNFREQ=3 -DIERS_MODEL
-#OPTS    = -DENAGLO -DENAQZS -DENAGAL -DENACMP -DNFREQ=2
+OPTS    = -DTRACE -DENAGLO  -DENAQZS -DENAGAL -DENACMP  -DNFREQ=4   -DNEXOBS=3
 
 # for no lapack
 CFLAGS  = -Wall -O3 -ansi -pedantic -Wno-unused-but-set-variable -I$(SRC) $(OPTS) -g
-#LDLIBS  = -lm -lrt
-LDLIBS  = ../../../lib/iers/gcc/iers.a -lgfortran -lm -lrt
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S), Darwin)
+	LDLIBS  = -lm
+else
+	LDLIBS  = -lm -lrt
+endif
+
+#LDLIBS  = ../../../lib/iers/gcc/iers.a -lgfortran -lm -lrt
 
 #CFLAGS  = -Wall -O3 -ansi -pedantic -Wno-unused-but-set-variable -I$(SRC) -DLAPACK $(OPTS)
 #LDLIBS  = -lm -lrt -llapack -lblas
@@ -167,4 +172,3 @@ prof :
 
 install :
 	cp rnx2rtkp $(BINDIR)
-

@@ -2,6 +2,10 @@
 <BorlandProject>
 	<Transactions/>
 	<Default.Personality>
+<<<<<<< HEAD
 		<Projects ActiveProject="D:\proj\RTKLIB\app\rtkconv\rtkconv.cbproj"/>
+=======
+		<Projects ActiveProject="D:\proj\RTKLIB\app\rtkvideo\rtkvideo.cbproj"/>
+>>>>>>> ee508088368eba60dcdba4ead6f85da07522592d
 	</Default.Personality>
 </BorlandProject>

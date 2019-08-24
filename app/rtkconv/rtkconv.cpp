@@ -22,11 +22,18 @@ USEFORM("..\appcmn\vieweropt.cpp", ViewerOptDialog);
 USEFORM("codeopt.cpp", CodeOptDialog);
 USEFORM("convmain.cpp", MainWindow);
 USEFORM("convopt.cpp", ConvOptDialog);
+<<<<<<< HEAD
+=======
+USEFORM("..\appcmn\viewer.cpp", TextViewer);
+>>>>>>> ee508088368eba60dcdba4ead6f85da07522592d
 USEFORM("..\appcmn\aboutdlg.cpp", AboutDialog);
 USEFORM("..\appcmn\confdlg.cpp", ConfDialog);
 USEFORM("..\appcmn\keydlg.cpp", KeyDialog);
 USEFORM("..\appcmn\timedlg.cpp", TimeDialog);
+<<<<<<< HEAD
 USEFORM("..\appcmn\viewer.cpp", TextViewer);
+=======
+>>>>>>> ee508088368eba60dcdba4ead6f85da07522592d
 USEFORM("startdlg.cpp", StartDialog);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)

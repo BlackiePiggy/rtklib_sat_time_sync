@@ -1,7 +1,11 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{B9D0F977-D158-4447-9818-D26CDBC2CE25}</ProjectGuid>
+<<<<<<< HEAD
         <ProjectVersion>18.6</ProjectVersion>
+=======
+        <ProjectVersion>18.7</ProjectVersion>
+>>>>>>> ee508088368eba60dcdba4ead6f85da07522592d
         <FrameworkType>VCL</FrameworkType>
         <MainSource>rtklaunch.cpp</MainSource>
         <Base>True</Base>

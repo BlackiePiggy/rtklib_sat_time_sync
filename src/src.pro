@@ -60,6 +60,9 @@ SOURCES += rtkcmn.c \
     rcv/skytraq.c \
     rcv/ss2.c \
     rcv/ublox.c \
+    rcv/tersus.c \
+    rcv/comnav.c \
+    rcv/swiftnav.c \
     rcv/cmr.c
 
 HEADERS += rtklib.h

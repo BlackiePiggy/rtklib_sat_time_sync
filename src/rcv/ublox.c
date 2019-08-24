@@ -83,6 +83,7 @@
 #define ID_TRKD5    0x030A      /* ubx message id: trace mesurement data */
 #define ID_TRKMEAS  0x0310      /* ubx message id: trace mesurement data */
 #define ID_TRKSFRBX 0x030F      /* ubx message id: trace subframe buffer */
+#define ID_TIMTM2   0x0D03      /* ubx message id: time mark data */
 
 #define FU1         1           /* ubx message field types */
 #define FU2         2
@@ -179,8 +180,8 @@ static int ubx_sig(int sys, int sigid)
         if (sigid == 5) return CODE_L2L; /* L2CL (not specified in [5]) */
     }
     else if (sys == SYS_CMP) {
-        if (sigid == 0) return CODE_L1I; /* B1I D1 (rinex 3.02) */
-        if (sigid == 1) return CODE_L1I; /* B1I D2 (rinex 3.02) */
+        if (sigid == 0) return CODE_L2I; /* B1I D1 (rinex 3.03) */
+        if (sigid == 1) return CODE_L2I; /* B1I D2 (rinex 3.03) */
         if (sigid == 2) return CODE_L7I; /* B2I D1 */
         if (sigid == 3) return CODE_L7I; /* B2I D2 */
     }
@@ -195,7 +196,7 @@ static int sig_idx(int sys, int code)
     if (sys == SYS_GPS) {
         if (code==CODE_L1C) return 1;
         if (code==CODE_L2L) return 2;
-        if (code==CODE_L2M) return NFREQ+1;
+        if (code==CODE_L2M) return 2;
     }
     else if (sys == SYS_GLO) {
         if (code==CODE_L1C) return 1;
@@ -203,7 +204,7 @@ static int sig_idx(int sys, int code)
     }
     else if (sys == SYS_GAL) {
         if (code==CODE_L1C) return 1;
-        if (code==CODE_L1B) return NFREQ+1;
+        if (code==CODE_L1B) return 1;
         if (code==CODE_L7I) return 2; /* E5bI */
         if (code==CODE_L7Q) return 2; /* E5bQ */
     }
@@ -212,7 +213,7 @@ static int sig_idx(int sys, int code)
         if (code==CODE_L2L) return 2;
     }
     else if (sys == SYS_CMP) {
-        if (code==CODE_L1I) return 1;
+        if (code==CODE_L1I||code==CODE_L2I) return 1;
         if (code==CODE_L7I) return 2;
     }
     else if (sys == SYS_SBS) {
@@ -225,7 +226,7 @@ static double sig_freq(int sys, int f, int fcn)
 {
     static const double freq_glo[8]={FREQ1_GLO,FREQ2_GLO,FREQ3_GLO};
     static const double dfrq_glo[8]={DFRQ1_GLO,DFRQ2_GLO};
-    static const double freq_bds[8]={FREQ1_CMP,0,0,FREQ3_CMP,FREQ2_CMP};
+    static const double freq_bds[8]={FREQ1_CMP,FREQ2_CMP,FREQ3_CMP};
     
     if (sys == SYS_GLO) {
         return freq_glo[f-1]+dfrq_glo[f-1]*fcn;
@@ -287,7 +288,7 @@ static int decode_rxmraw(raw_t *raw)
     
     for (i=0,p+=8;i<nsat&&i<MAXOBS;i++,p+=24) {
         raw->obs.data[n].time=time;
-        raw->obs.data[n].L[0]  =R8(p   )-toff*FREQ1;
+        raw->obs.data[n].L[0]  =R8(p   )-toff*FREQL1;
         raw->obs.data[n].P[0]  =R8(p+ 8)-toff*CLIGHT;
         raw->obs.data[n].D[0]  =R4(p+16);
         prn                    =U1(p+20);
@@ -313,6 +314,7 @@ static int decode_rxmraw(raw_t *raw)
             raw->obs.data[n].L[j]=raw->obs.data[n].P[j]=0.0;
             raw->obs.data[n].D[j]=0.0;
             raw->obs.data[n].SNR[j]=raw->obs.data[n].LLI[j]=0;
+            raw->obs.data[n].qualL[j]=raw->obs.data[n].qualP[j]=0;
             raw->obs.data[n].code[j]=CODE_NONE;
         }
         n++;
@@ -329,8 +331,8 @@ static int decode_rxmrawx(raw_t *raw)
     char *q,tstr[64];
     double tow,P,L,D,tn,tadj=0.0,toff=0.0;
     int i,j,k,f,sys,prn,sat,code,slip,halfv,halfc,LLI,n=0,std_slip=0;
-    int week,nmeas,ver,gnss,svid,sigid,frqid,lockt,cn0,cpstd,tstat;
-    
+    int week,nmeas,ver,gnss,svid,sigid,frqid,lockt,cn0,cpstd,prstd,tstat;
+
     trace(4,"decode_rxmrawx: len=%d\n",raw->len);
     
     if (raw->len<24) {
@@ -361,7 +363,7 @@ static int decode_rxmrawx(raw_t *raw)
     if ((q=strstr(raw->opt,"-TADJ="))) {
         sscanf(q,"-TADJ=%lf",&tadj);
     }
-    /* slip theshold of std-dev of carreir-phase (-STD_SLIP) */
+    /* slip threshold of std-dev of carrier-phase (-STD_SLIP) */
     if ((q=strstr(raw->opt,"-STD_SLIP="))) {
         sscanf(q,"-STD_SLIP=%d",&std_slip);
     }
@@ -381,11 +383,14 @@ static int decode_rxmrawx(raw_t *raw)
         frqid=U1(p+23);    /* freqId (fcn + 7) */
         lockt=U2(p+24);    /* locktime (ms) */
         cn0  =U1(p+26);    /* cn0 (dBHz) */
+        prstd=U1(p+27)&15; /* pseudorange std-dev */
         cpstd=U1(p+28)&15; /* cpStdev (m) */
+        prstd=1<<(prstd>=5?prstd-5:0); /* prstd=2^(x-5) */
+        prstd=prstd<=9?prstd:9;  /* limit to 9 to fit RINEX format */
         tstat=U1(p+30);    /* trkStat */
         if (!(tstat&1)) P=0.0;
-        if (!(tstat&2)||L==-0.5||cpstd>CPSTD_VALID) L=0.0;
-        
+        if (!(tstat&2)||L==-0.5||cpstd>CPSTD_VALID) L=0.0; /* invalid phase */
+
         if (!(sys=ubx_sys(gnss))) {
             trace(2,"ubx rxmrawx: system error gnss=%d\n", gnss);
             continue;
@@ -400,30 +405,38 @@ static int decode_rxmrawx(raw_t *raw)
         }
         if (ver>=1) {
             code=ubx_sig(sys,sigid);
-        }
+            }
         else {
-            code=(sys==SYS_CMP)?CODE_L1I:((sys==SYS_GAL)?CODE_L1X:CODE_L1C);
+            code=(sys==SYS_CMP)?CODE_L2I:((sys==SYS_GAL)?CODE_L1X:CODE_L1C);
         }
         /* signal index in obs data */
         f=sig_idx(sys,code);
-        
+
         if (f==0||f>NFREQ+NEXOBS) {
             trace(2,"ubx rxmrawx signal error: sat=%2d sigid=%d\n",sat,sigid);
             continue;
         }
         /* offset by time tag adjustment */
-        if (toff!=0.0) {
+        if (toff!=0.0&&L!=0.0) {
             P-=toff*CLIGHT;
             L-=toff*sig_freq(sys,f,frqid-7);
         }
-        halfv=tstat&4?1:0; /* half cycle valid */
+        if (sys==SYS_SBS)
+           halfv=lockt>8000?1:0; /* half-cycle valid */
+        else
+            halfv=tstat&4?1:0; /* half cycle valid */
         halfc=tstat&8?1:0; /* half cycle subtracted from phase */
         slip=lockt==0||lockt*1E-3<raw->lockt[sat-1][f-1]||
-             halfc!=raw->halfc[sat-1][f-1]||(std_slip&&cpstd>=std_slip);
+             halfc!=raw->halfc[sat-1][f-1];
+        if (std_slip>0&&cpstd>=std_slip) slip=LLI_SLIP;
+        if (slip) raw->lockflag[sat-1][f-1]=slip;
         raw->lockt[sat-1][f-1]=lockt*1E-3;
         raw->halfc[sat-1][f-1]=halfc;
-        LLI=(slip?LLI_SLIP:0)|(!halfv?LLI_HALFC:0);
-        
+        /* LLI: bit1=slip,bit2=half-cycle-invalid */
+        LLI=!halfv&&L!=0.0?LLI_HALFC:0;
+        LLI|=halfc!=raw->halfc[sat-1][f-1]?1:0;
+        if (L!=0.0) LLI|=raw->lockflag[sat-1][f-1]>0.0?LLI_SLIP:0;
+
         for (j=0;j<n;j++) {
             if (raw->obs.data[j].sat==sat) break;
         }
@@ -433,6 +446,7 @@ static int decode_rxmrawx(raw_t *raw)
             raw->obs.data[n].rcv=0;
             for (k=0;k<NFREQ+NEXOBS;k++) {
                 raw->obs.data[n].L[k]=raw->obs.data[n].P[k]=0.0;
+                raw->obs.data[n].qualL[k]=raw->obs.data[n].qualP[k]=0.0;
                 raw->obs.data[n].D[k]=0.0;
                 raw->obs.data[n].SNR[k]=raw->obs.data[n].LLI[k]=0;
                 raw->obs.data[n].code[k]=CODE_NONE;
@@ -441,10 +455,13 @@ static int decode_rxmrawx(raw_t *raw)
         }
         raw->obs.data[j].L[f-1]=L;
         raw->obs.data[j].P[f-1]=P;
+        raw->obs.data[j].qualL[f-1]=cpstd<=7?cpstd:0;
+        raw->obs.data[j].qualP[f-1]=prstd;
         raw->obs.data[j].D[f-1]=(float)D;
         raw->obs.data[j].SNR[f-1]=(unsigned char)(cn0*4);
         raw->obs.data[j].LLI[f-1]=(unsigned char)LLI;
         raw->obs.data[j].code[f-1]=(unsigned char)code;
+        if (L!=0.0) raw->lockflag[sat-1][f-1]=0;
     }
     raw->time=time;
     raw->obs.n=n;
@@ -605,8 +622,13 @@ static int decode_trkmeas(raw_t *raw)
     static double adrs[MAXSAT]={0};
     gtime_t time;
     double ts,tr=-1.0,t,tau,utc_gpst,snr,adr,dop;
-    int i,j,n=0,nch,sys,prn,sat,qi,frq,flag,lock1,lock2,week;
+    int i,j,n=0,nch,sys,prn,sat,qi,frq,flag,lock1,lock2,week,fw=0;
     unsigned char *p=raw->buff+6;
+    char *q;
+    /* adjustment to code measurement in meters, based on GLONASS freq,
+       values based on difference between TRK_MEAS values and  RXM-RAWX values */
+    const char P_adj_fw2[]={ 0, 0, 0, 0, 1, 3, 2, 0,-4,-3,-9,-8,-7,-4, 0};  /* fw 2.30 */
+    const char P_adj_fw3[]={11,13,13,14,14,13,12,10, 8, 6, 5, 5, 5, 7, 0};  /* fw 3.01 */
     
     trace(4,"decode_trkmeas: len=%d\n",raw->len);
     
@@ -614,6 +636,11 @@ static int decode_trkmeas(raw_t *raw)
         sprintf(raw->msgtype,"UBX TRK-MEAS  (%4d):",raw->len);
     }
     if (!raw->time.time) return 0;
+
+    /* trk meas code adjust (-TRKM_ADJ) */
+    if ((q=strstr(raw->opt,"-TRKM_ADJ="))) {
+        sscanf(q,"-TRKM_ADJ=%d",&fw);
+    }
     
     /* number of channels */
     nch=U1(p+2);
@@ -697,7 +724,8 @@ static int decode_trkmeas(raw_t *raw)
         raw->obs.data[n].L[0]=-adr;
         raw->obs.data[n].D[0]=(float)dop;
         raw->obs.data[n].SNR[0]=(unsigned char)(snr*4.0);
-        raw->obs.data[n].code[0]=sys==SYS_CMP?CODE_L1I:CODE_L1C;
+        raw->obs.data[n].code[0]=sys==SYS_CMP?CODE_L2I:CODE_L1C;
+        raw->obs.data[n].qualL[0]=8-qi;
         raw->obs.data[n].LLI[0]=raw->lockt[sat-1][1]>0.0?1:0;
         if (sys==SYS_SBS) { /* half-cycle valid */
             raw->obs.data[n].LLI[0]|=lock2>142?0:2;
@@ -706,11 +734,16 @@ static int decode_trkmeas(raw_t *raw)
             raw->obs.data[n].LLI[0]|=flag&0x80?0:2;
         }
         raw->lockt[sat-1][1]=0.0;
-        
+        /* adjust code measurements for GLONASS sats */
+        if (sys==SYS_GLO&&frq>=-7&&frq<=7) {
+            if (fw==2) raw->obs.data[n].P[0]+=(double)P_adj_fw2[frq+7];
+            if (fw==3) raw->obs.data[n].P[0]+=(double)P_adj_fw3[frq+7];
+        }
         for (j=1;j<NFREQ+NEXOBS;j++) {
             raw->obs.data[n].L[j]=raw->obs.data[n].P[j]=0.0;
             raw->obs.data[n].D[j]=0.0;
             raw->obs.data[n].SNR[j]=raw->obs.data[n].LLI[j]=0;
+            raw->obs.data[n].qualL[j]=raw->obs.data[n].qualP[j]=0;
             raw->obs.data[n].code[j]=CODE_NONE;
         }
         n++;
@@ -816,7 +849,7 @@ static int decode_trkd5(raw_t *raw)
         raw->obs.data[n].L[0]=-adr;
         raw->obs.data[n].D[0]=(float)dop;
         raw->obs.data[n].SNR[0]=(unsigned char)(snr*4.0);
-        raw->obs.data[n].code[0]=sys==SYS_CMP?CODE_L1I:CODE_L1C;
+        raw->obs.data[n].code[0]=sys==SYS_CMP?CODE_L2I:CODE_L1C;
         raw->obs.data[n].LLI[0]=raw->lockt[sat-1][1]>0.0?1:0;
         raw->lockt[sat-1][1]=0.0;
         
@@ -1130,6 +1163,57 @@ static int decode_trksfrbx(raw_t *raw)
     }
     return 0;
 }
+/* decode ubx-tim-tm2: time mark data ----------------------------------------*/
+static int decode_timtm2(raw_t *raw)
+{
+    gtime_t eventime;
+    char ch, flags;
+    unsigned int count, wnR, wnF;
+    unsigned long towMsR, towSubMsR, towMsF, towSubMsF, accEst;
+    int time, timeBase, newRisingEdge, newFallingEdge;
+    unsigned char *p=raw->buff+6;
+    double tr[6],tf[6];
+
+    trace(4, "decode_timtm2: len=%d\n", raw->len);
+
+    if (raw->outtype) {
+        sprintf(raw->msgtype, "UBX TIM-TM2 (%4d)", raw->len);
+    }
+    ch = U1(p);
+    flags = *(p+1);
+    count = U2(p+2);
+    wnR = U2(p+4);
+    wnF = U2(p+6);
+    towMsR = U4(p+8);
+    towSubMsR = U4(p+12);
+    towMsF = U4(p+16);
+    towSubMsF = U4(p+20);
+    accEst = U4(p+24);
+
+    /* extract flags to variables */
+    newFallingEdge = ((flags >> 2) & 0x01);
+    timeBase =       ((flags >> 3) & 0x03);
+    time =           ((flags >> 6) & 0x01);
+    newRisingEdge =  ((flags >> 7) & 0x01);
+
+    if (newFallingEdge)
+    {
+        eventime = gpst2time(wnF,towMsF*1E-3+towSubMsF*1E-9);
+        raw->obs.flag = 5; /* Event flag */
+        raw->obs.data[0].eventime = eventime;
+        raw->obs.rcvcount = count;
+        raw->obs.tmcount++;
+        raw->obs.data[0].timevalid = time;
+    } else {
+        raw->obs.flag = 0;
+    }
+    time2epoch(gpst2time(wnR,towMsR*1E-3+towSubMsR*1E-9),tr);
+    time2epoch(gpst2time(wnF,towMsF*1E-3+towSubMsF*1E-9),tf);
+    trace(3,"time mark rise: %f:%f:%.3f\n",tr[3],tr[4],tr[5]);
+    trace(3,"time mark fall: %f:%f:%.3f\n",tf[3],tf[4],tf[5]);
+    return 0;
+}
+
 /* decode ublox raw message --------------------------------------------------*/
 static int decode_ubx(raw_t *raw)
 {
@@ -1152,6 +1236,7 @@ static int decode_ubx(raw_t *raw)
         case ID_TRKMEAS : return decode_trkmeas (raw);
         case ID_TRKD5   : return decode_trkd5   (raw);
         case ID_TRKSFRBX: return decode_trksfrbx(raw);
+        case ID_TIMTM2  : return decode_timtm2  (raw);
     }
     if (raw->outtype) {
         sprintf(raw->msgtype,"UBX 0x%02X 0x%02X (%4d)",type>>8,type&0xF,
@@ -1166,7 +1251,7 @@ static int sync_ubx(unsigned char *buff, unsigned char data)
     return buff[0]==UBXSYNC1&&buff[1]==UBXSYNC2;
 }
 /* input ublox raw message from stream -----------------------------------------
-* fetch next ublox raw data and input a mesasge from stream
+* fetch next ublox raw data and input a message from stream
 * args   : raw_t *raw   IO     receiver raw data control struct
 *          unsigned char data I stream data (1 byte)
 * return : status (-1: error message, 0: no message, 1: input observation data,

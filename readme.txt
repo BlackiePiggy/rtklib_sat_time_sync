@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #
 #  RTKLIB 2.4.3 Betas
 #
@@ -137,3 +138,6 @@ UPDATE HISTORY
                       support binex upgraded galileo ephemeris (0x01-14)
                       support 460800 and 921600 bps for serial stream
                       fix bug on return value of resamb_LAMBDA() error
+=======
+A version of RTKLIB optimized for single and dual frequency low cost GPS receivers, especially u-blox receivers.  It is based on RTKLIB 2.4.3 and is kept reasonably closely synced to that branch.  Documentation for RTKLIB is available at rtklib.com.   This software is provided “AS IS” without any warranties of any kind so please be careful, especially if using it in any kind of real-time application.  Binaries and tutorials for this code, and sample GPS data sets at http://rtkexplorer.com/               
+>>>>>>> ee508088368eba60dcdba4ead6f85da07522592d

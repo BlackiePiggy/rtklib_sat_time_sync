@@ -69,7 +69,7 @@ static const char *help[]={
 " NovAtel OEMV/4,OEMStar: RANGECMPB, RANGEB, RAWEPHEMB, IONUTCB, RAWWASSFRAMEB",
 " NovAtel OEM3          : RGEB, REGD, REPB, FRMB, IONB, UTCB",
 " u-blox LEA-4T/5T/6T   : RXM-RAW, RXM-SFRB",
-" NovAtel Superstar II  : ID#20, ID#21, ID#22, ID#23, ID#67",
+" Swift Piksi Multi     : ",
 " Hemisphere            : BIN76, BIN80, BIN94, BIN95, BIN96",
 " SkyTraq S1315F        : msg0xDD, msg0xE0, msg0xDC",
 " GW10                  : msg0x08, msg0x03, msg0x27, msg0x20",
@@ -101,7 +101,7 @@ static const char *help[]={
 "                  nov  = NovAtel OEMV/4/6,OEMStar",
 "                  oem3 = NovAtel OEM3",
 "                  ubx  = ublox LEA-4T/5T/6T/7T/M8T",
-"                  ss2  = NovAtel Superstar II",
+"                  sbp  = Swift Navigation SBP",
 "                  hemis= Hemisphere Eclipse/Crescent",
 "                  stq  = SkyTraq S1315F",
 "                  javad= Javad",
@@ -159,7 +159,7 @@ static const char *help[]={
 "     *.rtcm3       RTCM 3",
 "     *.gps         NovAtel OEMV/4/6,OEMStar",
 "     *.ubx         u-blox LEA-4T/5T/6T/7T/M8T",
-"     *.log         NovAtel Superstar II",
+"     *.sbp         Swift Navigation SBP",
 "     *.bin         Hemisphere Eclipse/Crescent",
 "     *.stq         SkyTraq S1315F",
 "     *.jps         Javad",
@@ -345,7 +345,7 @@ static int cmdopts(int argc, char **argv, rnxopt_t *opt, char **ifile,
     opt->navsys=SYS_GPS|SYS_GLO|SYS_GAL|SYS_QZS|SYS_SBS|SYS_CMP;
     opt->scanobs=1;
     
-    for (i=0;i<6;i++) for (j=0;j<64;j++) opt->mask[i][j]='1';
+    for (i=0;i<7;i++) for (j=0;j<64;j++) opt->mask[i][j]='1';
     
     for (i=1;i<argc;i++) {
         if (!strcmp(argv[i],"-ts")&&i+2<argc) {
@@ -498,18 +498,17 @@ static int cmdopts(int argc, char **argv, rnxopt_t *opt, char **ifile,
     if (nf>=1) opt->freqtype|=FREQTYPE_L1;
     if (nf>=2) opt->freqtype|=FREQTYPE_L2;
     if (nf>=3) opt->freqtype|=FREQTYPE_L5;
-    if (nf>=4) opt->freqtype|=FREQTYPE_L6;
-    if (nf>=5) opt->freqtype|=FREQTYPE_L7;
-    if (nf>=6) opt->freqtype|=FREQTYPE_L8;
-    if (nf>=7) opt->freqtype|=FREQTYPE_L9;
+    if (nf>=4) opt->freqtype|=FREQTYPE_E6;
+    if (nf>=5) opt->freqtype|=FREQTYPE_E5ab;
+    if (nf>=6) opt->freqtype|=FREQTYPE_S;
     
     if (*fmt) {
         if      (!strcmp(fmt,"rtcm2")) format=STRFMT_RTCM2;
         else if (!strcmp(fmt,"rtcm3")) format=STRFMT_RTCM3;
         else if (!strcmp(fmt,"nov"  )) format=STRFMT_OEM4;
-        else if (!strcmp(fmt,"oem3" )) format=STRFMT_OEM3;
+        else if (!strcmp(fmt,"cnav" )) format=STRFMT_CNAV;
         else if (!strcmp(fmt,"ubx"  )) format=STRFMT_UBX;
-        else if (!strcmp(fmt,"ss2"  )) format=STRFMT_SS2;
+        else if (!strcmp(fmt,"sbp"  )) format=STRFMT_SBP;
         else if (!strcmp(fmt,"hemis")) format=STRFMT_CRES;
         else if (!strcmp(fmt,"stq"  )) format=STRFMT_STQ;
         else if (!strcmp(fmt,"javad")) format=STRFMT_JAVAD;
@@ -528,7 +527,7 @@ static int cmdopts(int argc, char **argv, rnxopt_t *opt, char **ifile,
         else if (!strcmp(p,".rtcm3"))  format=STRFMT_RTCM3;
         else if (!strcmp(p,".gps"  ))  format=STRFMT_OEM4;
         else if (!strcmp(p,".ubx"  ))  format=STRFMT_UBX;
-        else if (!strcmp(p,".log"  ))  format=STRFMT_SS2;
+        else if (!strcmp(p,".sbp"  ))  format=STRFMT_SBP;
         else if (!strcmp(p,".bin"  ))  format=STRFMT_CRES;
         else if (!strcmp(p,".stq"  ))  format=STRFMT_STQ;
         else if (!strcmp(p,".jps"  ))  format=STRFMT_JAVAD;

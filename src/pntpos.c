@@ -33,7 +33,7 @@
 #define ERR_SAAS    0.3         /* saastamoinen model error std (m) */
 #define ERR_BRDCI   0.5         /* broadcast iono model error factor */
 #define ERR_CBIAS   0.3         /* code bias error std (m) */
-#define REL_HUMI    0.7         /* relative humidity for saastamoinen model */
+#define REL_HUMI    0.5         /* relative humidity for saastamoinen model */
 
 /* pseudorange measurement error variance ------------------------------------*/
 static double varerr(const prcopt_t *opt, double el, double snr_rover, int sys)
@@ -57,7 +57,7 @@ static double varerr(const prcopt_t *opt, double el, double snr_rover, int sys)
        in the case of iono-free combination */
     fact = (opt->ionoopt == IONOOPT_IFLC) ? SQR(3.0) : 1.0;
     switch (opt->weightmode) {
-        case WEIGHTOPT_ELEVATION: return fact * ( SQR(a) + SQR(b / sinel) );
+        case WEIGHTOPT_ELEVATION: return fact * ( SQR(a) + SQR(b/ sinel ) );
         case WEIGHTOPT_SNR      : return fact * SQR(a) * pow(10, 0.1 * MAX(snr_max - snr_rover, 0)); 
                                                    ;
         default: return 0;

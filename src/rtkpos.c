@@ -353,7 +353,7 @@ static void outsolstat(rtk_t *rtk,const nav_t *nav)
     dgps=rtk->opt.mode<=PMODE_DGPS?1:0;
     for (i=0;i<MAXSAT;i++) {
         ssat=rtk->ssat+i;
-        if (!ssat->vs) continue;
+		if (!ssat->vsat[0] && !ssat->vs) continue;
         satno2id(i+1,id);
         for (j=0;j<nfreq;j++) {
             k=IB(i+1,j,&rtk->opt);

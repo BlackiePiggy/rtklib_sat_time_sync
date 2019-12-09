@@ -69,7 +69,7 @@
 #define MAX_ITER    8               /* max number of iterations */
 #define MAX_STD_FIX 0.15            /* max std-dev (3d) to fix solution */
 #define MIN_NSAT_SOL 4              /* min satellite number for solution */
-#define THRES_REJECT 4.0            /* reject threshold of posfit-res (sigma) */
+#define THRES_REJECT 5.0            /* reject threshold of posfit-res (sigma) */
 
 #define THRES_MW_JUMP 10.0
 
@@ -126,7 +126,7 @@ extern int pppoutstat(rtk_t *rtk, char *buff)
 {
     ssat_t *ssat;
     double tow,pos[3],vel[3],acc[3],*x;
-    int i,j,week;
+    int i,j,k,week;
     char id[32],*p=buff;
     
     if (!rtk->sol.stat) return 0;
@@ -151,10 +151,12 @@ extern int pppoutstat(rtk_t *rtk, char *buff)
                    vel[2],acc[0],acc[1],acc[2],0.0,0.0,0.0,0.0,0.0,0.0);
     }
     /* receiver clocks */
-    i=IC(0,&rtk->opt);
-    p+=sprintf(p,"$CLK,%d,%.3f,%d,%d,%.3f,%.3f,%.3f,%.3f\n",
+	i = IC(0, &rtk->opt);/*GPS,GLO, Gal, BDS*/
+    p+=sprintf(p,"$CLK,%d,%.3f,%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",
                week,tow,rtk->sol.stat,1,x[i]*1E9/CLIGHT,x[i+1]*1E9/CLIGHT,
-               STD(rtk,i)*1E9/CLIGHT,STD(rtk,i+1)*1E9/CLIGHT);
+			   x[i+2] * 1E9 / CLIGHT, x[i + 3] * 1E9 / CLIGHT,
+			   STD(rtk, i)*1E9 / CLIGHT, STD(rtk, i + 1)*1E9 / CLIGHT,
+               STD(rtk,i+2)*1E9/CLIGHT,STD(rtk,i+3)*1E9/CLIGHT);
     
     /* tropospheric parameters */
     if (rtk->opt.tropopt==TROPOPT_EST||rtk->opt.tropopt==TROPOPT_ESTG) {
@@ -169,27 +171,35 @@ extern int pppoutstat(rtk_t *rtk, char *buff)
     }
     /* ionosphere parameters */
     if (rtk->opt.ionoopt==IONOOPT_EST) {
-        for (i=0;i<MAXSAT;i++) {
-            ssat=rtk->ssat+i;
-            if (!ssat->vs) continue;
-            j=II(i+1,&rtk->opt);
-            if (rtk->x[j]==0.0) continue;
-            satno2id(i+1,id);
-            p+=sprintf(p,"$ION,%d,%.3f,%d,%s,%.1f,%.1f,%.4f,%.4f\n",week,tow,
-                       rtk->sol.stat,id,rtk->ssat[i].azel[0]*R2D,
-                       rtk->ssat[i].azel[1]*R2D,x[j],STD(rtk,j));
-        }
+		for (i = 0; i < MAXSAT; i++) {
+			ssat = rtk->ssat + i;
+			//if (!ssat->vs) continue;
+			if (ssat->vsat[0] && ssat->vs){
+				j = II(i + 1, &rtk->opt);
+				if (rtk->x[j] == 0.0) continue;
+				satno2id(i + 1, id);
+				p += sprintf(p, "$ION,%d,%.3f,%d,%s,%.1f,%.1f,%.4f,%.4f\n", week, tow,
+					rtk->sol.stat, id, rtk->ssat[i].azel[0] * R2D,
+					rtk->ssat[i].azel[1] * R2D, x[j], STD(rtk, j));
+			}
+		}
     }
-#ifdef OUTSTAT_AMB
+//#ifdef OUTSTAT_AMB
     /* ambiguity parameters */
-    for (i=0;i<MAXSAT;i++) for (j=0;j<NF(&rtk->opt);j++) {
-        k=IB(i+1,j,&rtk->opt);
-        if (rtk->x[k]==0.0) continue;
-        satno2id(i+1,id);
-        p+=sprintf(p,"$AMB,%d,%.3f,%d,%s,%d,%.4f,%.4f\n",week,tow,
-                   rtk->sol.stat,id,j+1,x[k],STD(rtk,k));
-    }
-#endif
+	for (i = 0; i < MAXSAT; i++) {
+		ssat = rtk->ssat + i;
+		for (j = 0; j < NF(&rtk->opt); j++) {
+
+			k = IB(i + 1, j, &rtk->opt);
+			//if (rtk->x[k] == 0.0) continue;
+			if (ssat->vsat[0] && ssat->vs) {
+				satno2id(i + 1, id);
+				p += sprintf(p, "$AMB,%d,%.3f,%d,%s,%d,%.4f,%.4f\n", week, tow,
+					rtk->sol.stat, id, j + 1, x[k], STD(rtk, k));
+			}
+		}
+	}
+//#endif
     return (int)(p-buff);
 }
 /* exclude meas of eclipsing satellite (block IIA) ---------------------------*/
@@ -389,7 +399,7 @@ static void corr_meas(const obsd_t *obs, const nav_t *nav, const double *azel,
 {
     const double *lam=nav->lam[obs->sat-1];
     double C1,C2;
-    int i,sys,ix;
+    int i,sys,ix=0;
     
     sys=satsys(obs->sat,NULL);
     
@@ -665,7 +675,7 @@ static void udiono_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
             ion=(obs[i].P[0]-obs[i].P[k])/(1.0-SQR(lam[k]/lam[0]));
             ecef2pos(rtk->sol.rr,pos);
             azel=rtk->ssat[obs[i].sat-1].azel;
-            ion/=ionmapf(pos,azel);
+            //ion/=ionmapf(pos,azel);
             initx(rtk,ion,VAR_IONO,j);
         }
         else {
@@ -1026,7 +1036,7 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
                 /* receiver DCB correction for P2 */
                 if (j/2==1) dcb=-nav->rbias[0][sys==SYS_GLO?1:0][0];
             }
-            C=SQR(lam[j/2]/lam[0])*ionmapf(pos,azel+i*2)*(j%2==0?-1.0:1.0);
+            C=SQR(lam[j/2]/lam[0])*(j%2==0?-1.0:1.0);//*ionmapf(pos,azel+i*2)
             
             for (k=0;k<nx;k++) H[k+nx*nv]=k<3?-e[k]:0.0;
             
@@ -1059,8 +1069,8 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
             else        rtk->ssat[sat-1].resp[j/2]=v[nv];
             
             /* variance */
-            var[nv]=varerr(obs[i].sat,sys,azel[1+i*2],0.25*rtk->ssat[sat-1].snr_rover[j/2],j/2,j%2,opt)+
-                    vart+SQR(C)*vari+var_rs[i];
+			var[nv] = varerr(obs[i].sat, sys, azel[1 + i * 2], 0.25*rtk->ssat[sat - 1].snr_rover[j / 2], j / 2, j % 2, opt);/* +
+                    vart+SQR(C)*vari+var_rs[i];*/
             if (sys==SYS_GLO&&j%2==1) var[nv]+=VAR_GLO_IFB;
             
             trace(3,"%s sat=%2d %s%d res=%9.4f sig=%9.4f el=%4.1f\n",str,sat,

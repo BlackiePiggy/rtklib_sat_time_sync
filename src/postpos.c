@@ -415,9 +415,9 @@ static void procpos(FILE *fp, FILE *fptm, const prcopt_t *popt, const solopt_t *
     gtime_t time={0};
     sol_t sol={{0}},oldsol={{0}},newsol={{0}};
     obsd_t obs[MAXOBS*2]; /* for rover and base */
-    double rb[3]={0};
+	double rb[3] = { 0 }, ep[6] = {2019,7,1,6,26,0.0};
     int i,nobs,n,solstatic,num=0,pri[]={0,1,2,3,4,5,1,6};
-    
+
     trace(3,"procpos : mode=%d\n",mode);
     
     solstatic=sopt->solstatic&&
@@ -430,7 +430,11 @@ static void procpos(FILE *fp, FILE *fptm, const prcopt_t *popt, const solopt_t *
     rtcm_path[0]='\0';
     
     while ((nobs=inputobs(obs,rtk->sol.stat,popt))>=0) {
-        
+		
+		if (fabs(timediff(obs[0].time, epoch2time(ep)) )< 0.1){
+			ep[0] = ep[0];
+		} // add by xiang for debug for specific time
+
         /* exclude satellites */
         for (i=n=0;i<nobs;i++) {
             if ((satsys(obs[i].sat,NULL)&popt->navsys)&&

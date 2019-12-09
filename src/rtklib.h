@@ -63,6 +63,7 @@ extern "C" {
 #define COPYRIGHT_RTKLIB \
             "Copyright (C) 2007-2019 T.Takasu\nAll rights reserved."
 
+#define IERS_MODEL  1  				    /*added by xiang for IERS 2010 correction*/
 #define PI          3.1415926535897932  /* pi */
 #define D2R         (PI/180.0)          /* deg to rad */
 #define R2D         (180.0/PI)          /* rad to deg */
@@ -1592,7 +1593,10 @@ EXPORT int ionocorr(gtime_t time, const nav_t *nav, int sat, const double *pos,
                     const double *azel, int ionoopt, double *ion, double *var);
 EXPORT int tropcorr(gtime_t time, const nav_t *nav, const double *pos,
                     const double *azel, int tropopt, double *trp, double *var);
-
+/*added by xiang--------------------------------------------------------------*/
+EXPORT void GPT(double *pos, gtime_t time, double *p, double *t);
+EXPORT double Legendre_Interpolation(const double a_mean[], const double a_amp[], const double b_mean[], const double b_amp[],
+	int nmax, int mmax, int doy, const double *pos);
 /* antenna models ------------------------------------------------------------*/
 EXPORT int  readpcv(const char *file, pcvs_t *pcvs);
 EXPORT pcv_t *searchpcv(int sat, const char *type, gtime_t time,

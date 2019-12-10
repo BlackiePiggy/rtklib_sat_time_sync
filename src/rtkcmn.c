@@ -987,7 +987,16 @@ extern int solve(const char *tr, const double *A, const double *Y, int n,
 }
 
 #else /* without LAPACK/BLAS or MKL */
-
+/* multiply matrix (wrapper of blas dgemm) -------------------------------------
+* multiply matrix by matrix (C=alpha*A*B+beta*C)
+* args   : char   *tr       I  transpose flags ("N":normal,"T":transpose)
+*          int    n,k,m     I  size of (transposed) matrix A,B
+*          double alpha     I  alpha
+*          double *A,*B     I  (transposed) matrix A (n x m), B (m x k)
+*          double beta      I  beta
+*          double *C        IO matrix C (n x k)
+* return : none
+*-----------------------------------------------------------------------------*/
 /* multiply matrix -----------------------------------------------------------*/
 extern void matmul(const char *tr, int n, int k, int m, double alpha,
                    const double *A, const double *B, double beta, double *C)
@@ -1133,7 +1142,7 @@ static int filter_(const double *x, const double *P, const double *H,
                    const double *v, const double *R, int n, int m,
                    double *xp, double *Pp)
 {
-    double *F=mat(n,m),*Q=mat(m,m),*K=mat(n,m),*I=eye(n);
+	double *F = mat(n, m), *Q = mat(m, m), *K = mat(n, m), *I = eye(n), *A = mat(n, n),*E = eye(n);
     int info;
     
     matcpy(Q,R,m,m);
@@ -1143,8 +1152,14 @@ static int filter_(const double *x, const double *P, const double *H,
     if (!(info=matinv(Q,m))) {
         matmul("NN",n,m,m,1.0,F,Q,0.0,K);   /* K=P*H*Q^-1 */
         matmul("NN",n,1,m,1.0,K,v,1.0,xp);  /* xp=x+K*v */
-        matmul("NT",n,n,m,-1.0,K,H,1.0,I);  /* Pp=(I-K*H')*P */
+        matmul("NT",n,n,m,-1.0,K,H,1.0,I);  /* Pp=(I-K*H')*P Pp = (I-K*H')*P(I-K*H')' + KRK'*/
         matmul("NN",n,n,n,1.0,I,P,0.0,Pp);
+		/* have symetric matrix for Pp four more matrix operation*/
+		//matmul("NN", n, m, n, 1.0, K, R, 0.0, F);
+		//matmul("NT", n, n, m, 1.0, F, K, 0.0, A);
+		//matmul("NT", n, n, n, 1.0, Pp, I, 0.0, Pp);
+		//matmul("NN", n, n, n, 0.0, E, A, 1.0, Pp);/*this addition is not right*/
+
     }
     free(F); free(Q); free(K); free(I);
     return info;

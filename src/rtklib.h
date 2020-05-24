@@ -177,7 +177,7 @@ extern "C" {
 #endif
 #ifdef ENACMP
 #define MINPRNCMP   1                   /* min satellite sat number of BeiDou */
-#define MAXPRNCMP   37                  /* max satellite sat number of BeiDou */
+#define MAXPRNCMP   60                  /* max satellite sat number of BeiDou */
 #define NSATCMP     (MAXPRNCMP-MINPRNCMP+1) /* number of BeiDou satellites */
 #define NSYSCMP     1
 #else
@@ -1229,6 +1229,9 @@ typedef struct {        /* satellite status type */
     double  gf;         /* geometry-free phase L1-L2 (m) */
     double  gf2;        /* geometry-free phase L1-L5 (m) */
     double  mw;         /* MW-LC (m) */
+	double mwmean;
+	double mwmean2;
+	double mwarc;
     double  phw;        /* phase windup (cycle) */
     gtime_t pt[2][NFREQ]; /* previous carrier-phase time */
     double  ph[2][NFREQ]; /* previous carrier-phase observable (cycle) */

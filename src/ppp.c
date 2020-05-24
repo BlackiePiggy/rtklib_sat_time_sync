@@ -69,9 +69,12 @@
 #define MAX_ITER    8               /* max number of iterations */
 #define MAX_STD_FIX 0.15            /* max std-dev (3d) to fix solution */
 #define MIN_NSAT_SOL 4              /* min satellite number for solution */
-#define THRES_REJECT 5.0            /* reject threshold of posfit-res (sigma) */
+#define THRES_REJECT 4.0            /* reject threshold of posfit-res (sigma) */
 
 #define THRES_MW_JUMP 10.0
+#define MWGAPMAX	5.0				/*added by xiang for MW detection*/
+#define MWARCMAX	100.0
+#define MWCSMIN		0.8
 
 #define VAR_POS     SQR(60.0)       /* init variance receiver position (m^2) */
 #define VAR_VEL     SQR(10.0)       /* init variance of receiver vel ((m/s)^2) */
@@ -114,7 +117,17 @@
 #define II(s,opt)   (NP(opt)+NC(opt)+NT(opt)+(s)-1)
 #define ID(opt)     (NP(opt)+NC(opt)+NT(opt)+NI(opt))
 #define IB(s,f,opt) (NR(opt)+MAXSAT*(f)+(s)-1)
-
+/* BDS to satellite type------------------------------------------------------*/
+static char *BDsType[46] = {
+	"BDS2-G", "BDS2-G", "BDS2-G", "BDS2-G", "BDS2-G", "BDS2-I",
+	"BDS2-I", "BDS2-I", "BDS2-I", "BDS2-I", "BDS2-M", "BDS2-M",
+	"BDS2-I", "BDS2-M", "",		  "BDS2-I", "",		  "BDS2-G",
+	"BDS3-M", "BDS3-M", "BDS3-M", "BDS3-M", "BDS3-M", "BDS3-M",
+	"BDS3-M", "BDS3-M", "BDS3-M", "BDS3-M", "BDS3-M", "BDS3-M",
+	"BDS3-I", "BDS3-M", "BDS3-M", "BDS3-M", "BDS3-M", "BDS3-M",
+	"BDS3-M", "BDS3-I", "BDS3-I", "BDS3-I", "BDS3-M", "BDS3-M",
+	"BDS3-M", "BDS3-M", "BDS3-M", "BDS3-M"
+};
 /* standard deviation of state -----------------------------------------------*/
 static double STD(rtk_t *rtk, int i)
 {
@@ -327,6 +340,45 @@ static int model_phw(gtime_t time, int sat, const char *type, int opt,
     *phw=ph+floor(*phw-ph+0.5); /* in cycle */
     return 1;
 }
+static void corr_bds2_multipath(obsd_t *obs, double *azel)
+{
+	double alpha;
+	int nType, i, idx, prn;
+	char id[32];
+	const double coef[10][6] = {
+		{ -0.55, -0.71, -0.27, -0.47, -0.40, -0.22 },
+		{ -0.40, -0.36, -0.23, -0.38, -0.31, -0.15 },
+		{ -0.34, -0.33, -0.21, -0.32, -0.26, -0.13 },
+		{ -0.23, -0.19, -0.15, -0.23, -0.18, -0.10 },
+		{ -0.15, -0.14, -0.11, -0.11, -0.06, -0.04 },
+		{ -0.04, -0.03, -0.04, 0.06, 0.09, 0.05 },
+		{ 0.09, 0.08, 0.05, 0.34, 0.28, 0.14 },
+		{ 0.19, 0.17, 0.14, 0.69, 0.48, 0.27 },
+		{ 0.27, 0.24, 0.19, 0.97, 0.64, 0.36 },
+		{ 0.35, 0.33, 0.32, 1.05, 0.69, 0.47 },
+	};
+	satno2id(obs->sat, id);
+	prn = (int)str2num(id, 1, 2);
+
+	if (!strcmp(BDsType[prn-1], "BDS2-I")) nType = 1;
+	else if (!strcmp(BDsType[prn-1], "BDS2-M")) nType = 2;
+	else if (!strcmp(BDsType[prn-1], "BDS2-G")) nType = 2;
+	else return;
+	// L2, L7, L6
+	if (azel[1]*R2D <= 0.0){
+		for (i = 0; i < 3; i++) obs->P[i] += coef[0][(nType - 1) * 3 + i];
+	}
+	else if (azel[1] * R2D >= 90.0){
+		for (i = 0; i < 3; i++) obs->P[i] += coef[9][(nType - 1) * 3 + i];
+	}
+	else{
+		idx = (int)(azel[1] *R2D / 10.0);
+		for (i = 0; i < 3; i++){
+			alpha = (coef[idx + 1] [(nType - 1) * 3 + i] - coef[idx][(nType - 1) * 3 + i]) / 10.0;
+			obs->P[i] += alpha*(azel[1] * R2D - (idx - 1) * 10) + coef[idx][(nType - 1) * 3 + i];
+		}
+	}
+}
 /* measurement error variance ------------------------------------------------*/
 static double varerr(int sat, int sys, double el, double snr_rover, int freq, 
                      int type, const prcopt_t *opt)
@@ -375,7 +427,7 @@ static void initx(rtk_t *rtk, double xi, double var, int i)
 static double gfmeas(const obsd_t *obs, const nav_t *nav)
 {
     const double *lam=nav->lam[obs->sat-1];
-    int i=(satsys(obs->sat,NULL)&(SYS_GAL|SYS_SBS))?2:1;
+	int i = (satsys(obs->sat, NULL)&(SYS_GAL | SYS_SBS | SYS_CMP)) ? 2 : 1;
     
     if (lam[0]==0.0||lam[i]==0.0||obs->L[0]==0.0||obs->L[i]==0.0) return 0.0;
     return lam[0]*obs->L[0]-lam[i]*obs->L[i];
@@ -436,7 +488,8 @@ static void corr_meas(const obsd_t *obs, const nav_t *nav, const double *azel,
     }
     /* iono-free LC */
     *Lc=*Pc=0.0;
-    i=(sys&(SYS_GAL|SYS_SBS))?2:1; /* L1/L2 or L1/L5 */
+	i = (sys&(SYS_GAL | SYS_SBS | SYS_CMP)) ? 2 : 1; /* L1/L2 or L1/L5 */
+
     if (lam[0]==0.0||lam[i]==0.0) return;
     
     C1= SQR(lam[i])/(SQR(lam[i])-SQR(lam[0]));
@@ -472,6 +525,8 @@ static void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 {
     double g0,g1;
     int i,j;
+	char str[32], id[32];
+	time2str(obs[0].time, str, 2);
     
     trace(4,"detslp_gf: n=%d\n",n);
     
@@ -485,8 +540,9 @@ static void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         trace(4,"detslip_gf: sat=%2d gf0=%8.3f gf1=%8.3f\n",obs[i].sat,g0,g1);
         
         if (g0!=0.0&&fabs(g1-g0)>rtk->opt.thresslip) {
-            trace(3,"detslip_gf: slip detected sat=%2d gf=%8.3f->%8.3f\n",
-                  obs[i].sat,g0,g1);
+			satno2id(obs[i].sat, id);
+            trace(2,"detslip_gf: slip detected %s sat=%3d %3s gf=%8.3f->%8.3f\n",
+                  str, obs[i].sat,id,g0,g1);
             
             for (j=0;j<rtk->opt.nf;j++) rtk->ssat[obs[i].sat-1].slip[j]|=1;
         }
@@ -495,26 +551,80 @@ static void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 /* detect slip by Melbourne-Wubbena linear combination jump ------------------*/
 static void detslp_mw(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 {
-    double w0,w1;
-    int i,j;
-    
-    trace(4,"detslp_mw: n=%d\n",n);
-    
-    for (i=0;i<n&&i<MAXOBS;i++) {
-        if ((w1=mwmeas(obs+i,nav))==0.0) continue;
-        
-        w0=rtk->ssat[obs[i].sat-1].mw;
-        rtk->ssat[obs[i].sat-1].mw=w1;
-        
-        trace(4,"detslip_mw: sat=%2d mw0=%8.3f mw1=%8.3f\n",obs[i].sat,w0,w1);
-        
-        if (w0!=0.0&&fabs(w1-w0)>THRES_MW_JUMP) {
-            trace(3,"detslip_mw: slip detected sat=%2d mw=%8.3f->%8.3f\n",
-                  obs[i].sat,w0,w1);
-            
-            for (j=0;j<rtk->opt.nf;j++) rtk->ssat[obs[i].sat-1].slip[j]|=1;
-        }
-    }
+	double mw1, mw0, mwmean, mwmean2, mwdiff, sigma2, mwdiffThres;
+	int i, j, arclength;
+	double *lam, lamW;
+	char str[32], id[32];
+	time2str(obs[0].time, str, 2);
+
+
+	trace(3, "detslp_gf: n=%d\n", n);
+
+	lam = nav->lam[0];
+	lamW = lam[0] * lam[1] / (lam[1] - lam[0]);
+
+	for (i = 0; i < n&&i < MAXOBS; i++) {
+		if ((mw1 = mwmeas(obs + i, nav)) == 0.0) continue;
+
+		mw0 = rtk->ssat[obs[i].sat - 1].mw;
+		rtk->ssat[obs[i].sat - 1].mw = mw1;
+
+		if (rtk->ssat[obs[i].sat - 1].mwarc == 0 || mw0 == 0.0){
+			rtk->ssat[obs[i].sat - 1].mwmean = mw1;
+			rtk->ssat[obs[i].sat - 1].mwmean2 = lamW / 2;
+			rtk->ssat[obs[i].sat - 1].mwarc = 1;
+			continue;
+		}
+
+		if (rtk->ssat[obs[i].sat - 1].slip[0] == 1 || rtk->ssat[obs[i].sat - 1].slip[1] == 1){
+			for (j = 0; j < rtk->opt.nf; j++) rtk->ssat[obs[i].sat - 1].slip[j] |= 1;
+
+			rtk->ssat[obs[i].sat - 1].mwmean = mw1;
+			rtk->ssat[obs[i].sat - 1].mwmean2 = lamW / 2;
+			rtk->ssat[obs[i].sat - 1].mwarc = 1;
+			continue;
+		}
+
+		trace(4, "detslip_mw: sat=%2d mw0=%8.3f mw1=%8.3f\n", obs[i].sat, mw0, mw1);
+
+		if (fabs(mw1 - mw0) > MWGAPMAX) {
+			trace(3, "detslip_mw: slip detected sat=%2d mw=%8.3f->%8.3f\n",
+				obs[i].sat, mw0, mw1);
+			for (j = 0; j<rtk->opt.nf; j++) rtk->ssat[obs[i].sat - 1].slip[j] |= 1;
+
+			rtk->ssat[obs[i].sat - 1].mwmean = mw1;
+			rtk->ssat[obs[i].sat - 1].mwmean2 = lamW / 2;
+			rtk->ssat[obs[i].sat - 1].mwarc = 1;
+			continue;
+		}
+
+		mwmean = rtk->ssat[obs[i].sat - 1].mwmean;
+		mwmean2 = rtk->ssat[obs[i].sat - 1].mwmean2;
+		mwdiff = mw1 - mwmean;
+		//sigma2 = mwmean2 - mwmean * mwmean;
+		mwdiffThres = MIN(MWGAPMAX, MAX(4 * sqrt(mwmean2), MWCSMIN));
+		if (rtk->ssat[obs[i].sat - 1].mwarc >= 4) {
+			if (fabs(mwdiff)>mwdiffThres){
+				satno2id(obs[i].sat, id);
+				trace(2, "detslip_mw: slip detected %s sat=%3d %3s el=%8.3f SNR=%5.1f %5.1f mw=%8.3f->%8.3f\n",
+					str, obs[i].sat, id, rtk->ssat[obs[i].sat - 1].azel[1] * R2D, obs[i].SNR[0] * 0.25, obs[i].SNR[1] * 0.25, mw0, mw1);
+
+				for (j = 0; j < rtk->opt.nf; j++) rtk->ssat[obs[i].sat - 1].slip[j] |= 1;
+
+				rtk->ssat[obs[i].sat - 1].mwmean = mw1;
+				rtk->ssat[obs[i].sat - 1].mwmean2 = lamW / 2;
+				rtk->ssat[obs[i].sat - 1].mwarc = 1;
+				continue;
+			}
+		}
+		arclength = rtk->ssat[obs[i].sat - 1].mwarc + 1;
+		if (arclength >= MWARCMAX) {
+			arclength = MWARCMAX;
+		}
+		rtk->ssat[obs[i].sat - 1].mwmean = ((arclength - 1)*mwmean + mw1) / arclength;
+		rtk->ssat[obs[i].sat - 1].mwmean2 = ((arclength - 1)*mwmean2 + (mw1 - mwmean)*(mw1 - mwmean)) / arclength;
+		rtk->ssat[obs[i].sat - 1].mwarc = arclength;
+	}
 }
 /* temporal update of position -----------------------------------------------*/
 static void udpos_ppp(rtk_t *rtk)
@@ -651,7 +761,7 @@ static void udiono_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     const double *lam;
     double ion,sinel,pos[3],*azel;
     char *p;
-    int i,j,k,gap_resion=GAP_RESION;
+    int i,j,k,s, gap_resion=GAP_RESION;
     
     trace(3,"udiono_ppp:\n");
     
@@ -667,7 +777,8 @@ static void udiono_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     for (i=0;i<n;i++) {
         j=II(obs[i].sat,&rtk->opt);
         if (rtk->x[j]==0.0) {
-            k=satsys(obs[i].sat,NULL)==SYS_GAL?2:1;
+			s = satsys(obs[i].sat, NULL);
+			k = (s&(SYS_GAL | SYS_CMP)) ? 2 : 1;
             lam=nav->lam[obs[i].sat-1];
             if (obs[i].P[0]==0.0||obs[i].P[k]==0.0||lam[0]==0.0||lam[k]==0.0) {
                 continue;
@@ -978,7 +1089,7 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
     double var[MAXOBS*2],dtrp=0.0,dion=0.0,vart=0.0,vari=0.0,dcb;
     double dantr[NFREQ]={0},dants[NFREQ]={0};
     double ve[MAXOBS*2*NFREQ]={0},vmax=0;
-    char str[32];
+    char str[32], id[32];
     int ne=0,obsi[MAXOBS*2*NFREQ]={0},frqi[MAXOBS*2*NFREQ],maxobs,maxfrq,rej;
     int i,j,k,sat,sys,nv=0,nx=rtk->nx,stat=1;
     
@@ -991,6 +1102,7 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
     
     for (i=0;i<n&&i<MAXOBS;i++) {
         sat=obs[i].sat;
+		satno2id(sat, id);
         lam=nav->lam[sat-1];
         if (lam[j/2]==0.0||lam[0]==0.0) continue;
         
@@ -1018,13 +1130,16 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
                        opt->posopt[2]?2:0,rs+i*6,rr,&rtk->ssat[sat-1].phw)) {
             continue;
         }
+		/*correct BDS-2 satellite multipath*/
+		if (sys& SYS_CMP) corr_bds2_multipath(obs+i,azel+i*2);
+
         /* corrected phase and code measurements */
         corr_meas(obs+i,nav,azel+i*2,&rtk->opt,dantr,dants,
                   rtk->ssat[sat-1].phw,L,P,&Lc,&Pc);
         
         /* stack phase and code residuals {L1,P1,L2,P2,...} */
         for (j=0;j<2*NF(opt);j++) {
-            
+			if (sys == SYS_CMP)	if (j == 2 || j == 3) continue; /*only B1 and B3 are needed*/
             dcb=bias=0.0;
             
             if (opt->ionoopt==IONOOPT_IFLC) {
@@ -1069,8 +1184,8 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
             else        rtk->ssat[sat-1].resp[j/2]=v[nv];
             
             /* variance */
-			var[nv] = varerr(obs[i].sat, sys, azel[1 + i * 2], 0.25*rtk->ssat[sat - 1].snr_rover[j / 2], j / 2, j % 2, opt);/* +
-                    vart+SQR(C)*vari+var_rs[i];*/
+			var[nv] = varerr(obs[i].sat, sys, azel[1 + i * 2], 0.25*rtk->ssat[sat - 1].snr_rover[j / 2], j / 2, j % 2, opt)+var_rs[i];/* +
+                    vart+SQR(C)*vari;*/
             if (sys==SYS_GLO&&j%2==1) var[nv]+=VAR_GLO_IFB;
             
             trace(3,"%s sat=%2d %s%d res=%9.4f sig=%9.4f el=%4.1f\n",str,sat,
@@ -1078,8 +1193,8 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
             
             /* reject satellite by pre-fit residuals */
             if (!post&&opt->maxinno>0.0&&fabs(v[nv])>opt->maxinno) {
-                trace(2,"outlier (%d) rejected %s sat=%2d %s%d res=%9.4f el=%4.1f\n",
-                      post,str,sat,j%2?"P":"L",j/2+1,v[nv],azel[1+i*2]*R2D);
+                trace(2,"outlier (%d) rejected %s sat=%2d %3s %s%d res=%9.4f el=%4.1f\n",
+                      post,str,sat,id,j%2?"P":"L",j/2+1,v[nv],azel[1+i*2]*R2D);
                 exc[i]=1; rtk->ssat[sat-1].rejc[j%2]++;
                 continue;
             }
@@ -1099,8 +1214,9 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
             vmax=ve[j]; maxobs=obsi[j]; maxfrq=frqi[j]; rej=j;
         }
         sat=obs[maxobs].sat;
-        trace(2,"outlier (%d) rejected %s sat=%2d %s%d res=%9.4f el=%4.1f\n",
-            post,str,sat,maxfrq%2?"P":"L",maxfrq/2+1,vmax,azel[1+maxobs*2]*R2D);
+		satno2id(sat, id);
+        trace(2,"outlier (%d) rejected %s sat=%2d %3s %s%d res=%9.4f el=%4.1f\n",
+            post,str,sat,id, maxfrq%2?"P":"L",maxfrq/2+1,vmax,azel[1+maxobs*2]*R2D);
         exc[maxobs]=1; rtk->ssat[sat-1].rejc[maxfrq%2]++; stat=0;
         ve[rej]=0;
     }

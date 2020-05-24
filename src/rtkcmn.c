@@ -262,7 +262,7 @@ static unsigned char obsfreqs[]={
 static char codepris[7][MAXFREQ][16]={  /* code priority table */
 
    /* L1/E1/B1   L2/E5b/B2   L5/E5a/L3 E6/LEX  E5(a+b)  S */
-    {"PWCSLXYMN","PWCSLXYMN","IQX"     ,""       ,""       ,""      ,""    }, /* GPS */
+    {"PWCSLXYMN","PWCSLXYMN","IQX"     ,""       ,""       ,""      ,""    }, /* GPS CPYWMNSL, PYWCMNDSLX*/
     {"PC"      ,"PC"        ,"IQX"   ,""        ,""      ,""    }, /* GLO */
     {"CABXZ"   ,"IQX"       ,"IQX"   ,"ABCXZ"   ,"IQX"   ,""    }, /* GAL */
     {"CSLXZ"   ,"SLX"       ,"IQX"   ,"SLX"     ,""      ,""    }, /* QZS */
@@ -4409,7 +4409,9 @@ extern int rtk_uncompress(const char *file, char *uncfile)
         stat=1;
     }
     /* extract hatanaka-compressed file by cnx2rnx */
-    else if ((p=strrchr(tmpfile,'.'))&&strlen(p)>3&&(*(p+3)=='d'||*(p+3)=='D')) {
+    //else if ((p=strrchr(tmpfile,'.'))&&strlen(p)>3&&(*(p+3)=='d'||*(p+3)=='D')) {
+	else if ((p = strrchr(tmpfile, '.')) && strlen(p) > 3 && (*(p + 3) == 'd' || *(p + 3) == 'D' ||
+		strstr(p, ".crx") || strstr(p, ".CRX"))) {
         
         strcpy(uncfile,tmpfile);
         uncfile[p-tmpfile+3]=*(p+3)=='D'?'O':'o';

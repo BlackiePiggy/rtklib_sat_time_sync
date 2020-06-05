@@ -1,6 +1,6 @@
-﻿Build started 2020/5/24 12:36:49.
+﻿Build started 2020/6/5 20:46:03.
      1>Project "C:\Users\yanxi\OneDrive - University of Calgary\CODE\RTKLIBRemote\RTKLIB\app\rnx2rtkp\msc\msc.vcxproj" on node 2 (Rebuild target(s)).
-     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(388,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (msc-DESKTOP-5VO7KA4.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(388,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (msc-DESKTOP-5VO7KA4-2.vcxproj, msc-DESKTOP-5VO7KA4.vcxproj).  This can lead to incorrect clean and rebuild behavior.
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W0 /WX- /sdl /Od /Oy- /D WIN32 /D _CRT_SECURE_NO_WARNINGS /D _DEBUG /D _CONSOLE /D _LIB /D _CRT_SECURE_NO_DEPRECATE /D TRACE /D ENAGLO /D ENAGAL /D ENAQZS /D ENACMP /D ENALEO /D NFREQ=3 /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt ..\..\..\src\ephemeris.c ..\..\..\src\geoid.c ..\..\..\src\ionex.c ..\..\..\src\lambda.c ..\..\..\src\options.c ..\..\..\src\pntpos.c ..\..\..\src\postpos.c ..\..\..\src\ppp.c ..\..\..\src\ppp_ar.c ..\..\..\src\ppp_corr.c ..\..\..\src\preceph.c ..\..\..\src\qzslex.c ..\..\..\src\rinex.c ..\..\..\src\rnx2rtkp.c ..\..\..\src\rtcm.c ..\..\..\src\rtcm2.c ..\..\..\src\rtcm3.c ..\..\..\src\rtcm3e.c ..\..\..\src\rtkcmn.c ..\..\..\src\rtkpos.c ..\..\..\src\sbas.c ..\..\..\src\solution.c ..\..\..\src\tides.c
          tides.c
@@ -58,4 +58,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:14.18
+Time Elapsed 00:00:06.44

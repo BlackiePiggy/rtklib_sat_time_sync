@@ -670,16 +670,16 @@ static int decode_obsepoch(FILE *fp, char *buff, double ver, gtime_t *time,
     trace(4,"decode_obsepoch: ver=%.2f\n",ver);
     
     if (ver<=2.99) { /* ver.2 */
-        /* if ((n=(int)str2num(buff,29,3))<=0) return 0; */
+        if ((n=(int)str2num(buff,29,3))<=0) return 0;
         
         /* epoch flag: 3:new site,4:header info,5:external event */
         *flag=(int)str2num(buff,28,1);
         
-        if (*flag == 5) {
-            str2time(buff,0,26,time);
-        }
+        //if (*flag == 5) {
+        //    str2time(buff,0,26,time);
+        //}
 
-        if ((n=(int)str2num(buff,29,3))<=0) return 0;
+        //if ((n=(int)str2num(buff,29,3))<=0) return 0;
 
         if (3<=*flag&&*flag<=5) return n;
         
@@ -699,15 +699,15 @@ static int decode_obsepoch(FILE *fp, char *buff, double ver, gtime_t *time,
         }
     }
     else { /* ver.3 */
-        /* if ((n=(int)str2num(buff,32,3))<=0) return 0; */
+         if ((n=(int)str2num(buff,32,3))<=0) return 0; 
         
         *flag=(int)str2num(buff,31,1);
         
-        if (*flag == 5) {
-            str2time(buff,1,28,time);
-        }
+        //if (*flag == 5) {
+        //    str2time(buff,1,28,time);
+        //}
 
-        if ((n=(int)str2num(buff,32,3))<=0) return 0;
+        //if ((n=(int)str2num(buff,32,3))<=0) return 0;
         
         if (3<=*flag&&*flag<=5) return n;
         

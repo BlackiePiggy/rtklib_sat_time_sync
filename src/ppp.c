@@ -69,7 +69,7 @@
 #define MAX_ITER    8               /* max number of iterations */
 #define MAX_STD_FIX 0.15            /* max std-dev (3d) to fix solution */
 #define MIN_NSAT_SOL 4              /* min satellite number for solution */
-#define THRES_REJECT 4.0            /* reject threshold of posfit-res (sigma) */
+#define THRES_REJECT 10.0            /* reject threshold of posfit-res (sigma) */
 
 #define THRES_MW_JUMP 10.0
 #define MWGAPMAX	5.0				/*added by xiang for MW detection*/
@@ -488,7 +488,7 @@ static void corr_meas(const obsd_t *obs, const nav_t *nav, const double *azel,
     }
     /* iono-free LC */
     *Lc=*Pc=0.0;
-	i = (sys&(SYS_GAL | SYS_SBS | SYS_CMP)) ? 2 : 1; /* L1/L2 or L1/L5 */
+	i = (sys&(SYS_GAL | SYS_SBS)) ? 2 : 1; /* L1/L2 or L1/L5 | SYS_CMP */
 
     if (lam[0]==0.0||lam[i]==0.0) return;
     
@@ -515,7 +515,7 @@ static void detslp_ll(rtk_t *rtk, const obsd_t *obs, int n)
     for (i=0;i<n&&i<MAXOBS;i++) for (j=0;j<rtk->opt.nf;j++) {
         if (obs[i].L[j]==0.0||!(obs[i].LLI[j]&3)) continue;
         
-        trace(3,"detslp_ll: slip detected sat=%2d f=%d\n",obs[i].sat,j+1);
+        trace(2,"detslp_ll: slip detected sat=%2d f=%d\n",obs[i].sat,j+1);
         
         rtk->ssat[obs[i].sat-1].slip[j]=1;
     }
@@ -541,9 +541,11 @@ static void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         
         if (g0!=0.0&&fabs(g1-g0)>rtk->opt.thresslip) {
 			satno2id(obs[i].sat, id);
-            trace(2,"detslip_gf: slip detected %s sat=%3d %3s gf=%8.3f->%8.3f\n",
-                  str, obs[i].sat,id,g0,g1);
-            
+            //trace(2,"detslip_gf: slip detected %s sat=%3d %3s gf=%8.3f->%8.3f\n",
+            //      str, obs[i].sat,id,g0,g1);
+			trace(2, "detslip_gf: slip detected %s sat=%3d el=%8.3f SNR=%5.1f %5.1f gf=%.3f->%.3f diff = %8.3f\n",
+				str, obs[i].sat, rtk->ssat[obs[i].sat - 1].azel[1] * R2D, obs[i].SNR[0] * 0.25, obs[i].SNR[1] * 0.25, g0, g1, g1 - g0);
+
             for (j=0;j<rtk->opt.nf;j++) rtk->ssat[obs[i].sat-1].slip[j]|=1;
         }
     }
@@ -1139,7 +1141,7 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
         
         /* stack phase and code residuals {L1,P1,L2,P2,...} */
         for (j=0;j<2*NF(opt);j++) {
-			if (sys == SYS_CMP)	if (j == 2 || j == 3) continue; /*only B1 and B3 are needed*/
+			//if (sys == SYS_CMP)	if (j == 2 || j == 3) continue; /*only B1 and B3 are needed*/
             dcb=bias=0.0;
             
             if (opt->ionoopt==IONOOPT_IFLC) {
@@ -1184,8 +1186,8 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
             else        rtk->ssat[sat-1].resp[j/2]=v[nv];
             
             /* variance */
-			var[nv] = varerr(obs[i].sat, sys, azel[1 + i * 2], 0.25*rtk->ssat[sat - 1].snr_rover[j / 2], j / 2, j % 2, opt)+var_rs[i];/* +
-                    vart+SQR(C)*vari;*/
+			var[nv] = varerr(obs[i].sat, sys, azel[1 + i * 2], 0.25*rtk->ssat[sat - 1].snr_rover[j / 2], j / 2, j % 2, opt);/* +
+                    vart+SQR(C)*vari+var_rs[i];*/
             if (sys==SYS_GLO&&j%2==1) var[nv]+=VAR_GLO_IFB;
             
             trace(3,"%s sat=%2d %s%d res=%9.4f sig=%9.4f el=%4.1f\n",str,sat,

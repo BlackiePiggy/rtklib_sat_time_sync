@@ -1548,7 +1548,7 @@ extern int outprcopts(unsigned char *buff, const prcopt_t *opt)
 extern int outsolheads(unsigned char *buff, const solopt_t *opt)
 {
     const char *s1[]={"WGS84","Tokyo"},*s2[]={"ellipsoidal","geodetic"};
-    const char *s3[]={"GPST","UTC ","JST "},*sep=opt2sep(opt);
+    const char *s3[]={"GPST Time","UTC Time","JST Time"},*sep=opt2sep(opt);
     char *p=(char *)buff;
     int timeu=opt->timeu<0?0:(opt->timeu>20?20:opt->timeu);
     

@@ -1167,7 +1167,7 @@ extern int filter(double *x, double *P, const double *H, const double *v,
                   const double *R, int n, int m)
 {
     double *x_,*xp_,*P_,*Pp_,*H_;
-    int i,j,k,info,*ix;
+    int i,j,k,info=0,*ix;
     
     /* create list of non-zero states */
     ix=imat(n,1); for (i=k=0;i<n;i++) if (x[i]!=0.0&&P[i+i*n]>0.0) ix[k++]=i;

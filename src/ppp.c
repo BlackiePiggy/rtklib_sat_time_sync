@@ -69,7 +69,7 @@
 #define MAX_ITER    8               /* max number of iterations */
 #define MAX_STD_FIX 0.15            /* max std-dev (3d) to fix solution */
 #define MIN_NSAT_SOL 4              /* min satellite number for solution */
-#define THRES_REJECT 10.0            /* reject threshold of posfit-res (sigma) */
+#define THRES_REJECT 4            /* reject threshold of posfit-res (sigma) */
 
 #define THRES_MW_JUMP 10.0
 #define MWGAPMAX	5.0				/*added by xiang for MW detection*/
@@ -183,10 +183,10 @@ extern int pppoutstat(rtk_t *rtk, char *buff)
                    rtk->sol.stat,1,x[i+1],x[i+2],STD(rtk,i+1),STD(rtk,i+2));
     }
     /* ionosphere parameters */
-    if (rtk->opt.ionoopt==IONOOPT_EST) {
+	if (rtk->opt.ionoopt == IONOOPT_EST) {
 		for (i = 0; i < MAXSAT; i++) {
 			ssat = rtk->ssat + i;
-			//if (!ssat->vs) continue;
+			/*if (!ssat->vs) continue;*/
 			if (ssat->vsat[0] && ssat->vs){
 				j = II(i + 1, &rtk->opt);
 				if (rtk->x[j] == 0.0) continue;
@@ -196,15 +196,19 @@ extern int pppoutstat(rtk_t *rtk, char *buff)
 					rtk->ssat[i].azel[1] * R2D, x[j], STD(rtk, j));
 			}
 		}
-    }
-//#ifdef OUTSTAT_AMB
+	}
+		j = ID(&rtk->opt);
+		p += sprintf(p, "$DCB,%5d,%10.3f,%d,%d,%8.4f,%8.4f\n", week, tow,
+			rtk->sol.stat, 1, x[j], STD(rtk, j));
+    
+/*#ifdef OUTSTAT_AMB*/
     /* ambiguity parameters */
 	for (i = 0; i < MAXSAT; i++) {
 		ssat = rtk->ssat + i;
 		for (j = 0; j < NF(&rtk->opt); j++) {
 
 			k = IB(i + 1, j, &rtk->opt);
-			//if (rtk->x[k] == 0.0) continue;
+			/*if (rtk->x[k] == 0.0) continue;*/
 			if (ssat->vsat[0] && ssat->vs) {
 				satno2id(i + 1, id);
 				p += sprintf(p, "$AMB,%d,%.3f,%d,%s,%d,%.4f,%.4f\n", week, tow,
@@ -212,7 +216,7 @@ extern int pppoutstat(rtk_t *rtk, char *buff)
 			}
 		}
 	}
-//#endif
+/*#endif*/
     return (int)(p-buff);
 }
 /* exclude meas of eclipsing satellite (block IIA) ---------------------------*/
@@ -364,7 +368,7 @@ static void corr_bds2_multipath(obsd_t *obs, double *azel)
 	else if (!strcmp(BDsType[prn-1], "BDS2-M")) nType = 2;
 	else if (!strcmp(BDsType[prn-1], "BDS2-G")) nType = 2;
 	else return;
-	// L2, L7, L6
+	/* L2, L7, L6*/
 	if (azel[1]*R2D <= 0.0){
 		for (i = 0; i < 3; i++) obs->P[i] += coef[0][(nType - 1) * 3 + i];
 	}
@@ -457,12 +461,12 @@ static void corr_meas(const obsd_t *obs, const nav_t *nav, const double *azel,
     
     for (i=0;i<NFREQ;i++) {
         L[i]=P[i]=0.0;
-        if (lam[i]==0.0||obs->L[i]==0.0||obs->P[i]==0.0) continue;
+		if (lam[i] == 0.0||obs->L[i]==0.0||obs->P[i]==0.0) continue;/**/
         if (testsnr(0,0,azel[1],obs->SNR[i]*0.25,&opt->snrmask)) continue;
         
         /* antenna phase center and phase windup correction */
-        L[i]=obs->L[i]*lam[i]-dants[i]-dantr[i]-phw*lam[i];
-        P[i]=obs->P[i]       -dants[i]-dantr[i];
+		if (obs->L[i]) L[i] = obs->L[i] * lam[i] - dants[i] - dantr[i] - phw*lam[i];
+		if (obs->P[i]) P[i] = obs->P[i] - dants[i] - dantr[i];
 
         if (opt->sateph==EPHOPT_SSRAPC||opt->sateph==EPHOPT_SSRCOM) {
             /* use SSR code correction */
@@ -488,7 +492,7 @@ static void corr_meas(const obsd_t *obs, const nav_t *nav, const double *azel,
     }
     /* iono-free LC */
     *Lc=*Pc=0.0;
-	i = (sys&(SYS_GAL | SYS_SBS)) ? 2 : 1; /* L1/L2 or L1/L5 | SYS_CMP */
+	i = (sys&(SYS_GAL | SYS_SBS| SYS_CMP)) ? 2 : 1; /* L1/L2 or L1/L5  */
 
     if (lam[0]==0.0||lam[i]==0.0) return;
     
@@ -509,16 +513,25 @@ static void corr_meas(const obsd_t *obs, const nav_t *nav, const double *azel,
 static void detslp_ll(rtk_t *rtk, const obsd_t *obs, int n)
 {
     int i,j;
-    
+	char str[32], id[32];
+	time2str(obs[0].time, str, 2);
+
     trace(3,"detslp_ll: n=%d\n",n);
     
-    for (i=0;i<n&&i<MAXOBS;i++) for (j=0;j<rtk->opt.nf;j++) {
-        if (obs[i].L[j]==0.0||!(obs[i].LLI[j]&3)) continue;
-        
-        trace(2,"detslp_ll: slip detected sat=%2d f=%d\n",obs[i].sat,j+1);
-        
-        rtk->ssat[obs[i].sat-1].slip[j]=1;
-    }
+	for (i = 0; i < n&&i < MAXOBS; i++)
+	{
+		satno2id(obs[i].sat, id);
+		for (j = 0; j < rtk->opt.nf; j++) {
+			if (obs[i].L[j] == 0.0 || !(obs[i].LLI[j] & 3)) continue;
+
+			/*trace(2,"detslp_ll: slip detected sat=%2d f=%d\n",obs[i].sat,j+1);*/
+			trace(2, "detslp_ll: slip detected %s sat=%3d %3s el=%8.3f SNR=%5.1f %5.1f f=%d\n",
+				str, obs[i].sat, id, rtk->ssat[obs[i].sat - 1].azel[1] * R2D, obs[i].SNR[0] * 0.25, obs[i].SNR[1] * 0.25, j+1);
+
+			rtk->ssat[obs[i].sat - 1].slip[j] = 1;
+			rtk->ssat[obs[i].sat - 1].slipLLI[j] = 1;
+		}
+	}
 }
 /* detect cycle slip by geometry free phase jump -----------------------------*/
 static void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
@@ -541,12 +554,15 @@ static void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         
         if (g0!=0.0&&fabs(g1-g0)>rtk->opt.thresslip) {
 			satno2id(obs[i].sat, id);
-            //trace(2,"detslip_gf: slip detected %s sat=%3d %3s gf=%8.3f->%8.3f\n",
-            //      str, obs[i].sat,id,g0,g1);
-			trace(2, "detslip_gf: slip detected %s sat=%3d el=%8.3f SNR=%5.1f %5.1f gf=%.3f->%.3f diff = %8.3f\n",
-				str, obs[i].sat, rtk->ssat[obs[i].sat - 1].azel[1] * R2D, obs[i].SNR[0] * 0.25, obs[i].SNR[1] * 0.25, g0, g1, g1 - g0);
+            /*trace(2,"detslip_gf: slip detected %s sat=%3d %3s gf=%8.3f->%8.3f\n",
+                  str, obs[i].sat,id,g0,g1);*/
+			trace(2, "detslp_gf: slip detected %s sat=%3d %3s el=%8.3f SNR=%5.1f %5.1f gf=%8.3f->%8.3f diff = %8.3f\n",
+				str, obs[i].sat, id, rtk->ssat[obs[i].sat - 1].azel[1] * R2D, obs[i].SNR[0] * 0.25, obs[i].SNR[1] * 0.25, g0, g1, g1 - g0);
 
-            for (j=0;j<rtk->opt.nf;j++) rtk->ssat[obs[i].sat-1].slip[j]|=1;
+			for (j = 0; j < rtk->opt.nf; j++) {
+				rtk->ssat[obs[i].sat - 1].slip[j] |= 1;
+				rtk->ssat[obs[i].sat - 1].slipGF[j] = 1;
+			}
         }
     }
 }
@@ -592,7 +608,10 @@ static void detslp_mw(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 		if (fabs(mw1 - mw0) > MWGAPMAX) {
 			trace(3, "detslip_mw: slip detected sat=%2d mw=%8.3f->%8.3f\n",
 				obs[i].sat, mw0, mw1);
-			for (j = 0; j<rtk->opt.nf; j++) rtk->ssat[obs[i].sat - 1].slip[j] |= 1;
+			for (j = 0; j < rtk->opt.nf; j++) {
+				rtk->ssat[obs[i].sat - 1].slip[j] |= 1;
+				rtk->ssat[obs[i].sat - 1].slipMW[j] = 1;
+			}
 
 			rtk->ssat[obs[i].sat - 1].mwmean = mw1;
 			rtk->ssat[obs[i].sat - 1].mwmean2 = lamW / 2;
@@ -603,15 +622,18 @@ static void detslp_mw(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 		mwmean = rtk->ssat[obs[i].sat - 1].mwmean;
 		mwmean2 = rtk->ssat[obs[i].sat - 1].mwmean2;
 		mwdiff = mw1 - mwmean;
-		//sigma2 = mwmean2 - mwmean * mwmean;
+		/*sigma2 = mwmean2 - mwmean * mwmean;*/
 		mwdiffThres = MIN(MWGAPMAX, MAX(4 * sqrt(mwmean2), MWCSMIN));
 		if (rtk->ssat[obs[i].sat - 1].mwarc >= 4) {
 			if (fabs(mwdiff)>mwdiffThres){
 				satno2id(obs[i].sat, id);
-				trace(2, "detslip_mw: slip detected %s sat=%3d %3s el=%8.3f SNR=%5.1f %5.1f mw=%8.3f->%8.3f\n",
+				trace(2, "detslp_mw: slip detected %s sat=%3d %3s el=%8.3f SNR=%5.1f %5.1f mw=%8.3f->%8.3f\n",
 					str, obs[i].sat, id, rtk->ssat[obs[i].sat - 1].azel[1] * R2D, obs[i].SNR[0] * 0.25, obs[i].SNR[1] * 0.25, mw0, mw1);
 
-				for (j = 0; j < rtk->opt.nf; j++) rtk->ssat[obs[i].sat - 1].slip[j] |= 1;
+				for (j = 0; j < rtk->opt.nf; j++) {
+					rtk->ssat[obs[i].sat - 1].slip[j] |= 1;
+					rtk->ssat[obs[i].sat - 1].slipMW[j] = 1;
+				}
 
 				rtk->ssat[obs[i].sat - 1].mwmean = mw1;
 				rtk->ssat[obs[i].sat - 1].mwmean2 = lamW / 2;
@@ -718,14 +740,14 @@ static void udclk_ppp(rtk_t *rtk)
     
     /* initialize every epoch for clock (white noise) */
     for (i=0;i<NSYS;i++) {
-        //if (rtk->opt.sateph==EPHOPT_PREC) {
-        //    /* time of prec ephemeris is based gpst */
-        //    /* negelect receiver inter-system bias  */
-        //    dtr=rtk->sol.dtr[0];
-        //}
-        //else {
-        //    dtr=i==0?rtk->sol.dtr[0]:rtk->sol.dtr[0]+rtk->sol.dtr[i];
-        //}
+        /*if (rtk->opt.sateph==EPHOPT_PREC) {*/
+            /* time of prec ephemeris is based gpst */
+            /* negelect receiver inter-system bias  */
+           /* dtr=rtk->sol.dtr[0];
+        }
+        else {
+            dtr=i==0?rtk->sol.dtr[0]:rtk->sol.dtr[0]+rtk->sol.dtr[i];
+        }*/
 		dtr = i == 0 ? rtk->sol.dtr[0] : rtk->sol.dtr[0] + rtk->sol.dtr[i];
         initx(rtk,CLIGHT*dtr,VAR_CLK,IC(i,&rtk->opt));
     }
@@ -780,7 +802,7 @@ static void udiono_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         j=II(obs[i].sat,&rtk->opt);
         if (rtk->x[j]==0.0) {
 			s = satsys(obs[i].sat, NULL);
-			k = (s&(SYS_GAL | SYS_CMP)) ? 2 : 1;
+			k = (s&(SYS_GAL | SYS_SBS | SYS_CMP)) ? 2 : 1;
             lam=nav->lam[obs[i].sat-1];
             if (obs[i].P[0]==0.0||obs[i].P[k]==0.0||lam[0]==0.0||lam[k]==0.0) {
                 continue;
@@ -788,7 +810,7 @@ static void udiono_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
             ion=(obs[i].P[0]-obs[i].P[k])/(1.0-SQR(lam[k]/lam[0]));
             ecef2pos(rtk->sol.rr,pos);
             azel=rtk->ssat[obs[i].sat-1].azel;
-            //ion/=ionmapf(pos,azel);
+            /*ion/=ionmapf(pos,azel);*/
             initx(rtk,ion,VAR_IONO,j);
         }
         else {
@@ -824,16 +846,19 @@ static void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     }
     for (i=0;i<MAXSAT;i++) for (j=0;j<rtk->opt.nf;j++) {
         rtk->ssat[i].slip[j]=0;
+		rtk->ssat[i].slipLLI[j] = 0;
+		rtk->ssat[i].slipMW[j] = 0;
+		rtk->ssat[i].slipGF[j] = 0;
     }
     /* detect cycle slip by LLI */
     detslp_ll(rtk,obs,n);
     
-    /* detect cycle slip by geometry-free phase jump */
-    detslp_gf(rtk,obs,n,nav);
-    
     /* detect slip by Melbourne-Wubbena linear combination jump */
     detslp_mw(rtk,obs,n,nav);
-    
+
+	/* detect cycle slip by geometry-free phase jump */
+	detslp_gf(rtk, obs, n, nav);
+
     ecef2pos(rtk->sol.rr,pos);
     
     for (f=0;f<NF(&rtk->opt);f++) {
@@ -859,7 +884,7 @@ static void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
             }
             else if (L[f]!=0.0&&P[f]!=0.0) {
                 slip[i]=rtk->ssat[sat-1].slip[f];
-                l=satsys(sat,NULL)==SYS_GAL?2:1;
+				l = satsys(sat, NULL) == (SYS_GAL | SYS_SBS | SYS_CMP) ? 2 : 1;
                 lam=nav->lam[sat-1];
                 if (obs[i].P[0]==0.0||obs[i].P[l]==0.0||lam[0]==0.0||lam[l]==0.0||lam[f]==0.0)
                     ion=0;
@@ -1123,6 +1148,9 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
             !model_iono(obs[i].time,pos,azel+i*2,opt,sat,x,nav,&dion,&vari)) {
             continue;
         }
+		/*added by xiang to debug dion and vari*/
+		rtk->ssat[sat - 1].dion = dion;
+		rtk->ssat[sat - 1].vari = vari;
         /* satellite and receiver antenna model */
         if (opt->posopt[0]) satantpcv(rs+i*6,rr,nav->pcvs+sat-1,dants);
         antmodel(opt->pcvr,opt->antdel[0],azel+i*2,opt->posopt[1],dantr);
@@ -1141,7 +1169,7 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
         
         /* stack phase and code residuals {L1,P1,L2,P2,...} */
         for (j=0;j<2*NF(opt);j++) {
-			//if (sys == SYS_CMP)	if (j == 2 || j == 3) continue; /*only B1 and B3 are needed*/
+			if (sys == SYS_CMP)	if (j == 2 || j == 3) continue; /*only B1 and B3 are needed*/
             dcb=bias=0.0;
             
             if (opt->ionoopt==IONOOPT_IFLC) {
@@ -1153,7 +1181,7 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
                 /* receiver DCB correction for P2 */
                 if (j/2==1) dcb=-nav->rbias[0][sys==SYS_GLO?1:0][0];
             }
-            C=SQR(lam[j/2]/lam[0])*(j%2==0?-1.0:1.0);//*ionmapf(pos,azel+i*2)
+            C=SQR(lam[j/2]/lam[0])*(j%2==0?-1.0:1.0);/*ionmapf(pos,azel+i*2)*/
             
             for (k=0;k<nx;k++) H[k+nx*nv]=k<3?-e[k]:0.0;
             
@@ -1312,8 +1340,12 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 {
     const prcopt_t *opt=&rtk->opt;
     double *rs,*dts,*var,*v,*H,*R,*azel,*xp,*Pp,dr[3]={0},std[3];
-    char str[32];
-    int i,j,nv,info,svh[MAXOBS],exc[MAXOBS]={0},stat=SOLQ_SINGLE;
+    char str[32],id[32];
+    int i,j,k,nv,info,svh[MAXOBS],exc[MAXOBS]={0},stat=SOLQ_SINGLE;
+	int m, f, sat = 0, nslipGF = 0, nSlip = 0, satSlipGF[20] = { 0 },nobs=0;
+	double *xLast,*PLast, *xGFm, *PGFm;/*xLast is the last iteration in m when there is slip.*/
+	double vv, vvLast, ita;
+
     
     time2str(obs[0].time,str,2);
     trace(3,"pppos   : time=%s nx=%d n=%d\n",str,rtk->nx,n);
@@ -1325,7 +1357,13 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         rtk->ssat[obs[i].sat-1].snr_rover[j]=obs[i].SNR[j];
         rtk->ssat[obs[i].sat-1].snr_base[j] =0;
     }
-        
+
+	/*keep the previous solution before update temperarily*/
+	xLast = mat(rtk->nx, 1); PLast = zeros(rtk->nx, rtk->nx);
+	xGFm = mat(rtk->nx, 1); PGFm = zeros(rtk->nx, rtk->nx);
+	matcpy(xLast, rtk->x, rtk->nx, 1);
+	matcpy(PLast, rtk->P, rtk->nx, rtk->nx);
+
     /* temporal update of ekf states */
     udstate_ppp(rtk,obs,n,nav);
     
@@ -1344,33 +1382,99 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     nv=n*rtk->opt.nf*2+MAXSAT+3;
     xp=mat(rtk->nx,1); Pp=zeros(rtk->nx,rtk->nx);
     v=mat(nv,1); H=mat(rtk->nx,nv); R=mat(nv,nv);
-    
-    for (i=0;i<MAX_ITER;i++) {
-        
-        matcpy(xp,rtk->x,rtk->nx,1);
-        matcpy(Pp,rtk->P,rtk->nx,rtk->nx);
-        
-        /* prefit residuals */
-        if (!(nv=ppp_res(0,obs,n,rs,dts,var,svh,dr,exc,nav,xp,rtk,v,H,R,azel))) {
-            trace(2,"%s ppp (%d) no valid obs data\n",str,i+1);
-            break;
-        }
-        /* measurement update of ekf states */
-        if ((info=filter(xp,Pp,H,v,R,rtk->nx,nv))) {
-            trace(2,"%s ppp (%d) filter error info=%d\n",str,i+1,info);
-            break;
-        }
-        /* postfit residuals */
-        if (ppp_res(i+1,obs,n,rs,dts,var,svh,dr,exc,nav,xp,rtk,v,H,R,azel)) {
-            matcpy(rtk->x,xp,rtk->nx,1);
-            matcpy(rtk->P,Pp,rtk->nx,rtk->nx);
-            stat=SOLQ_PPP;
-            break;
-        }
-    }
-    if (i>=MAX_ITER) {
-        trace(2,"%s ppp (%d) iteration overflows\n",str,i);
-    }
+
+	/* determine the real cycle slip based on GF*/
+	//for (i = 0; i < MAXSAT; i++){
+	//	if (rtk->ssat[i].slipGF[0]){
+	//		nslipGF += rtk->ssat[i].slipGF[0];
+	//		satSlipGF[nSlip] = i + 1;/*sat NO.*/
+	//		nSlip++;
+	//	}
+	//}
+	//for (m = 0; m < nslipGF + 1; m++){/*m starts from 1. skip the m==0 interation without doing anything*/
+
+	//	if (m){
+	//		sat = satSlipGF[m - 1];
+	//		satno2id(sat, id);
+	//		if (rtk->ssat[sat - 1].azel[1] < opt->elmin) continue;
+	//	}
+	//	for (f = 0; f < NF(&rtk->opt); f++) {
+	//		if (m){
+	//			j = IB(sat, f, &rtk->opt);
+	//			if (!PLast[j + j*rtk->nx]) continue;
+	//			matcpy(xGFm, rtk->x, rtk->nx, 1);
+	//			matcpy(PGFm, rtk->P, rtk->nx, rtk->nx);
+	//			initx(rtk, xLast[j], PLast[j + j*rtk->nx], j);
+	//			for (i = 0; i < n; i++) {
+	//				if (obs[i].sat == sat) { nobs = i; break; }
+	//			}
+	//			if (!obs[nobs].L[f]) continue;
+	//		}
+	//		if (!m && f > 0) break;/*only run one time when m==0*/
+	//		for (i = 0; i<MAXOBS;i++) exc[i] = 0;
+
+			for (i = 0; i < MAX_ITER; i++) {
+				matcpy(xp, rtk->x, rtk->nx, 1);
+				matcpy(Pp, rtk->P, rtk->nx, rtk->nx);
+
+				/* prefit residuals */
+				if (!(nv = ppp_res(0, obs, n, rs, dts, var, svh, dr, exc, nav, xp, rtk, v, H, R, azel))) {
+					trace(2, "%s ppp (%d) no valid obs data\n", str, i + 1);
+					break;
+				}
+				/* measurement update of ekf states */
+				if ((info = filter(xp, Pp, H, v, R, rtk->nx, nv))) {
+					trace(2, "%s ppp (%d) filter error info=%d\n", str, i + 1, info);
+					break;
+				}
+				/* postfit residuals */
+				if (ppp_res(i + 1, obs, n, rs, dts, var, svh, dr, exc, nav, xp, rtk, v, H, R, azel)) {
+					matcpy(rtk->x, xp, rtk->nx, 1);
+					matcpy(rtk->P, Pp, rtk->nx, rtk->nx);
+					stat = SOLQ_PPP;
+					break;
+				}
+			}
+			if (i >= MAX_ITER) {
+				trace(2, "%s ppp (%d) iteration overflows\n", str, i);
+			}
+
+	//		/*keep the last iteration information*/
+	//		if (!m) vvLast = sqrt(dot(v, v, nv) / nv);
+	//		/*compare current and previous solution*/
+
+	//		if (m ){
+	//			ita = fabs(rtk->x[j] - xGFm[j]) / SQRT(PGFm[j + j*rtk->nx] + rtk->P[j + j*rtk->nx]);
+	//			vv = sqrt(dot(v, v, nv) / nv);
+	//			double ratio = vv / vvLast;
+	//			if ((vv/vvLast)<1.5 && !exc[nobs]){//
+	//				rtk->ssat[sat - 1].slipGF[f] = 0;
+	//				rtk->ssat[sat - 1].slip[f] = 0;
+	//				/*if (j%2==0) rtk->ssat[sat-1].vsat[j/2]=1; shall vsat==0*/
+	//				
+	//				/*output the spurious slip detected by GF*/
+	//				trace(2, "spurious cycle slip GF:  %s sat=%3d %3s el=%8.3f f= %3d gf=%.3f ita=%.3f ratio=%.3f exc=%2d vv=%.3f vvLast=%.3f\n",
+	//					str, sat, id, rtk->ssat[sat - 1].azel[1] * R2D, f, rtk->ssat[sat - 1].gf, ita, ratio, exc[nobs], vv, vvLast);/*, g2, g2 - g1*/
+	//				vvLast = vv;
+	//			}
+	//			else {
+	//				matcpy(rtk->x, xGFm, rtk->nx, 1);/*whether xp, Pp are the last data.*/
+	//				matcpy(rtk->P, PGFm, rtk->nx, rtk->nx);
+	//				
+	//				/*output the spurious slip detected by GF*/
+	//				trace(2, "real cycle slip GF:  %s sat=%3d %3s el=%8.3f f= %3d gf=%.3f ita=%.3f ratio=%.3f exc=%2d vv=%.3f vvLast=%.3f\n",
+	//					str, sat, id, rtk->ssat[sat - 1].azel[1] * R2D, f, rtk->ssat[sat - 1].gf, ita, ratio, exc[nobs], vv, vvLast);
+	//				exc[nobs] = 0;
+	//			}
+	//			
+	//		}
+	//		/*make decision to see whether the slip is real or false*/
+	//		/*what need to do after the decision*/
+
+	//	}
+	//}
+
+	/*choose the solution that is the best solutions with smallest residuals.*/
     if (stat==SOLQ_PPP) {
         
         /* ambiguity resolution in ppp */
@@ -1399,4 +1503,5 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     }
     free(rs); free(dts); free(var); free(azel);
     free(xp); free(Pp); free(v); free(H); free(R);
+	free(xLast); free(PLast); free(xGFm); free(PGFm);
 }

@@ -353,16 +353,17 @@ static void outsolstat(rtk_t *rtk,const nav_t *nav)
     dgps=rtk->opt.mode<=PMODE_DGPS?1:0;
     for (i=0;i<MAXSAT;i++) {
         ssat=rtk->ssat+i;
-		if (!ssat->vsat[0] && !ssat->vs) continue;
+		if (!ssat->vs) continue;
         satno2id(i+1,id);
         for (j=0;j<nfreq;j++) {
             k=IB(i+1,j,&rtk->opt);
-            fprintf(fp_stat,"$SAT,%d,%.3f,%s,%d,%.1f,%.1f,%.4f,%.4f,%d,%.0f,%d,%d,%d,%d,%d,%d,%.2f,%.6f,%.5f,%.5f\n",
+            fprintf(fp_stat,"$SAT,%d,%.3f,%s,%d,%.1f,%.1f,%.4f,%.4f,%d,%.0f,%d,%d,%d,%d,%d,%d,%.2f,%.6f,%.5f,%.5f,%.5f,%.5f,%.5f,%d,%d,%d,%.5f,%.5f\n",
                     week,tow,id,j+1,ssat->azel[0]*R2D,ssat->azel[1]*R2D,
                     ssat->resp[j],ssat->resc[j],ssat->vsat[j],ssat->snr_rover[j]*0.25,
                     ssat->fix[j],ssat->slip[j]&3,ssat->lock[j],ssat->outc[j],
                     ssat->slipc[j],ssat->rejc[j],dgps?0:rtk->x[k],
-                    dgps?0:rtk->P[k+k*rtk->nx],nav->lam[i][j],ssat->icbias[j]);
+                    dgps?0:rtk->P[k+k*rtk->nx],nav->lam[i][j],ssat->icbias[j],
+					ssat->mw, ssat->mwmean, ssat->gf, ssat->slipLLI[j], ssat->slipMW[j], ssat->slipGF[j],ssat->dion,ssat->vari); /*add mw, GF, slipGF;*/
         }
     }
 }
@@ -2360,7 +2361,9 @@ extern int rtkpos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     /* precise point positioning */
     if (opt->mode>=PMODE_PPP_KINEMA) {
         pppos(rtk,obs,nu,nav);
-        outsolstat(rtk,nav);
+		if ((rtk->P[0] + rtk->P[1] + rtk->P[2])<30*30)  outsolstat(rtk, nav);
+		else return 0;
+
         return 1;
     }
     /* check number of data of base station and age of differential */

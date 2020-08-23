@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>-k UPPP.conf -o CIT12015075_18_testNR.pos -p 7 -x 2 -y 2 -ts 2015/03/16 18:00:00 -te 2015/03/16 20:00:00 cit10750.15o brdc0750.15n cod18361.eph cod18361.clk cod18362.clk</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>C:\GNSS_DATA\data\2015\075</LocalDebuggerWorkingDirectory>
-    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-  </PropertyGroup>
-</Project>

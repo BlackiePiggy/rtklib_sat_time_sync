@@ -64,7 +64,7 @@ extern "C" {
             "Copyright (C) 2007-2019 T.Takasu\nAll rights reserved."
 
 #define IERS_MODEL  1  				    /*added by xiang for IERS 2010 correction*/
-#define PI          3.1415926535897932  /* pi */
+#define PI          3.14159265358979323846  /* pi */
 #define D2R         (PI/180.0)          /* deg to rad */
 #define R2D         (180.0/PI)          /* rad to deg */
 #define CLIGHT      299792458.0         /* speed of light (m/s) */
@@ -1221,6 +1221,9 @@ typedef struct {        /* satellite status type */
     unsigned char snr_base  [NFREQ]; /* base signal strength (0.25 dBHz) */
     unsigned char fix [NFREQ]; /* ambiguity fix flag (1:fix,2:float,3:hold) */
     unsigned char slip[NFREQ]; /* cycle-slip flag */
+	unsigned char slipLLI[NFREQ]; /* cycle-slip flag for LLI */
+	unsigned char slipGF[NFREQ]; /* cycle-slip flag for GF */
+	unsigned char slipMW[NFREQ]; /* cycle-slip flag for MW */
     unsigned char half[NFREQ]; /* half-cycle valid flag */
     int lock [NFREQ];   /* lock counter of phase */
     unsigned int outc [NFREQ]; /* obs outage counter of phase */
@@ -1235,6 +1238,8 @@ typedef struct {        /* satellite status type */
     double  phw;        /* phase windup (cycle) */
     gtime_t pt[2][NFREQ]; /* previous carrier-phase time */
     double  ph[2][NFREQ]; /* previous carrier-phase observable (cycle) */
+	double dion;		/*added the ion for monitor ion correction*/
+	double vari;
 } ssat_t;
 
 typedef struct {        /* ambiguity control type */

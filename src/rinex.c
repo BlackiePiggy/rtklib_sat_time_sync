@@ -180,7 +180,7 @@ static int sat2code(int sat, char *code)
     return 1;
 }
 /* galileo sisa index to sisa nominal value (m) ------------------------------*/
-static double sisa_value(int sisa)
+extern double sisa_value(int sisa)
 {
     if (sisa<= 49) return sisa*0.01;
     if (sisa<= 74) return 0.5+(sisa- 50)*0.02;
@@ -189,7 +189,7 @@ static double sisa_value(int sisa)
     return -1.0; /* unknown or NAPA */
 }
 /* galileo sisa value (m) to sisa index --------------------------------------*/
-static int sisa_index(double value)
+extern int sisa_index(double value)
 {
     if (value<0.0 || value>6.0) return 255; /* unknown or NAPA */
     else if (value<=0.5) return (int)(value/0.01);
@@ -675,11 +675,11 @@ static int decode_obsepoch(FILE *fp, char *buff, double ver, gtime_t *time,
         /* epoch flag: 3:new site,4:header info,5:external event */
         *flag=(int)str2num(buff,28,1);
         
-        //if (*flag == 5) {
-        //    str2time(buff,0,26,time);
-        //}
+        /*if (*flag == 5) {
+            str2time(buff,0,26,time);
+        }
 
-        //if ((n=(int)str2num(buff,29,3))<=0) return 0;
+        if ((n=(int)str2num(buff,29,3))<=0) return 0;*/
 
         if (3<=*flag&&*flag<=5) return n;
         
@@ -703,11 +703,11 @@ static int decode_obsepoch(FILE *fp, char *buff, double ver, gtime_t *time,
         
         *flag=(int)str2num(buff,31,1);
         
-        //if (*flag == 5) {
-        //    str2time(buff,1,28,time);
-        //}
+        /*if (*flag == 5) {
+            str2time(buff,1,28,time);
+        }
 
-        //if ((n=(int)str2num(buff,32,3))<=0) return 0;
+        if ((n=(int)str2num(buff,32,3))<=0) return 0;*/
         
         if (3<=*flag&&*flag<=5) return n;
         
@@ -1546,7 +1546,7 @@ static int readrnxfile(const char *file, gtime_t ts, gtime_t te, double tint,
     fclose(fp);
     
     /* delete temporary file */
-    if (cstat) remove(tmpfile);
+    /*if (cstat) remove(tmpfile);*/
     
     return stat;
 }

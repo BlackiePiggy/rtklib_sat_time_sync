@@ -92,6 +92,12 @@
 #define STD_GAL_NAPA 500.0        /* error of galileo ephemeris for NAPA (m) */
 
 #define MAX_ITER_KEPLER 30        /* max number of iteration of Kelpler */
+// RTCM3 BDS EPH encoding
+//////////////////////////////////////////////////////////
+#define ROUND(x)    ((int)floor((x)+0.5))
+#define BDSTOINT(type, value) (type)(ROUND(value))
+#define BDSADDBITS(a, b) {bitbuffer = (bitbuffer<<(a))|(BDSTOINT(long long,b)&((1ULL<<a)-1)); numbits += (a); while(numbits >= 8) { buffer[size++] = bitbuffer>>(numbits-8);numbits -= 8;}}
+#define BDSADDBITSFLOAT(a,b,c) {long long i = BDSTOINT(long long,(b)/(c)); BDSADDBITS(a,i)};
 
 /* ephemeris selections ------------------------------------------------------*/
 static int eph_sel[]={ /* GPS,GLO,GAL,QZS,BDS,SBS */
@@ -483,6 +489,60 @@ static seph_t *selseph(gtime_t time, int sat, const nav_t *nav)
     }
     return nav->seph+j;
 }
+static unsigned int BDs_CRC(eph_t eph)
+{
+	unsigned char buffer[80];
+	int size = 0;
+	int numbits = 0;
+	long long bitbuffer = 0;
+	unsigned char *startbuffer = buffer;
+
+	BDSADDBITSFLOAT(14, eph.idot, PI / (double)(1 << 30) / (double)(1 << 13))
+	BDSADDBITSFLOAT(11, eph.f2, 1.0 / (double)(1 << 30)
+	/ (double)(1 << 30) / (double)(1 << 6))
+	BDSADDBITSFLOAT(22, eph.f1, 1.0 / (double)(1 << 30) / (double)(1 << 20))
+	BDSADDBITSFLOAT(24, eph.f0, 1.0 / (double)(1 << 30) / (double)(1 << 3))
+	BDSADDBITSFLOAT(18, eph.crs, 1.0 / (double)(1 << 6))
+	BDSADDBITSFLOAT(16, eph.deln, PI / (double)(1 << 30) / (double)(1 << 13))
+	BDSADDBITSFLOAT(32, eph.M0, PI / (double)(1 << 30) / (double)(1 << 1))
+	BDSADDBITSFLOAT(18, eph.cuc, 1.0 / (double)(1 << 30) / (double)(1 << 1))
+	BDSADDBITSFLOAT(32, eph.e, 1.0 / (double)(1 << 30) / (double)(1 << 3))
+	BDSADDBITSFLOAT(18, eph.cus, 1.0 / (double)(1 << 30) / (double)(1 << 1))
+	BDSADDBITSFLOAT(32, sqrt(eph.A), 1.0 / (double)(1 << 19))
+	BDSADDBITSFLOAT(18, eph.cic, 1.0 / (double)(1 << 30) / (double)(1 << 1))
+	BDSADDBITSFLOAT(32, eph.OMG0, PI / (double)(1 << 30) / (double)(1 << 1))
+	BDSADDBITSFLOAT(18, eph.cis, 1.0 / (double)(1 << 30) / (double)(1 << 1))
+	BDSADDBITSFLOAT(32, eph.i0, PI / (double)(1 << 30) / (double)(1 << 1))
+	BDSADDBITSFLOAT(18, eph.crc, 1.0 / (double)(1 << 6))
+	BDSADDBITSFLOAT(32, eph.omg, PI / (double)(1 << 30) / (double)(1 << 1))
+	BDSADDBITSFLOAT(24, eph.OMGd, PI / (double)(1 << 30) / (double)(1 << 13))
+	BDSADDBITS(5, 0)  // the last byte is filled by 0-bits to obtain a length of an integer multiple of 8
+
+	return rtk_crc24q(startbuffer, size);
+}
+/* select BDS ephememeris ---------------------------------------------------*/
+static seph_t *selBeph(gtime_t time, int sat, int iodecrc, const nav_t *nav)
+{
+	double t, tmax = MAXDTOE_CMP, tmin = tmax + 1.0;
+	int i, j = -1;
+	unsigned int crc;
+
+	trace(4, "selBeph : time=%s sat=%2d\n", time_str(time, 3), sat);
+
+	for (i = 0; i<nav->n; i++) {
+		if (nav->eph[i].sat != sat) continue;
+
+		if ((t = fabs(timediff(nav->eph[i].toe, time)))>tmax) continue;
+		crc = BDs_CRC(nav->eph[i]);
+		if (fabs(crc - iodecrc)<1) continue;
+		if (t <= tmin) { j = i; tmin = t; } /* toe closest to time */
+	}
+	if (j<0) {
+		trace(3, "no BDS ephemeris     : %s sat=%2d\n", time_str(time, 0), sat);
+		return NULL;
+	}
+	return nav->eph + j;
+}
 /* satellite clock with broadcast ephemeris ----------------------------------*/
 static int ephclk(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
                   double *dts)
@@ -528,7 +588,7 @@ static int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     
     *svh=-1;
     
-    if (sys==SYS_GPS||sys==SYS_GAL||sys==SYS_QZS||sys==SYS_CMP) {
+    if (sys==SYS_GPS||sys==SYS_GAL||sys==SYS_QZS) {//||sys==SYS_CMP
         if (!(eph=seleph(teph,sat,iode,nav))) return 0;
         eph2pos(time,eph,rs,dts,var);
         time=timeadd(time,tt);
@@ -549,6 +609,13 @@ static int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
         seph2pos(time,seph,rst,dtst,var);
         *svh=seph->svh;
     }
+	else if (sys == SYS_CMP) {
+		if (!(eph = selBeph(teph, sat, iode,nav))) return 0;
+		eph2pos(time, eph, rs, dts, var);
+		time = timeadd(time, tt);
+		eph2pos(time, eph, rst, dtst, var);
+		*svh = eph->svh;
+	}
     else return 0;
     
     /* satellite velocity and clock drift by differential approx */
@@ -641,7 +708,7 @@ static int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
         return 0;
     }
     /* satellite postion and clock by broadcast ephemeris */
-    if (!ephpos(time,teph,sat,nav,ssr->iode,rs,dts,var,svh)) return 0;
+	if (!ephpos(time, teph, sat, nav, ssr->iode, rs, dts, var, svh)) return 0;
     
     /* satellite clock for gps, galileo and qzss */
     sys=satsys(sat,NULL);

@@ -50,12 +50,12 @@ extern int dehanttideinel_(double *xsta, int *year, int *mon, int *day,
 *-----------------------------------------------------------------------------*/
 void ST1IDIU(double *RecCorXYZ, double *SunCoorXYZ, double *MoonCoorXYZ, double FAC2SUN, double FAC2MON, double *XCORSTA)
 {
-	// THIS SUBROUTINE GIVES THE OUT-OF-PHASE CORRECTIONS INDUCED BY
-	// MANTLE INELASTICITY IN THE DIURNAL BAND
-	//
-	//       INPUT : XSTA,XSUN,XMON,FAC2SUN,FAC2MON
-	//      OUTPUT : XCORSTA
-	//
+	/* THIS SUBROUTINE GIVES THE OUT-OF-PHASE CORRECTIONS INDUCED BY
+	 MANTLE INELASTICITY IN THE DIURNAL BAND
+	
+	       INPUT : XSTA,XSUN,XMON,FAC2SUN,FAC2MON
+	      OUTPUT : XCORSTA
+	*/
 	double DHI = -0.0025;
 	double DLI = -0.0007;
 	double RSTA = sqrt(pow(RecCorXYZ[0], 2) + pow(RecCorXYZ[1], 2) + pow(RecCorXYZ[3], 2));
@@ -106,13 +106,13 @@ void ST1IDIU(double *RecCorXYZ, double *SunCoorXYZ, double *MoonCoorXYZ, double 
 *-----------------------------------------------------------------------------*/
 void ST1ISEM(double *RecCorXYZ, double *SunCoorXYZ, double *MoonCoorXYZ, double FAC2SUN, double FAC2MON, double *XCORSTA)
 {
-	//
-	// THIS SUBROUTINE GIVES THE OUT-OF-PHASE CORRECTIONS INDUCED BY
-	// MANTLE INELASTICITY IN THE DIURNAL BAND
-	//
-	//       INPUT : XSTA,XSUN,XMON,FAC2SUN,FAC2MON
-	//      OUTPUT : XCORSTA
-	//
+	/*
+	 THIS SUBROUTINE GIVES THE OUT-OF-PHASE CORRECTIONS INDUCED BY
+	 MANTLE INELASTICITY IN THE DIURNAL BAND
+	
+	       INPUT : XSTA,XSUN,XMON,FAC2SUN,FAC2MON
+	      OUTPUT : XCORSTA
+	*/
 	double DHI = -0.0022;
 	double DLI = -0.0007;
 	double RSTA = sqrt(pow(RecCorXYZ[0], 2) + pow(RecCorXYZ[1], 2) + pow(RecCorXYZ[2], 2));
@@ -166,13 +166,13 @@ void ST1ISEM(double *RecCorXYZ, double *SunCoorXYZ, double *MoonCoorXYZ, double 
 *-----------------------------------------------------------------------------*/
 void ST1L1(double *RecCorXYZ, double *SunCoorXYZ, double *MoonCoorXYZ, double FAC2SUN, double FAC2MON, double *XCORSTA)
 {
-	//
-	//THIS SUBROUTINE GIVES THE CORRECTIONS INDUCED BY THE LATITUDE DEPENDENCE
-	//GIVEN BY L^(1) IN MAHTEWS ET AL (1991)
-	//
-	//      INPUT : XSTA,XSUN,XMON,FAC3SUN,FAC3MON
-	//     OUTPUT : XCORSTA
-	//
+	/*
+	THIS SUBROUTINE GIVES THE CORRECTIONS INDUCED BY THE LATITUDE DEPENDENCE
+	GIVEN BY L^(1) IN MAHTEWS ET AL (1991)
+	
+	      INPUT : XSTA,XSUN,XMON,FAC3SUN,FAC3MON
+	     OUTPUT : XCORSTA
+	*/
 	double L1D = 0.0012;
 	double L1SD = 0.0024;
 	double RSTA = sqrt(pow(RecCorXYZ[0], 2) + pow(RecCorXYZ[1], 2) + pow(RecCorXYZ[2], 2));
@@ -187,9 +187,9 @@ void ST1L1(double *RecCorXYZ, double *SunCoorXYZ, double *MoonCoorXYZ, double FA
 
 	double XSUN[3] = { SunCoorXYZ[0], SunCoorXYZ[1], SunCoorXYZ[2] };
 	double XMON[3] = { MoonCoorXYZ[0], MoonCoorXYZ[1], MoonCoorXYZ[2] };
-	//
-	// FOR THE DIURNAL BAND
-	//
+	/*
+	 FOR THE DIURNAL BAND
+	*/
 	double  L1 = L1D;
 	double
 		DNSUN = -L1*pow(SINPHI, 2)*FAC2SUN*XSUN[2] * (XSUN[0] * COSLA + XSUN[1] * SINLA) / pow(RSUN, 2);
@@ -204,9 +204,9 @@ void ST1L1(double *RecCorXYZ, double *SunCoorXYZ, double *MoonCoorXYZ, double FA
 	XCORSTA[0] = -DE*SINLA - DN*SINPHI*COSLA;
 	XCORSTA[1] = DE*COSLA - DN*SINPHI*SINLA;
 	XCORSTA[2] = DN*COSPHI;
-	//
-	// FOR THE SEMI-DIURNAL BAND
-	//
+	/*
+	 FOR THE SEMI-DIURNAL BAND
+	*/
 	L1 = L1SD;
 	double COSTWOLA = pow(COSLA, 2) - pow(SINLA, 2);
 	double SINTWOLA = 2.0*COSLA*SINLA;
@@ -221,15 +221,15 @@ void ST1L1(double *RecCorXYZ, double *SunCoorXYZ, double *MoonCoorXYZ, double FA
 	XCORSTA[2] = XCORSTA[2] + DN*COSPHI;
 }
 
-//----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
 void STEP2LON(double *RecCorXYZ, double fhr, double t, double *xcorsta)
 {
 	double deg2rad = 0.0174532925199432957690;
 
-	// *** cf. table 7.5b of IERS conventions 2003 (TN.32, pg.82)
-	// *** columns are s,h,p,N',ps, dR(ip),dT(ip),dR(op),dT(op)
-	// *** IERS cols.= s,h,p,N',ps, dR(ip),dR(op),dT(ip),dT(op)
-	// *** units of mm
+	/* *** cf. table 7.5b of IERS conventions 2003 (TN.32, pg.82)
+	 *** columns are s,h,p,N',ps, dR(ip),dT(ip),dR(op),dT(op)
+	 *** IERS cols.= s,h,p,N',ps, dR(ip),dR(op),dT(ip),dT(op)
+	 *** units of mm*/
 	int i, j;
 	double
 		datdi[9][5] = { { 0, 0, 1, 2, 2 }, { 0, 2, 0, 0, 0 }, { 0, 0, -1, 0, 0 }, { 1, 0, 0, 0, 1 }, { 0, 0, 0, 0, 0 },
@@ -256,7 +256,7 @@ void STEP2LON(double *RecCorXYZ, double fhr, double t, double *xcorsta)
 	double cosphi = sqrt(pow(RecCorXYZ[0], 2) + pow(RecCorXYZ[1], 2)) / rsta;
 	double sinla = RecCorXYZ[1] / sinphi / rsta;
 	double cosla = RecCorXYZ[0] / cosphi / rsta;
-	//  reduce angles to between 0 and 360
+	/*  reduce angles to between 0 and 360*/
 	s = fmod(s, 360.0);
 	h = fmod(h, 360.0);
 	p = fmod(p, 360.0);
@@ -271,8 +271,8 @@ void STEP2LON(double *RecCorXYZ, double fhr, double t, double *xcorsta)
 	}
 
 
-	//             1 2 3 4   5   6      7      8      9
-	//  columns are s,h,p,N',ps, dR(ip),dT(ip),dR(op),dT(op)
+	/*             1 2 3 4   5   6      7      8      9
+	  columns are s,h,p,N',ps, dR(ip),dT(ip),dR(op),dT(op)*/
 	for (j = 0; j<5; j++)
 	{
 		double thetaf =
@@ -295,7 +295,7 @@ void STEP2LON(double *RecCorXYZ, double fhr, double t, double *xcorsta)
 		xcorsta[i] = xcorsta[i] / 1000.0;
 	}
 }
-//------------------------------------------------------------------------
+/*------------------------------------------------------------------------*/
 void STEP2DIU(double *RecCorXYZ, double fhr, double t, double *XCORSTA)
 {
 	int i;
@@ -338,7 +338,7 @@ void STEP2DIU(double *RecCorXYZ, double fhr, double t, double *XCORSTA)
 	double  ps = 282.937340980 + 1.719457666670*t
 		+ 0.00045688889*t*t - 0.000000017780*t*t*t - 0.000000003340*t*t*t*t;
 
-	//*** reduce angles to between 0 and 360
+	/**** reduce angles to between 0 and 360*/
 
 	s = fmod(s, 360.0);
 	tau = fmod(tau, 360.0);
@@ -355,7 +355,7 @@ void STEP2DIU(double *RecCorXYZ, double fhr, double t, double *XCORSTA)
 	double cosla = RecCorXYZ[0] / cosphi / rsta;
 	double zla = atan2(RecCorXYZ[1], RecCorXYZ[0]);
 	XCORSTA[0] = 0; XCORSTA[1] = 0; XCORSTA[2] = 0;
-	for (int i = 0; i<31; i++)
+	for ( i = 0; i<31; i++)
 	{
 		double thetaf = (tau + datdi[0][i] * s + datdi[1][i] * h
 			+ datdi[2][i] * p + datdi[3][i] * zns + datdi[4][i] * ps) *deg2rad;
@@ -382,29 +382,29 @@ void iau_CAL2JD(int IY, int IM, int ID, double *DJM0, double *DJM)
 {
 	int J, MY, IYPMY;
 
-	//  Earliest year allowed (4800BC)
+	/*  Earliest year allowed (4800BC)*/
 	int IYMIN = -4799;
 
-	//  Month lengths in days
+	/*  Month lengths in days*/
 	int MTAB[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-	//  Preset status.
+	/*  Preset status.*/
 	J = 0;
 
-	//  Validate year.
+	/*  Validate year.*/
 	if (IY<IYMIN)
 	{
 		J = -1;
 	}
 	else
 	{
-		//     Validate month.
+		/*     Validate month.*/
 		if (IM >= 1 && IM <= 12)
 		{
 
-			//        Allow for leap year.
+			/*       Allow for leap year.*/
 			if (IY % 4 == 0)
 			{
 				MTAB[1] = 29;
@@ -418,12 +418,12 @@ void iau_CAL2JD(int IY, int IM, int ID, double *DJM0, double *DJM)
 				MTAB[1] = 28;
 			}
 
-			//        Validate day.
+			/*        Validate day.*/
 			if (ID<1 || ID> MTAB[IM])
 			{
 				J = -3;
 			}
-			//       Result.
+			/*       Result.*/
 			MY = (IM - 14) / 12;
 			IYPMY = IY + MY;
 			*DJM0 = 2400000.5;
@@ -433,7 +433,7 @@ void iau_CAL2JD(int IY, int IM, int ID, double *DJM0, double *DJM)
 		}
 		else
 		{
-			//        Bad month
+			/*        Bad month*/
 			J = -2;
 		}
 	}
@@ -443,53 +443,53 @@ void iau_DAT(int IY, int IM, int ID, double FD, double* DELTAT)
 {
 	int J;
 
-	//  Release year for this version of iau_DAT
+	/* Release year for this version of iau_DAT*/
 	int IYV = 2009;
 
-	// Number of Delta(AT) changes (increase by 1 for each new leap second)
+	/* Number of Delta(AT) changes (increase by 1 for each new leap second)*/
 	const int NDAT = 39;
 
-	//  Number of Delta(AT) expressions before leap seconds were introduced
+	/*  Number of Delta(AT) expressions before leap seconds were introduced*/
 	const int NERA1 = 14;
 
-	//  Dates (year, month) on which new Delta(AT) came into force
+	/*  Dates (year, month) on which new Delta(AT) came into force*/
 	int
 		IDATE[2][39] = { { 1960, 1961, 1961, 1962, 1963, 1964, 1964, 1964, 1965, 1965, 1965, 1965,
 		1966, 1968, 1972, 1972, 1973, 1974, 1975, 1976, 1977, 1978, 1979, 1980, 1981, 1982,
 
 		1983, 1985, 1988, 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1999, 2006, 2009 }, { 1, 1, 8, 1, 11, 1, 4, 9, 1, 3, 7, 9, 1, 2, 1, 7, 1, 1, 1, 1, 1, 1, 1, 1, 7, 7, 7, 7, 1, 1, 1, 7, 7, 7, 1, 7, 1, 1, 1 } };
 
-	//  New Delta(AT) which came into force on the given dates
+	/*  New Delta(AT) which came into force on the given dates*/
 	double
 		DATS[39] = { 1.4178180, 1.4228180, 1.3728180, 1.8458580, 1.9458580, 3.2401300, 3.3401300, 3.4401300,
 
 		3.5401300, 3.6401300, 3.7401300, 3.8401300, 4.3131700, 4.2131700, 10, 11, 12, 13, 14, 15, 16, 17,
 		18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34 };
 
-	//  Reference dates (MJD) and drift rates (s/day), pre leap seconds
+	/*  Reference dates (MJD) and drift rates (s/day), pre leap seconds*/
 	double DRIFT[2][14] = { { 37300, 37300, 37300, 37665, 37665, 38761,
 
 		38761, 38761, 38761, 38761, 38761, 38761, 39126, 39126 }, { 0.001296, 0.001296, 0.001296, 0.0011232, 0.0011232,
 
 		0.001296, 0.001296, 0.001296, 0.001296, 0.001296, 0.001296, 0.001296, 0.002592, 0.002592 } };
 
-	//  Miscellaneous local variables
+	/* Miscellaneous local variables*/
 	int MORE;
-	int JS, M, IS;   //I, 
+	int JS, M, IS;   /*I, */
 	double DAT, DJM0, DJM;
 
-	//  Dates and Delta(AT)s
+	/* Dates and Delta(AT)s*/
 
-	//  Reference dates and drift rates
+	/* Reference dates and drift rates*/
 
 
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-	// Initialize the result to zero and the status to OK.
+	/* Initialize the result to zero and the status to OK.*/
 	DAT = 0.0;
 	JS = 0;
 
-	//  If invalid fraction of a day, set error status and give up.
+	/*  If invalid fraction of a day, set error status and give up.*/
 	if (FD<0.0 || FD >= 1.0)
 	{
 		JS = -4;
@@ -498,10 +498,10 @@ void iau_DAT(int IY, int IM, int ID, double FD, double* DELTAT)
 		return;
 	}
 
-	//  Convert the date into an MJD.
+	/*  Convert the date into an MJD.*/
 	iau_CAL2JD(IY, IM, ID, &DJM0, &DJM);
 
-	//  If invalid year, month, or day, give up.
+	/* If invalid year, month, or day, give up.*/
 	if (JS < 0)
 	{
 		*DELTAT = DAT;
@@ -509,7 +509,7 @@ void iau_DAT(int IY, int IM, int ID, double FD, double* DELTAT)
 		return;
 	}
 
-	//  If pre-UTC year, set warning status and give up.
+	/*  If pre-UTC year, set warning status and give up.*/
 	if (IY < IDATE[0][0])
 	{
 		JS = 1;
@@ -518,19 +518,20 @@ void iau_DAT(int IY, int IM, int ID, double FD, double* DELTAT)
 		return;
 	}
 
-	//  If suspiciously late year, set warning status but proceed.
+	/*  If suspiciously late year, set warning status but proceed.*/
 	if (IY > IYV + 5)
 	{
 		JS = 1;
 	}
-	//  Combine year and month.
+	/*  Combine year and month.*/
 	M = 12 * IY + IM;
 
-	//  Prepare to search the tables.
+	/*  Prepare to search the tables.*/
 	MORE = 1;
 
-	//  Find the most recent table entry.
-	for (int i = NDAT; i>1; i--)
+	/*  Find the most recent table entry.*/
+	int i = 0;
+	for ( i = NDAT; i>1; i--)
 	{
 		if (MORE)
 		{
@@ -539,10 +540,10 @@ void iau_DAT(int IY, int IM, int ID, double FD, double* DELTAT)
 		}
 	}
 
-	// Get the Delta(AT).
+	/* Get the Delta(AT).*/
 	DAT = DATS[IS - 1];
 
-	//  If pre-1972, adjust for drift.
+	/*  If pre-1972, adjust for drift.*/
 	if (IS < NERA1)
 	{
 		DAT = DAT + (DJM + FD - DRIFT[0][IS]) * DRIFT[1][IS];
@@ -576,7 +577,7 @@ extern int dehanttideinel_(double *xsta, int *year, int *mon, int *day,
 {
 	int i;
 	double JJM0, JJM1;
-	// Nominal 2nd and 3rd degree load love and shida numbers
+	/* Nominal 2nd and 3rd degree load love and shida numbers*/
 	double H20 = 0.6078;
 	double L20 = 0.0847;
 	double  H3 = 0.292;
@@ -591,33 +592,31 @@ extern int dehanttideinel_(double *xsta, int *year, int *mon, int *day,
 	double scsun = dot(xsta, xsun, 3) / distStn / distSun;
 	double scmon = dot(xsta, xmon, 3) / distStn / distMoon;
 
-	// COMPUTATION OF NEW H2 AND L2
-	// ----------------------------
+	/*/ COMPUTATION OF NEW H2 AND L2*/
+	/*----------------------------*/
 	double  cosphi = sqrt(pow(xsta[0], 2) + pow(xsta[1], 2)) / distStn;
 	double  H2 = H20 - 0.0006*(1 - 3. / 2 * pow(cosphi, 2));
 	double  L2 = L20 + 0.0002*(1 - 3. / 2 * pow(cosphi, 2));
 
-	// P2-TERM
-	// -------
+	/* P2-TERM	 -------*/
 	double  P2SUN = 3 * (H2 / 2 - L2)*pow(scsun, 2) - H2 / 2;
 	double  P2MON = 3 * (H2 / 2 - L2)*pow(scmon, 2) - H2 / 2;
 
-	// P3-TERM
-	// -------
+	/* P3-TERM	 -------*/
 	double  P3SUN = 5.0 / 2.0*(H3 - 3 * L3)*pow(scsun, 3) + 3.0 / 2.0*(L3 - H3)*scsun;
 	double  P3MON = 5.0 / 2.0*(H3 - 3 * L3)*pow(scmon, 3) + 3.0 / 2.0*(L3 - H3)*scmon;
 
 
-	// TERM IN DIRECTION OF SUN/MOON VECTOR
-	// ------------------------------------
+	/* TERM IN DIRECTION OF SUN/MOON VECTOR
+	 ------------------------------------*/
 	double  X2SUN = 3 * L2*scsun;
 	double  X2MON = 3 * L2*scmon;
 	double  X3SUN = 3.0*L3 / 2.0*(5 * pow(scsun, 2) - 1);
 	double  X3MON = 3.0*L3 / 2.0*(5 * pow(scmon, 2) - 1);
 
 
-	// FACTORS FOR SUN/MOON
-	// --------------------
+	/* FACTORS FOR SUN/MOON
+	 --------------------*/
 	double  MASS_RATIO_SUN = 332945.943062;
 	double  MASS_RATIO_MOON = 0.012300034;
 	double  RE = 6378136.55;
@@ -627,9 +626,9 @@ extern int dehanttideinel_(double *xsta, int *year, int *mon, int *day,
 	double  FAC3MON = FAC2MON*(RE / distMoon);
 
 
-	// TOTAL DISPLACEMENT
-	// ------------------
-	//DXTIDE= 0.0;
+	/* TOTAL DISPLACEMENT
+	 ------------------*/
+	/*DXTIDE= 0.0;*/
 	for (i = 0; i < 3; i++){
 		DXTIDE[i] = FAC2SUN*(X2SUN*xsun[i] / distSun + P2SUN*xsta[i] / distStn) +
 			FAC2MON*(X2MON*xmon[i] / distMoon + P2MON*xsta[i] / distStn) +
@@ -638,9 +637,9 @@ extern int dehanttideinel_(double *xsta, int *year, int *mon, int *day,
 	}
 
 
-	// CORRECTIONS FOR THE OUT-OF-PHASE PART OF LOVE NUMBERS (PART H_2^(0)I
-	//            AND L_2^(0)I )
-	// FIRST, FOR THE DIURNAL BAND
+	/* CORRECTIONS FOR THE OUT-OF-PHASE PART OF LOVE NUMBERS (PART H_2^(0)I
+	            AND L_2^(0)I )
+	 FIRST, FOR THE DIURNAL BAND*/
 	double XCORSTA[3];
 	ST1IDIU(xsta, xsun, xmon, FAC2SUN, FAC2MON, XCORSTA);
 	for (i = 0; i<3; i++)
@@ -648,8 +647,8 @@ extern int dehanttideinel_(double *xsta, int *year, int *mon, int *day,
 		DXTIDE[i] = DXTIDE[i] + XCORSTA[i];
 	}
 
-	// SECOND, FOR THE SEMI-DIURNAL BAND
-	//
+	/* SECOND, FOR THE SEMI-DIURNAL BAND*/
+	
 	ST1ISEM(xsta, xsun, xmon, FAC2SUN, FAC2MON, XCORSTA);
 
 	for (i = 0; i<3; i++)
@@ -657,18 +656,18 @@ extern int dehanttideinel_(double *xsta, int *year, int *mon, int *day,
 		DXTIDE[i] = DXTIDE[i] + XCORSTA[i];
 	}
 
-	// CORRECTIONS FOR THE LATITUDE DEPENDENCE OF LOVE NUMBERS (PART L^(1) )
-	//
+	/* CORRECTIONS FOR THE LATITUDE DEPENDENCE OF LOVE NUMBERS (PART L^(1) )*/
+	
 	ST1L1(xsta, xsun, xmon, FAC2SUN, FAC2MON, XCORSTA);
 	for (i = 0; i<3; i++)
 	{
 		DXTIDE[i] = DXTIDE[i] + XCORSTA[i];
 	}
 	/*CONSIDER CORRECTIONS FOR STEP 2*/
-	//
-	// CORRECTIONS FOR THE DIURNAL BAND:
-	//
-	// FIRST, WE NEED TO KNOW THE DATE CONVERTED IN JULIAN CENTURIES
+	/*
+	 CORRECTIONS FOR THE DIURNAL BAND:
+	
+	 FIRST, WE NEED TO KNOW THE DATE CONVERTED IN JULIAN CENTURIES*/
 	iau_CAL2JD(*year, *mon, *day, &JJM0, &JJM1);
 	double FHRD = *fhr;
 	double T = ((JJM0 - 2451545.0) + JJM1 + FHRD) / 36525.0;
@@ -676,18 +675,18 @@ extern int dehanttideinel_(double *xsta, int *year, int *mon, int *day,
 	iau_DAT(*year, *mon, *day, FHRD, &DTT);
 	DTT = DTT + 32.184;
 	T = T + DTT / (3600.0*24.0*36525.0);
-	//
-	//  SECOND, WE CAN CALL THE SUBROUTINE STEP2DIU, FOR THE DIURNAL BAND CORRECTIONS,
-	//   (in-phase and out-of-phase frequency dependence):
-	//
+	/*
+	  SECOND, WE CAN CALL THE SUBROUTINE STEP2DIU, FOR THE DIURNAL BAND CORRECTIONS,
+	   (in-phase and out-of-phase frequency dependence):
+	*/
 	STEP2DIU(xsta, FHRD, T, XCORSTA);
 	for (i = 0; i<3; i++)
 	{
 		DXTIDE[i] = DXTIDE[i] + XCORSTA[i];
 	}
-	//  CORRECTIONS FOR THE LONG-PERIOD BAND,
-	//   (in-phase and out-of-phase frequency dependence):
-	//
+	/*  CORRECTIONS FOR THE LONG-PERIOD BAND,
+	   (in-phase and out-of-phase frequency dependence):
+	*/
 	STEP2LON(xsta, FHRD, T, XCORSTA);
 	for (i = 0; i<3; i++)
 	{
@@ -698,7 +697,7 @@ extern int dehanttideinel_(double *xsta, int *year, int *mon, int *day,
 #endif
 
 /* solar/lunar tides (ref [2] 7) ---------------------------------------------*/
-//#ifndef IERS_MODEL
+/*#ifndef IERS_MODEL*/
 static void tide_pl(const double *eu, const double *rp, double GMp,
 	const double *pos, double *dr)
 {
@@ -772,7 +771,7 @@ static void tide_solid(const double *rsun, const double *rmoon,
 	}
 	trace(5, "tide_solid: dr=%.3f %.3f %.3f\n", dr[0], dr[1], dr[2]);
 }
-//#endif /* !IERS_MODEL */
+/*#endif*/ /* !IERS_MODEL */
 
 /* displacement by ocean tide loading (ref [2] 7) ----------------------------*/
 static void tide_oload(gtime_t tut, const double *odisp, double *denu)
@@ -889,7 +888,7 @@ static void tide_pole(gtime_t tut, const double *pos, const double *erpv,
 *          see ref [4] 5.2.1, 5.2.2, 5.2.3
 *          ver.2.4.0 does not use ocean loading and pole tide corrections
 *-----------------------------------------------------------------------------*/
-extern void tidedisp(gtime_t tutc, double *rr, int opt, const erp_t *erp,
+extern void tidedisp(gtime_t tutc, const double *rr, int opt, const erp_t *erp,
 	const double *odisp, double *dr)
 {
 	gtime_t tut;
@@ -946,11 +945,11 @@ extern void tidedisp(gtime_t tutc, double *rr, int opt, const erp_t *erp,
 		*                       DXTIDE(2) = 0.6304056321824967613D-01 meters
 		*                       DXTIDE(3) = 0.5516568152597246810D-01 meters
 		**/
-		//rr[0] = 4075578.385; rr[1] = 931852.890; rr[2] = 4801570.154;
-		//rs[0] = 137859926952.015; rs[1] = 54228127881.4350; rs[2] = 23509422341.6960;
-		//rm[0] = -179996231.920342; rm[1] = -312468450.131567; rm[2] = -169288918.592160;
+		/*rr[0] = 4075578.385; rr[1] = 931852.890; rr[2] = 4801570.154;
+		rs[0] = 137859926952.015; rs[1] = 54228127881.4350; rs[2] = 23509422341.6960;
+		rm[0] = -179996231.920342; rm[1] = -312468450.131567; rm[2] = -169288918.592160;
 
-		//year = 2009; mon = 4; day = 13; fhr = 0.0;
+		year = 2009; mon = 4; day = 13; fhr = 0.0;*/
 
 		dehanttideinel_((double *)rr, &year, &mon, &day, &fhr, rs, rm, drt);
 

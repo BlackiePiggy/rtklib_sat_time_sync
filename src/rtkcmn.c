@@ -143,6 +143,7 @@
 #define POLYCRC32   0xEDB88320u /* CRC32 polynomial */
 #define POLYCRC24Q  0x1864CFBu  /* CRC24Q polynomial */
 
+#define MIN(x,y)    ((x)<=(y)?(x):(y))
 #define SQR(x)      ((x)*(x))
 #define MAX_VAR_EPH SQR(300.0)  /* max variance eph to reject satellite (m^2) */
 
@@ -358,19 +359,19 @@ static const double ura_nominal[]={     /* ura nominal values */
 #define dgetrs_     dgetrs
 #endif
 #ifdef LAPACK
-extern void dgemm_(char *, char *, int *, int *, int *, double *, double *,
+/*extern void dgemm_(char *, char *, int *, int *, int *, double *, double *,
                    int *, double *, int *, double *, double *, int *);
 extern void dgetrf_(int *, int *, double *, int *, int *, int *);
 extern void dgetri_(int *, double *, int *, int *, double *, int *, int *);
 extern void dgetrs_(char *, int *, int *, double *, int *, int *, double *,
-                    int *, int *);
+                    int *, int *);*/
 #endif
 
 #ifdef IERS_MODEL
-//extern int gmf_(double *mjd, double *lat, double *lon, double *hgt, double *zd,
-//                double *gmfh, double *gmfw);
-extern void gmf_(double mjd, double lat, double lon, double hgt, double zd,
-	double *gmfh, double *gmfw);
+/*extern int gmf_(double *mjd, double *lat, double *lon, double *hgt, double *zd,
+                double *gmfh, double *gmfw);*/
+/*extern void gmf_(double mjd, double lat, double lon, double hgt, double zd,
+	double *gmfh, double *gmfw);*/
 #endif
 
 /* fatal error ---------------------------------------------------------------*/
@@ -1154,10 +1155,10 @@ static int filter_(const double *x, const double *P, const double *H,
         matmul("NT",n,n,m,-1.0,K,H,1.0,I);  /* Pp=(I-K*H')*P Pp = (I-K*H')*P(I-K*H')' + KRK'*/
         matmul("NN",n,n,n,1.0,I,P,0.0,Pp);
 		/* have symetric matrix for Pp four more matrix operation*/
-		//matmul("NN", n, m, n, 1.0, K, R, 0.0, F);
-		//matmul("NT", n, n, m, 1.0, F, K, 0.0, A);
-		//matmul("NT", n, n, n, 1.0, Pp, I, 0.0, Pp);
-		//matmul("NN", n, n, n, 0.0, E, A, 1.0, Pp);/*this addition is not right*/
+		/*matmul("NN", n, m, n, 1.0, K, R, 0.0, F);
+		matmul("NT", n, n, m, 1.0, F, K, 0.0, A);
+		matmul("NT", n, n, n, 1.0, Pp, I, 0.0, Pp);
+		matmul("NN", n, n, n, 0.0, E, A, 1.0, Pp);*/ /*this addition is not right*/
 
     }
     free(F); free(Q); free(K); free(I);
@@ -2660,23 +2661,23 @@ extern int uraindex(double value)
     return i;
 }
 /* galileo sisa index to sisa nominal value (m) ------------------------------*/
-extern double sisa_value(int sisa)
+/*extern double sisa_value(int sisa)
 {
     if (sisa<= 49) return sisa*0.01;
     if (sisa<= 74) return 0.5+(sisa- 50)*0.02;
     if (sisa<= 99) return 1.0+(sisa- 75)*0.04;
     if (sisa<=125) return 2.0+(sisa-100)*0.16;
-    return -1.0; /* unknown or NAPA */
-}
+    return -1.0; *//* unknown or NAPA */
+/*}*/
 /* galileo sisa value (m) to sisa index --------------------------------------*/
-extern int sisa_index(double value)
+/*extern int sisa_index(double value)
 {
-    if (value<0.0 || value>6.0) return 255; /* unknown or NAPA */
-    else if (value<=0.5) return (int)(value/0.01);
+    if (value<0.0 || value>6.0) return 255;*/ /* unknown or NAPA */
+   /* else if (value<=0.5) return (int)(value/0.01);
     else if (value<=1.0) return (int)((value-0.5)/0.02)+50;
     else if (value<=2.0) return (int)((value-1.0)/0.04)+75;
     return (int)((value-2.0)/0.16)+100;
-}
+}*/
 /* unique ephemerides ----------------------------------------------------------
 * unique ephemerides in navigation data and update carrier wave length
 * args   : nav_t *nav    IO     navigation data
@@ -3602,11 +3603,11 @@ extern double tropmodel(gtime_t time, const double *pos, const double *azel,
     
 	/*add GPT to calculate pressure and temp by xiang*/
 	GPT(pos, time, &pres, &temp);
-	//GlobalPresTemp(pos, time, &p, &tt);
+	/*GlobalPresTemp(pos, time, &p, &tt);*/
 	temp = temp + 273.15;
 
-    //pres=1013.25*pow(1.0-2.2557E-5*hgt,5.2568);
-    //temp=temp0-6.5E-3*hgt+273.16;
+    /*pres=1013.25*pow(1.0-2.2557E-5*hgt,5.2568);
+    temp=temp0-6.5E-3*hgt+273.16;*/
 
     e=6.108*humi*exp((17.15*temp-4684.0)/(temp-38.45));
     
@@ -3936,7 +3937,7 @@ extern double Legendre_Interpolation(const double a_mean[], const double a_amp[]
 		}
 	}
 
-	//if (a_amp[0] == 0 && b_amp[0] == 0) return	d_mean;
+	/*if (a_amp[0] == 0 && b_amp[0] == 0) return	d_mean;*/
 	double	d_final = (d_mean + d_amp*cos(doy * 2 * PI / 365.25));
 
 	return	d_final;
@@ -4077,7 +4078,7 @@ extern void gmf_(double mjd, double lat, double lon, double hgt, double zd,
 
 	/*determine Legendre functions*/
 	for (i = 0; i <= n; i++){
-		for (j = 0; j <= min(i, m); j++){
+		for (j = 0; j <= MIN(i, m); j++){
 			ir = floor(i - j) / 2;
 			sum1 = 0.0;
 			for (k = 0; k <= ir; k++) sum1 += pow(-1, k)*dfac[2 * i - 2 * k] / dfac[k] / dfac[i - k] / dfac[i - j - 2 * k] * pow(t, (i - j - 2 * k));
@@ -4181,7 +4182,7 @@ extern double tropmapf(gtime_t time, const double pos[], const double azel[],
     zd =PI/2.0-azel[1];
     
     /* call GMF */
-    //gmf_(&mjd,&lat,&lon,&hgt,&zd,&gmfh,&gmfw);
+    /*gmf_(&mjd,&lat,&lon,&hgt,&zd,&gmfh,&gmfw);*/
 	gmf_(mjd, lat, lon, hgt, zd, &gmfh, &gmfw);
     
     if (mapfw) *mapfw=gmfw;
@@ -4409,14 +4410,22 @@ extern int rtk_uncompress(const char *file, char *uncfile)
         stat=1;
     }
     /* extract hatanaka-compressed file by cnx2rnx */
-    //else if ((p=strrchr(tmpfile,'.'))&&strlen(p)>3&&(*(p+3)=='d'||*(p+3)=='D')) {
+    /*else if ((p=strrchr(tmpfile,'.'))&&strlen(p)>3&&(*(p+3)=='d'||*(p+3)=='D')) {*/
 	else if ((p = strrchr(tmpfile, '.')) && strlen(p) > 3 && (*(p + 3) == 'd' || *(p + 3) == 'D' ||
 		strstr(p, ".crx") || strstr(p, ".CRX"))) {
         
         strcpy(uncfile,tmpfile);
-        uncfile[p-tmpfile+3]=*(p+3)=='D'?'O':'o';
-        sprintf(cmd,"crx2rnx < \"%s\" > \"%s\"",tmpfile,uncfile);
-        
+		if (*(p + 3) == 'd' || *(p + 3) == 'D')
+		{
+			uncfile[p - tmpfile + 3] = *(p + 3) == ('D'||'d') ? 'O' : 'o';
+			sprintf(cmd, "crx2rnx < \"%s\" > \"%s\"", tmpfile, uncfile);
+		}
+		else if(*(p + 1) == 'c' || *(p + 1) == 'C')
+		{
+			uncfile[p - tmpfile + 1] = *(p + 1) == 'C' ? 'R' : 'r';
+			uncfile[p - tmpfile + 2] = *(p + 1) == 'C' ? 'N' : 'n';
+			sprintf(cmd, "crx2rnx %s -f", tmpfile );
+		}
         if (execcmd(cmd)) {
             remove(uncfile);
             if (stat) remove(tmpfile);

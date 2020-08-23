@@ -1294,7 +1294,10 @@ static int decode_ssr1_head(rtcm_t *rtcm, int sys, int *sync, int *iod,
     solid =getbitu(rtcm->buff,i, 4); i+= 4; /* solution id */
     nsat  =getbitu(rtcm->buff,i,ns); i+=ns;
     *udint=ssrudint[udi];
-    
+	/*if (sys == SYS_CMP)/*add to calculate IOD*/
+	/*{
+		*iod= ((int)tow / 720) % 240;
+	}*/
     time2str(rtcm->time,tstr,2);
     trace(4,"decode_ssr1_head: time=%s sys=%d nsat=%d sync=%d iod=%d provid=%d solid=%d\n",
           tstr,sys,nsat,*sync,*iod,provid,solid);
@@ -1540,8 +1543,8 @@ static int decode_ssr4(rtcm_t *rtcm, int sys)
     }
     for (j=0;j<nsat&&i+191+np+ni+nj<=rtcm->len*8;j++) {
         prn     =getbitu(rtcm->buff,i,np)+offp; i+=np;
-        iode    =getbitu(rtcm->buff,i,ni);      i+=ni;
-        iodcrc  =getbitu(rtcm->buff,i,nj);      i+=nj;
+		iode = getbitu(rtcm->buff, i, ni);      i += ni;/*DF470*/
+		iodcrc = getbitu(rtcm->buff, i, nj);      i += nj;/*DF471*/
         deph [0]=getbits(rtcm->buff,i,22)*1E-4; i+=22;
         deph [1]=getbits(rtcm->buff,i,20)*4E-4; i+=20;
         deph [2]=getbits(rtcm->buff,i,20)*4E-4; i+=20;
@@ -1563,6 +1566,9 @@ static int decode_ssr4(rtcm_t *rtcm, int sys)
         rtcm->ssr[sat-1].iode=iode;
         rtcm->ssr[sat-1].iodcrc=iodcrc;
         rtcm->ssr[sat-1].refd=refd;
+
+		if (sys == SYS_CMP)
+			rtcm->ssr[sat - 1].iode = iodcrc;
         
         for (k=0;k<3;k++) {
             rtcm->ssr[sat-1].deph [k]=deph [k];

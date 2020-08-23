@@ -1495,9 +1495,9 @@ extern int outprcopts(unsigned char *buff, const prcopt_t *opt)
     
     p+=sprintf(p,"%s pos mode  : %s\n",COMMENTH,s1[opt->mode]);
     
-    if (PMODE_DGPS<=opt->mode&&opt->mode<=PMODE_FIXED) {
+    /*if (PMODE_DGPS<=opt->mode&&opt->mode<=PMODE_FIXED) {*/
         p+=sprintf(p,"%s freqs     : %s\n",COMMENTH,s2[opt->nf-1]);
-    }
+    /*}*/
     if (opt->mode>PMODE_SINGLE) {
         p+=sprintf(p,"%s solution  : %s\n",COMMENTH,s3[opt->soltype]);
     }
@@ -1506,9 +1506,9 @@ extern int outprcopts(unsigned char *buff, const prcopt_t *opt)
         p+=sprintf(p,"%s dynamics  : %s\n",COMMENTH,opt->dynamics?"on":"off");
         p+=sprintf(p,"%s tidecorr  : %s\n",COMMENTH,opt->tidecorr?"on":"off");
     }
-    if (opt->mode<=PMODE_FIXED) {
+  /*  if (opt->mode<=PMODE_FIXED) {*/
         p+=sprintf(p,"%s ionos opt : %s\n",COMMENTH,s4[opt->ionoopt]);
-    }
+   /* }*/
     p+=sprintf(p,"%s tropo opt : %s\n",COMMENTH,s5[opt->tropopt]);
     p+=sprintf(p,"%s ephemeris : %s\n",COMMENTH,s6[opt->sateph]);
     if (opt->navsys!=SYS_GPS) {

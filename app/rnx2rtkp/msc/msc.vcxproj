@@ -80,7 +80,7 @@
       </PrecompiledHeader>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;_LIB;_CRT_SECURE_NO_DEPRECATE;TRACE;ENAGLO;ENAGAL;ENAQZS;ENACMP;ENALEO;NFREQ=3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;_LIB;_CRT_SECURE_NO_DEPRECATE;TRACE;ENAGLO;ENAGAL;ENAQZS;ENACMP;ENALEO;NFREQ=7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>

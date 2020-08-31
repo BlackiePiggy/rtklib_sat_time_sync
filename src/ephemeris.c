@@ -84,7 +84,7 @@
 #define RTOL_KEPLER 1E-13         /* relative tolerance for Kepler equation */
 
 #define DEFURASSR 0.15            /* default accurary of ssr corr (m) */
-#define MAXECORSSR 10.0           /* max orbit correction of ssr (m) */
+#define MAXECORSSR 20.0           /* max orbit correction of ssr (m) */
 #define MAXCCORSSR (1E-6*CLIGHT)  /* max clock correction of ssr (m) */
 #define MAXAGESSR 90.0            /* max age of ssr orbit and clock (s) */
 #define MAXAGESSR_HRCLK 10.0      /* max age of ssr high-rate clock (s) */
@@ -92,8 +92,8 @@
 #define STD_GAL_NAPA 500.0        /* error of galileo ephemeris for NAPA (m) */
 
 #define MAX_ITER_KEPLER 30        /* max number of iteration of Kelpler */
-// RTCM3 BDS EPH encoding
-//////////////////////////////////////////////////////////
+/* RTCM3 BDS EPH encoding
+//////////////////////////////////////////////////////////*/
 #define ROUND(x)    ((int)floor((x)+0.5))
 #define BDSTOINT(type, value) (type)(ROUND(value))
 #define BDSADDBITS(a, b) {bitbuffer = (bitbuffer<<(a))|(BDSTOINT(long long,b)&((1ULL<<a)-1)); numbits += (a); while(numbits >= 8) { buffer[size++] = bitbuffer>>(numbits-8);numbits -= 8;}}
@@ -516,7 +516,7 @@ static unsigned int BDs_CRC(eph_t eph)
 	BDSADDBITSFLOAT(18, eph.crc, 1.0 / (double)(1 << 6))
 	BDSADDBITSFLOAT(32, eph.omg, PI / (double)(1 << 30) / (double)(1 << 1))
 	BDSADDBITSFLOAT(24, eph.OMGd, PI / (double)(1 << 30) / (double)(1 << 13))
-	BDSADDBITS(5, 0)  // the last byte is filled by 0-bits to obtain a length of an integer multiple of 8
+        BDSADDBITS(5, 0)  /* the last byte is filled by 0-bits to obtain a length of an integer multiple of 8*/
 
 	return rtk_crc24q(startbuffer, size);
 }
@@ -524,8 +524,9 @@ static unsigned int BDs_CRC(eph_t eph)
 static seph_t *selBeph(gtime_t time, int sat, int iodecrc, const nav_t *nav)
 {
 	double t, tmax = MAXDTOE_CMP, tmin = tmax + 1.0;
-	int i, j = -1;
-	unsigned int crc;
+	int i, j = -1, week=0;
+	double sec;
+	unsigned int crc, IOD;
 
 	trace(4, "selBeph : time=%s sat=%2d\n", time_str(time, 3), sat);
 
@@ -533,8 +534,11 @@ static seph_t *selBeph(gtime_t time, int sat, int iodecrc, const nav_t *nav)
 		if (nav->eph[i].sat != sat) continue;
 
 		if ((t = fabs(timediff(nav->eph[i].toe, time)))>tmax) continue;
-		crc = BDs_CRC(nav->eph[i]);
-		if (fabs(crc - iodecrc)<1) continue;
+		sec = time2bdt(nav->eph[i].toe, &week);
+		IOD = ((int)(sec) / 720) % 240;
+		/*crc = BDs_CRC(nav->eph[i]);*/
+		
+		if (IOD != iodecrc) continue;
 		if (t <= tmin) { j = i; tmin = t; } /* toe closest to time */
 	}
 	if (j<0) {
@@ -588,7 +592,7 @@ static int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     
     *svh=-1;
     
-    if (sys==SYS_GPS||sys==SYS_GAL||sys==SYS_QZS) {//||sys==SYS_CMP
+    if (sys==SYS_GPS||sys==SYS_GAL||sys==SYS_QZS) {/*||sys==SYS_CMP*/
         if (!(eph=seleph(teph,sat,iode,nav))) return 0;
         eph2pos(time,eph,rs,dts,var);
         time=timeadd(time,tt);

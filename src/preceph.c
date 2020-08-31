@@ -676,7 +676,7 @@ extern void satantoff(gtime_t time, const double *rs, int sat, const nav_t *nav,
     if (!normv3(r,ey)) return;
     cross3(ey,ez,ex);
     
-    if (NFREQ>=3&&(satsys(sat,NULL)&(SYS_GAL|SYS_SBS))) k=2;
+	if (NFREQ >= 3 && (satsys(sat, NULL)&(SYS_GAL | SYS_SBS | SYS_CMP))) k = 2;
     
     if (NFREQ<2||lam[j]==0.0||lam[k]==0.0) return;
     

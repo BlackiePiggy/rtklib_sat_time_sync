@@ -582,14 +582,14 @@ void Plot::MenuOpenObsClick()
 {
     trace(3,"MenuOpenObsClick\n");
     
-    ReadObs(QFileDialog::getOpenFileNames(this,tr("Open Obs/Nav Data"),QString(),tr("RINEX OBS (*.obs *.*o *.*d *.*o.gz *.*o.Z *.d.gz *.d.Z);;All (*.*)")));
+    ReadObs(QFileDialog::getOpenFileNames(this,tr("Open Obs/Nav Data"),QString(),tr("RINEX OBS (*.rnx *.obs *.*o *.*d *.*o.gz *.*o.Z *.d.gz *.d.Z);;All (*.*)")));
 }
 // callback on menu-open-nav-data -------------------------------------------
 void Plot::MenuOpenNavClick()
 {
     trace(3,"MenuOpenNavClick\n");
     
-    ReadNav(QFileDialog::getOpenFileNames(this,tr("Open Raw Obs/Nav Messages"),QString(),tr("RINEX NAV (*.nav *.gnav *.hnav *.qnav *.*n *.*g *.*h *.*q *.*p);;All (*.*)")));
+    ReadNav(QFileDialog::getOpenFileNames(this,tr("Open Raw Obs/Nav Messages"),QString(),tr("RINEX NAV (*.rnx *.nav *.gnav *.hnav *.qnav *.*n *.*g *.*h *.*q *.*p);;All (*.*)")));
 }
 // callback on menu-open-elev-mask ------------------------------------------
 void Plot::MenuOpenElevMaskClick()

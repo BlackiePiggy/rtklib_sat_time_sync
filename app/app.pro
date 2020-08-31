@@ -1,8 +1,8 @@
 TEMPLATE = subdirs
 
-SUBDIRS= rtknavi_qt \
-	 rtkget_qt \
-         rtkplot_qt \
+SUBDIRS= rtkplot_qt \
+         rtknavi_qt \
+         rtkget_qt \
          rtkpost_qt \
          rtklaunch_qt \
          srctblbrows_qt \

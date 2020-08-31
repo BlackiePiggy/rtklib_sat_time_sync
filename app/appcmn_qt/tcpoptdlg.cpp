@@ -88,7 +88,7 @@ void  TcpOptDialog::BtnOkClick()
             .arg(Str_Text);
 
 	AddHist(Addr,History);
-	AddHist(MntPnt,MntpHist);
+    AddHist(MntPnt,MntpHist);
 
     accept();
 }

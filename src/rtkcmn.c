@@ -683,6 +683,13 @@ extern unsigned int getbitu(const unsigned char *buff, int pos, int len)
     for (i=pos;i<pos+len;i++) bits=(bits<<1)+((buff[i/8]>>(7-i%8))&1u);
     return bits;
 }
+extern unsigned int getbituMod(const unsigned char *buff, int pos, int len,int scale)
+{
+	unsigned int bits = 0;
+	int i;
+	for (i = pos; i<pos + len; i++) bits = ((bits << 1) + ((buff[i / 8] >> (7 - i % 8)) & 1u))*(scale);
+	return bits;
+}
 extern int getbits(const unsigned char *buff, int pos, int len)
 {
     unsigned int bits=getbitu(buff,pos,len);

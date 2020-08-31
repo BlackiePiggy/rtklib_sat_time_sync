@@ -1537,7 +1537,8 @@ static int decode_ssr4(rtcm_t *rtcm, int sys)
         case SYS_GLO: np=5; ni= 8; nj= 0; offp=  0; break;
         case SYS_GAL: np=6; ni=10; nj= 0; offp=  0; break;
         case SYS_QZS: np=4; ni= 8; nj= 0; offp=192; break;
-        case SYS_CMP: np=6; ni=10; nj=24; offp=  1; break;
+        /*case SYS_CMP: np=6; ni=10; nj=24; offp=  1; break;*/
+		case SYS_CMP: np = 6; ni = 10; nj = 8; offp = 0; break;
         case SYS_SBS: np=6; ni= 9; nj=24; offp=120; break;
         default: return sync?0:10;
     }
@@ -1567,8 +1568,7 @@ static int decode_ssr4(rtcm_t *rtcm, int sys)
         rtcm->ssr[sat-1].iodcrc=iodcrc;
         rtcm->ssr[sat-1].refd=refd;
 
-		if (sys == SYS_CMP)
-			rtcm->ssr[sat - 1].iode = iodcrc;
+		if (sys == SYS_CMP &&!rtcm->ssr[sat - 1].iode) rtcm->ssr[sat - 1].iode = iodcrc;
         
         for (k=0;k<3;k++) {
             rtcm->ssr[sat-1].deph [k]=deph [k];

@@ -177,7 +177,7 @@ extern "C" {
 #endif
 #ifdef ENACMP
 #define MINPRNCMP   1                   /* min satellite sat number of BeiDou */
-#define MAXPRNCMP   60                  /* max satellite sat number of BeiDou */
+#define MAXPRNCMP   80                  /* max satellite sat number of BeiDou */
 #define NSATCMP     (MAXPRNCMP-MINPRNCMP+1) /* number of BeiDou satellites */
 #define NSYSCMP     1
 #else
@@ -1695,6 +1695,7 @@ EXPORT int tle_pos(gtime_t time, const char *name, const char *satno,
 
 /* receiver raw data functions -----------------------------------------------*/
 EXPORT unsigned int getbitu(const unsigned char *buff, int pos, int len);
+EXPORT unsigned int getbituMod(const unsigned char *buff, int pos, int len, int scale);
 EXPORT int          getbits(const unsigned char *buff, int pos, int len);
 EXPORT void setbitu(unsigned char *buff, int pos, int len, unsigned int data);
 EXPORT void setbits(unsigned char *buff, int pos, int len, int data);

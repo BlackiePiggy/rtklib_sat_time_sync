@@ -28,6 +28,9 @@ public:
     QString Path,History[MAXHIST],MntpHist[MAXHIST];
 
     explicit TcpOptDialog(QWidget* parent);
+private slots:
+    void on_MntPnt_textActivated(const QString &arg1);
+    void on_MntPnt_textHighlighted(const QString &arg1);
 };
 //---------------------------------------------------------------------------
 #endif

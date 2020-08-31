@@ -279,7 +279,7 @@ static void write_obs(gtime_t time, stream_t *str, strconv_t *conv)
             }
         }
     }
-}
+/*}*/
 /* write nav data messages ---------------------------------------------------*/
 static void write_nav(gtime_t time, stream_t *str, strconv_t *conv)
 {

@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 * rinex.c : rinex functions
 *
-*          Copyright (C) 2007-2019 by T.TAKASU, All rights reserved.
+*          Copyright (C) 2007-2018 by T.TAKASU, All rights reserved.
 *
 * reference :
 *     [1] W.Gurtner and L.Estey, RINEX The Receiver Independent Exchange Format
@@ -92,7 +92,6 @@
 *           2016/10/10 1.27 add api outrnxinavh()
 *           2018/10/10 1.28 support galileo sisa value for rinex nav output
 *                           fix bug on handling beidou B1 code in rinex 3.03
-*           2019/08/19 1.29 support galileo sisa index for rinex nav input
 *-----------------------------------------------------------------------------*/
 #include "rtklib.h"
 
@@ -116,6 +115,14 @@ static const char obscodes[]="CLDS";    /* obs type codes */
 
 static const char frqcodes[]="1256789"; /* frequency codes */
 
+static const double ura_eph[] = {         /* ura values (ref [3] 20.3.3.3.1.1) */
+	2.4, 3.4, 4.85, 6.85, 9.65, 13.65, 24.0, 48.0, 96.0, 192.0, 384.0, 768.0, 1536.0,
+	3072.0, 6144.0, 0.0
+};
+static const double ura_nominal[] = {     /* ura nominal values */
+	2.0, 2.8, 4.0, 5.7, 8.0, 11.3, 16.0, 32.0, 64.0, 128.0, 256.0, 512.0, 1024.0,
+	2048.0, 4096.0, 8192.0
+};
 /* type definition -----------------------------------------------------------*/
 typedef struct {                        /* signal index type */
     int n;                              /* number of index */
@@ -178,6 +185,36 @@ static int sat2code(int sat, char *code)
         default: return 0;
     }
     return 1;
+}
+/* ura index to ura nominal value (m) ----------------------------------------*/
+static double uravalue(int sys, int sva)
+{
+    if (sys==SYS_GAL) {
+        if (sva<= 49) return sva*0.01;
+        if (sva<= 74) return 0.5+(sva- 50)*0.02;
+        if (sva<= 99) return 1.0+(sva- 75)*0.04;
+        if (sva<=125) return 2.0+(sva-100)*0.16;
+        return -1.0; /* unknown or NAPA */
+    }
+    else {
+        return 0<=sva&&sva<15?ura_nominal[sva]:8192.0;
+    }
+}
+/* ura value (m) to ura index ------------------------------------------------*/
+static int uraindex(int sys,double value)
+{
+    int i;
+    if (sys==SYS_GAL) {
+        if (value<0.0 || value>6.0) i=255; /* unknown or NAPA */
+        else if (value<=0.5) i=value/0.01;
+        else if (value<=1.0) i=(value-0.5)/0.02+50;
+        else if (value<=2.0) i=(value-1.0)/0.04+75;
+        else i=(value-2.0)/0.16+100;
+    }
+    else {  
+        for (i=0;i<15;i++) if (ura_eph[i]>=value) break;
+    }
+    return i;
 }
 /* galileo sisa index to sisa nominal value (m) ------------------------------*/
 extern double sisa_value(int sisa)
@@ -1124,7 +1161,7 @@ static int decode_eph(double ver, int sat, gtime_t toc, const double *data,
         
         eph->code=(int)data[20];      /* GPS: codes on L2 ch */
         eph->svh =(int)data[24];      /* sv health */
-        eph->sva=uraindex(data[23]);  /* ura (m->index) */
+        eph->sva=uraindex(sys,data[23]);  /* ura (m->index) */
         eph->flag=(int)data[22];      /* GPS: L2 P data flag */
         
         eph->tgd[0]=   data[25];      /* TGD */
@@ -1155,7 +1192,7 @@ static int decode_eph(double ver, int sat, gtime_t toc, const double *data,
                                       /* bit   4-5: E5a HS */
                                       /* bit     6: E5b DVS */
                                       /* bit   7-8: E5b HS */
-        eph->sva =sisa_index(data[23]); /* sisa (m->index) */
+        eph->sva =uraindex(sys,data[23]); /* ura (m->index) */
         
         eph->tgd[0]=   data[25];      /* BGD E5a/E1 */
         eph->tgd[1]=   data[26];      /* BGD E5b/E1 */
@@ -1172,7 +1209,7 @@ static int decode_eph(double ver, int sat, gtime_t toc, const double *data,
         eph->ttr=adjweek(eph->ttr,toc);
         
         eph->svh =(int)data[24];      /* satH1 */
-        eph->sva=uraindex(data[23]);  /* ura (m->index) */
+        eph->sva=uraindex(sys,data[23]);  /* ura (m->index) */
         
         eph->tgd[0]=   data[25];      /* TGD1 B1/B3 */
         eph->tgd[1]=   data[26];      /* TGD2 B2/B3 */
@@ -1184,7 +1221,7 @@ static int decode_eph(double ver, int sat, gtime_t toc, const double *data,
         eph->toe=adjweek(gpst2time(eph->week,data[11]),toc);
         eph->ttr=adjweek(gpst2time(eph->week,data[27]),toc);
         eph->svh =(int)data[24];      /* sv health */
-        eph->sva=uraindex(data[23]);  /* ura (m->index) */
+        eph->sva=uraindex(sys,data[23]);  /* ura (m->index) */
         eph->tgd[0]=   data[25];      /* TGD */
     }
     if (eph->iode<0||1023<eph->iode) {
@@ -1254,11 +1291,12 @@ static int decode_seph(double ver, int sat, gtime_t toc, double *data,
                        seph_t *seph)
 {
     seph_t seph0={0};
-    int week;
+    int week,sys;
     
     trace(4,"decode_seph: ver=%.2f sat=%2d\n",ver,sat);
     
-    if (satsys(sat,NULL)!=SYS_SBS) {
+    sys=satsys(sat,NULL);
+    if (sys!=SYS_SBS) {
         trace(3,"geo ephemeris error: invalid satellite sat=%2d\n",sat);
         return 0;
     }
@@ -1278,7 +1316,7 @@ static int decode_seph(double ver, int sat, gtime_t toc, double *data,
     seph->acc[0]=data[5]*1E3; seph->acc[1]=data[9]*1E3; seph->acc[2]=data[13]*1E3;
     
     seph->svh=(int)data[6];
-    seph->sva=uraindex(data[10]);
+    seph->sva=uraindex(sys,data[10]);
     
     return 1;
 }
@@ -2444,12 +2482,7 @@ extern int outrnxnavb(FILE *fp, const rnxopt_t *opt, const eph_t *eph)
     outnavf(fp,eph->flag   );
     fprintf(fp,"\n%s",sep  );
     
-    if (sys==SYS_GAL) {
-        outnavf(fp,sisa_value(eph->sva));
-    }
-    else {
-        outnavf(fp,uravalue(eph->sva));
-    }
+    outnavf(fp,uravalue(sys,eph->sva));
     outnavf(fp,eph->svh    );
     outnavf(fp,eph->tgd[0] ); /* GPS/QZS:TGD, GAL:BGD E5a/E1, BDS: TGD1 B1/B3 */
     if (sys==SYS_GAL||sys==SYS_CMP) {
@@ -2651,7 +2684,7 @@ extern int outrnxhnavb(FILE *fp, const rnxopt_t *opt, const seph_t *seph)
     outnavf(fp,seph->pos[1]/1E3   );
     outnavf(fp,seph->vel[1]/1E3   );
     outnavf(fp,seph->acc[1]/1E3   );
-    outnavf(fp,uravalue(seph->sva));
+    outnavf(fp,uravalue(SYS_SBS,seph->sva));
     fprintf(fp,"\n%s",sep         );
     
     outnavf(fp,seph->pos[2]/1E3   );

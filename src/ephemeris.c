@@ -516,7 +516,7 @@ static unsigned int BDs_CRC(eph_t eph)
 	BDSADDBITSFLOAT(18, eph.crc, 1.0 / (double)(1 << 6))
 	BDSADDBITSFLOAT(32, eph.omg, PI / (double)(1 << 30) / (double)(1 << 1))
 	BDSADDBITSFLOAT(24, eph.OMGd, PI / (double)(1 << 30) / (double)(1 << 13))
-        BDSADDBITS(5, 0)  /* the last byte is filled by 0-bits to obtain a length of an integer multiple of 8*/
+    BDSADDBITS(5, 0)  /* the last byte is filled by 0-bits to obtain a length of an integer multiple of 8*/
 
 	return rtk_crc24q(startbuffer, size);
 }

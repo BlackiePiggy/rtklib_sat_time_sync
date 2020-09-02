@@ -1,4 +1,4 @@
-﻿Build started 2020/8/31 17:21:18.
+﻿Build started 2020/9/1 18:00:50.
      1>Project "C:\Users\yanxi\OneDrive - University of Calgary\CODE\RTKLIBRemote\RTKLIB\app\rnx2rtkp\msc\msc.vcxproj" on node 2 (Rebuild target(s)).
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(388,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (msc-DESKTOP-5VO7KA4-2.vcxproj, msc-DESKTOP-5VO7KA4.vcxproj).  This can lead to incorrect clean and rebuild behavior.
      1>ClCompile:
@@ -58,4 +58,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:12.65
+Time Elapsed 00:00:09.51

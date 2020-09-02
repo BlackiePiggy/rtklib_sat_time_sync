@@ -1169,7 +1169,7 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
         
         /* stack phase and code residuals {L1,P1,L2,P2,...} */
         for (j=0;j<2*NF(opt);j++) {
-			/*if (sys == SYS_CMP)	if (j == 2 || j == 3) continue;*/ /*only B1 and B3 are needed*/
+			/*if (sys == SYS_CMP)	if (j == 2 || j == 3) continue; /*only B1 and B3 are needed*/
             dcb=bias=0.0;
             
             if (opt->ionoopt==IONOOPT_IFLC) {
@@ -1199,7 +1199,7 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
                 if (rtk->x[II(sat,opt)]==0.0) continue;
                 H[II(sat,opt)+nx*nv]=C;
             }
-            if (j/2==2&&j%2==1) { /* L5-receiver-dcb */
+            if (j/2==1&&j%2==1) { /* L5 (j=5) or B2(j=3) -receiver-dcb */
                 dcb+=rtk->x[ID(opt)];
                 H[ID(opt)+nx*nv]=1.0;
             }

@@ -2,7 +2,7 @@
 // ported to Qt by Jens Reimann
 
 #include <stdio.h>
-
+#include <QDebug>
 #include <QShowEvent>
 #include <QProcess>
 #include <QIntValidator>
@@ -40,13 +40,14 @@ void  TcpOptDialog::showEvent(QShowEvent* event)
     if (event->spontaneous()) return;
 
     int index=Path.lastIndexOf(":");
-    QString Str_Text=Path.mid(index);
+    QString Str_Text=Path.mid(index+1);
 
     QUrl url("ftp://"+Path.mid(0,index));
-
+    QString url_path = url.path();
+    QString new_url_path = url_path.remove('/');
     Addr->insertItem(0,url.host());Addr->setCurrentIndex(0);
     Port->setText(QString::number(url.port()));
-    MntPnt->insertItem(0,url.path());MntPnt->setCurrentIndex(0);
+    MntPnt->insertItem(0,new_url_path);MntPnt->setCurrentIndex(0);
     User->setText(url.userName());
     Passwd->setText(url.password());
     Str->setText(Str_Text);
@@ -62,18 +63,18 @@ void  TcpOptDialog::showEvent(QShowEvent* event)
     LabelUser->setEnabled(Opt==3);
     LabelPasswd->setEnabled(Opt>=2);
     LabelStr->setEnabled(Opt==2);
-
     setWindowTitle(ti[Opt]);
 
     Addr->clear();
     MntPnt->clear();
-	
 	for (int i=0;i<MAXHIST;i++) {
         if (History[i]!="") Addr->addItem(History[i]);
 	}
 	for (int i=0;i<MAXHIST;i++) {
         if (MntpHist[i]!="") MntPnt->addItem(MntpHist[i]);
-	}
+    }
+    Addr->setCurrentText(url.host());
+    MntPnt->setCurrentText(new_url_path);
     BtnNtrip->setVisible(Opt>=2);
 }
 //---------------------------------------------------------------------------

@@ -176,8 +176,8 @@ void CodeOptDialog::BtnOkClick()
     if (J35->isChecked()) mask[3][34]='1';
     if (J36->isChecked()) mask[3][35]='1';
     if (J33->isChecked()) mask[3][32]='1';
-	if (C40->isChecked()) mask[5][39]='1';
-	if (C41->isChecked()) mask[5][40]='1';
+        /*if (C40->isChecked()) mask[5][39]='1';
+        if (C41->isChecked()) mask[5][40]='1';*/
     if (C47->isChecked()) mask[5][46]='1';
     if (C48->isChecked()) mask[5][47]='1';
     if (C12->isChecked()) mask[5][11]='1';
@@ -357,8 +357,8 @@ void CodeOptDialog::UpdateEnable(void)
     J35->setEnabled((NavSys&SYS_QZS)&&(FreqType&FREQTYPE_E6));
     J36->setEnabled((NavSys&SYS_QZS)&&(FreqType&FREQTYPE_E6));
     J33->setEnabled((NavSys&SYS_QZS)&&(FreqType&FREQTYPE_E6));
-    C40->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L1));
-    C41->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L1));
+    /*C40->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L1));
+    C41->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L1));*/
     C47->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L2));
     C48->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L2));
     C12->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L2));

@@ -1168,7 +1168,7 @@ static int filter_(const double *x, const double *P, const double *H,
 		matmul("NN", n, n, n, 0.0, E, A, 1.0, Pp);*/ /*this addition is not right*/
 
     }
-    free(F); free(Q); free(K); free(I);
+	free(F); free(Q); free(K); free(I); free(A); free(E);
     return info;
 }
 extern int filter(double *x, double *P, const double *H, const double *v,

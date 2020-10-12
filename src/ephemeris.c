@@ -592,7 +592,7 @@ static int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     
     *svh=-1;
     
-    if (sys==SYS_GPS||sys==SYS_GAL||sys==SYS_QZS) {/*||sys==SYS_CMP*/
+    if (sys==SYS_GPS||sys==SYS_GAL||sys==SYS_QZS||sys==SYS_CMP) {
         if (!(eph=seleph(teph,sat,iode,nav))) return 0;
         eph2pos(time,eph,rs,dts,var);
         time=timeadd(time,tt);
@@ -613,13 +613,13 @@ static int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
         seph2pos(time,seph,rst,dtst,var);
         *svh=seph->svh;
     }
-	else if (sys == SYS_CMP) {
+    /*else if (sys == SYS_CMP) {
 		if (!(eph = selBeph(teph, sat, iode,nav))) return 0;
 		eph2pos(time, eph, rs, dts, var);
 		time = timeadd(time, tt);
 		eph2pos(time, eph, rst, dtst, var);
 		*svh = eph->svh;
-	}
+    }*/
     else return 0;
     
     /* satellite velocity and clock drift by differential approx */

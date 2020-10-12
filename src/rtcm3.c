@@ -1260,11 +1260,13 @@ static int decode_type1042(rtcm_t *rtcm)
     eph.toc=bdt2gpst(bdt2time(eph.week,toc));      /* bdt -> gpst */
     eph.ttr=rtcm->time;
     eph.A=sqrtA*sqrtA;
+    eph.iode =((int)eph.toes/720)%240;
     if (!strstr(rtcm->opt,"-EPHALL")) {
         if (timediff(eph.toe,rtcm->nav.eph[sat-1].toe)==0.0&&
             eph.iode==rtcm->nav.eph[sat-1].iode&&
             eph.iodc==rtcm->nav.eph[sat-1].iodc) return 0; /* unchanged */
     }
+
     rtcm->nav.eph[sat-1]=eph;
     rtcm->ephsat=sat;
     return 2;

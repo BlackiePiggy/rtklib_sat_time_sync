@@ -308,11 +308,11 @@ static int valsol(const double *azel, const int *vsat, int n,
     trace(3,"valsol  : n=%d nv=%d\n",n,nv);
     
     /* chi-square validation of residuals */
-    vv=dot(v,v,nv);
+    /*vv=dot(v,v,nv);
     if (nv>nx&&vv>chisqr[nv-nx-1]) {
         sprintf(msg,"chi-square error nv=%d vv=%.1f cs=%.1f",nv,vv,chisqr[nv-nx-1]);
         /* return 0; */ /* threshold too strict for all use cases, report error but continue on */
-    }
+   /* }*/
     /* large gdop check */
     for (i=ns=0;i<n;i++) {
         if (!vsat[i]) continue;

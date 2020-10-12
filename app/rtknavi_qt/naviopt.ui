@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
-    <height>549</height>
+    <width>765</width>
+    <height>553</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,7 +26,7 @@
       <enum>QTabWidget::North</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="TabSheet1">
       <property name="toolTip">
@@ -1054,7 +1054,7 @@
           <string/>
          </property>
          <property name="text">
-          <string>30</string>
+          <string>1000</string>
          </property>
         </widget>
        </item>
@@ -2309,7 +2309,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../rtkconv_qt/rtkconv_qt.qrc">
+          <iconset resource="rtknavi_qt.qrc">
            <normaloff>:/buttons/doc.bmp</normaloff>:/buttons/doc.bmp</iconset>
          </property>
          <property name="flat">
@@ -2371,7 +2371,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../rtkconv_qt/rtkconv_qt.qrc">
+          <iconset resource="rtknavi_qt.qrc">
            <normaloff>:/buttons/doc.bmp</normaloff>:/buttons/doc.bmp</iconset>
          </property>
          <property name="flat">
@@ -2705,7 +2705,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../rtkconv_qt/rtkconv_qt.qrc">
+          <iconset resource="rtknavi_qt.qrc">
            <normaloff>:/buttons/doc.bmp</normaloff>:/buttons/doc.bmp</iconset>
          </property>
          <property name="flat">
@@ -3279,7 +3279,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../rtkconv_qt/rtkconv_qt.qrc"/>
+  <include location="rtknavi_qt.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -260,6 +260,16 @@ static unsigned char obsfreqs[] = {
 	2, 2, 4, 4, 3, 3, 3, 1, 1, 3, /* 40-49 */
 	3, 3, 7, 7, 7, 7, 0, 0, 0, 0  /* 50-59 */
 };
+/*from rtklib explorer demo5*/
+/*static unsigned char obsfreqs[]={
+    /* 1:L1/E1/B1, 2:L2/E5b/B2, 3:L5/E5a, 4:E6/LEX/B3, 5:E5(a+b), 6:S */
+   /* 0, 1, 1, 1, 1,  1, 1, 1, 1, 1, /*  0- 9 */
+   /* 1, 1, 1, 1, 2,  2, 2, 2, 2, 2, /* 10-19 */ 
+    /*2, 2, 2, 2, 3,  3, 3, 2, 2, 2, /* 20-29 *//*C7I change as the second frequency*/
+    /*4, 4, 4, 4, 4,  4, 4, 5, 5, 5, /* 30-39 */
+    /*1, 1, 3, 3, 3,  3, 3, 1, 1, 3, /* 40-49 */ /*C2I change as the first frequency, C6I as the third frequency*/
+    /*3, 3, 6, 6, 6,  6, 0, 0, 0, 0  /* 50-59 */
+};*/
 static char codepris[7][MAXFREQ][16]={  /* code priority table */
 
    /* L1/E1/B1   L2/E5b/B2   L5/E5a/L3 E6/LEX  E5(a+b)  S */

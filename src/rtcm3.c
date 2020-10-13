@@ -2082,8 +2082,9 @@ static void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
         
         /* freqency index for beidou and galileo */
         if (sys==SYS_CMP) {
-            if      (freq[i]==5) freq[i]=2; /* B2 */
+            if      (freq[i]==2) freq[i]=1; /* C2I as the first freq for beidou */
             else if (freq[i]==4) freq[i]=3; /* B3 */
+			else if (freq[i] == 5) freq[i] = 2; /*B2*/
         }
         else if (sys==SYS_GAL) {
             if (freq[i]==5) freq[i]=2; /* E5b */

@@ -346,7 +346,7 @@ extern "C" {
 #define CODE_L1D    63                  /* obs code: B1a data   (BDS) */
 #define CODE_L8D    64                  /* obs code: B2 data    (BDS) */
 #define CODE_L8P    65                  /* obs code: B2 pilot   (BDS) */
-#define MAXCODE     65                  /* max number of obs code */
+#define MAXCODE     55                  /* max number of obs code */
 
 #define PMODE_SINGLE 0                  /* positioning mode: single */
 #define PMODE_DGPS   1                  /* positioning mode: DGPS/DGNSS */

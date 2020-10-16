@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.12.4, 2020-10-13T09:03:54. -->
+<!-- Written by QtCreator 4.12.4, 2020-10-15T17:31:07. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -81,9 +81,9 @@
    <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">1</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
-    <value type="bool">true</value>
+    <value type="bool">false</value>
     <value type="int" key="EnableQmlDebugging">0</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:\Users\yanxi\OneDrive - University of Calgary\CODE\RTKLIBRemote\build-RTKLib-Desktop_Qt_5_12_3_MinGW_64_bit-Debug</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:\Users\yanxi\OneDrive - University of Calgary\CODE\RTKLIBRemote\RTKLIB</value>
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/build-RTKLib-Desktop_Qt_5_12_3_MinGW_64_bit-Debug</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
@@ -132,9 +132,9 @@
     <value type="int" key="SeparateDebugInfo">2</value>
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.1">
-    <value type="bool">true</value>
+    <value type="bool">false</value>
     <value type="int" key="EnableQmlDebugging">2</value>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:\Users\yanxi\OneDrive - University of Calgary\CODE\RTKLIBRemote\build-RTKLib-Desktop_Qt_5_12_3_MinGW_64_bit-Release</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:\Users\yanxi\OneDrive - University of Calgary\CODE\RTKLIBRemote\RTKLIB</value>
     <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory.shadowDir">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/build-RTKLib-Desktop_Qt_5_12_3_MinGW_64_bit-Release</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
@@ -320,7 +320,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/build-RTKLib-Desktop_Qt_5_12_3_MinGW_64_bit-Debug/app/rtkconv_qt</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/RTKLIB/app/rtkconv_qt</value>
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.1">
     <value type="QString" key="Analyzer.Perf.CallgraphMode">dwarf</value>
@@ -392,9 +392,9 @@
     <value type="bool" key="RunConfiguration.UseLibrarySearchPath">true</value>
     <value type="bool" key="RunConfiguration.UseMultiProcess">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
-    <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
+    <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">false</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/build-RTKLib-Desktop_Qt_5_12_3_MinGW_64_bit-Debug/app/rtknavi_qt</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/RTKLIB/app/rtknavi_qt</value>
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.2">
     <value type="QString" key="Analyzer.Perf.CallgraphMode">dwarf</value>
@@ -468,7 +468,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/build-RTKLib-Desktop_Qt_5_12_3_MinGW_64_bit-Debug/app/rtkplot_qt</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/RTKLIB/app/rtkplot_qt</value>
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.3">
     <value type="QString" key="Analyzer.Perf.CallgraphMode">dwarf</value>
@@ -542,7 +542,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/build-RTKLib-Desktop_Qt_5_12_3_MinGW_64_bit-Debug/app/rtkpost_qt</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/RTKLIB/app/rtkpost_qt</value>
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.4">
     <value type="QString" key="Analyzer.Perf.CallgraphMode">dwarf</value>
@@ -616,7 +616,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/build-RTKLib-Desktop_Qt_5_12_3_MinGW_64_bit-Debug/app/strsvr_qt</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/RTKLIB/app/strsvr_qt</value>
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.5">
     <value type="QString" key="Analyzer.Perf.CallgraphMode">dwarf</value>
@@ -690,7 +690,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/build-RTKLib-Desktop_Qt_5_12_3_MinGW_64_bit-Debug/app/rtkget_qt</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/RTKLIB/app/rtkget_qt</value>
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.6">
     <value type="QString" key="Analyzer.Perf.CallgraphMode">dwarf</value>
@@ -764,7 +764,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/build-RTKLib-Desktop_Qt_5_12_3_MinGW_64_bit-Debug/app/rtklaunch_qt</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/RTKLIB/app/rtklaunch_qt</value>
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.7">
     <value type="QString" key="Analyzer.Perf.CallgraphMode">dwarf</value>
@@ -838,7 +838,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/build-RTKLib-Desktop_Qt_5_12_3_MinGW_64_bit-Debug/app/srctblbrows_qt</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">C:/Users/yanxi/OneDrive - University of Calgary/CODE/RTKLIBRemote/RTKLIB/app/srctblbrows_qt</value>
    </valuemap>
    <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">8</value>
   </valuemap>

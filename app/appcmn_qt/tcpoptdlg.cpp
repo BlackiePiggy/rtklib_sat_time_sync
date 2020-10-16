@@ -115,15 +115,14 @@ void  TcpOptDialog::BtnNtripClick()
     QString Addr_Text=Addr->currentText();
     QString Port_Text=Port->text();
 
-    ExecCmd("srctblbrows "+Addr_Text+":"+Port_Text,1);
+    ExecCmd("srctblbrows_qt "+Addr_Text+":"+Port_Text,1);
 }
 //---------------------------------------------------------------------------
 int  TcpOptDialog::ExecCmd(QString cmd, int show)
 {
-    QProcess prog;
     Q_UNUSED(show);
-
-    prog.start(cmd); /* FIXME: show option not yet supported */
+    QProcess * prog = new QProcess();
+    prog->start(cmd); /* FIXME: show option not yet supported */
     return 1;
 }
 //---------------------------------------------------------------------------

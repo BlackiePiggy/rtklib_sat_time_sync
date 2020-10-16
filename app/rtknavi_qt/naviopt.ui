@@ -26,7 +26,7 @@
       <enum>QTabWidget::North</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="TabSheet1">
       <property name="toolTip">
@@ -395,6 +395,11 @@
          <item>
           <property name="text">
            <string>Static</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>static-start</string>
           </property>
          </item>
          <item>

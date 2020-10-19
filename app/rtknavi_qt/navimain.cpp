@@ -146,16 +146,16 @@ MainWindow::MainWindow(QWidget *parent)
     }
     PrcOpt=prcopt_default;
     SolOpt=solopt_default;
-    
+
     rtksvrinit(&rtksvr);
     strinit(&monistr);
-    
+
     setWindowTitle(QString(tr("%1 ver. %2")).arg(PRGNAME).arg(VER_RTKLIB));
     setWindowIcon(QIcon(":/icons/rtknavi_Icon.ico"));
 
     TLEData.n=TLEData.nmax=0;
     TLEData.data=NULL;
-    
+
     PanelStack=PanelMode=0;
 
     for (int i=0;i<3;i++) {
@@ -201,7 +201,7 @@ void  MainWindow::showEvent(QShowEvent *event)
     systemTray->setContextMenu(trayMenu);
 
     connect(systemTray,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this,SLOT(TrayIconClick(QSystemTrayIcon::ActivationReason)));
-    
+
     connect(BtnExit,SIGNAL(clicked()),this,SLOT(BtnExitClick()));
     connect(BtnStart,SIGNAL(clicked()),this,SLOT(BtnStartClick()));
     connect(BtnStop,SIGNAL(clicked()),this,SLOT(BtnStopClick()));
@@ -236,7 +236,7 @@ void  MainWindow::showEvent(QShowEvent *event)
     QString file=QApplication::applicationFilePath();
     QFileInfo fi(file);
     IniFile=fi.absolutePath()+"/"+fi.baseName()+".ini";
-    
+
     InitSolBuff();
     strinitcom();
 
@@ -257,9 +257,9 @@ void  MainWindow::showEvent(QShowEvent *event)
         IniFile=parser.value(iniFileOption);
 #endif /*TODO: alternative for QT4 */
     LoadOpt();
-    
+
     LoadNav(&rtksvr.nav);
-    
+
     OpenMoniPort(MoniPort);
 
     if (TLEFileF!="") {
@@ -281,12 +281,10 @@ void  MainWindow::closeEvent(QCloseEvent *event )
 {
     trace(3,"FormClose\n");
 
-    if (event->spontaneous()) return;
-
     if (OpenPort>0) {
         // send disconnect message
         strwrite(&monistr,(unsigned char *)MSG_DISCONN,strlen(MSG_DISCONN));
-        
+
         strclose(&monistr);
     }
     SaveOpt();
@@ -328,30 +326,30 @@ void MainWindow::UpdateEnable(void)
 void  MainWindow::BtnExitClick()
 {
     trace(3,"BtnExitClick\n");
-    
+
     close();
 }
 // callback on button-start -------------------------------------------------
 void  MainWindow::BtnStartClick()
 {
     trace(3,"BtnStartClick\n");
-    
+
     SvrStart();
 }
 // callback on button-stop --------------------------------------------------
 void  MainWindow::BtnStopClick()
 {
     trace(3,"BtnStopClick\n");
-    
+
     SvrStop();
 }
 // callback on button-plot --------------------------------------------------
 void  MainWindow::BtnPlotClick()
 {
     QString cmd;
-    
+
     trace(3,"BtnPlotClick\n");
-    
+
     if (OpenPort<=0) {
         QMessageBox::critical(this,tr("Error"),tr("monitor port not open"));
         return;
@@ -366,9 +364,9 @@ void  MainWindow::BtnPlotClick()
 void  MainWindow::BtnOptClick()
 {
     int i,chgmoni=0;
-    
+
     trace(3,"BtnOptClick\n");
-    
+
     optDialog->PrcOpt     =PrcOpt;
     optDialog->SolOpt     =SolOpt;
     optDialog->DebugStatusF=DebugStatusF;
@@ -376,14 +374,14 @@ void  MainWindow::BtnOptClick()
     optDialog->BaselineC  =BaselineC;
     optDialog->Baseline[0]=Baseline[0];
     optDialog->Baseline[1]=Baseline[1];
-    
+
     optDialog->RovPosTypeF=RovPosTypeF;
     optDialog->RefPosTypeF=RefPosTypeF;
     optDialog->RovAntPcvF =RovAntPcvF;
     optDialog->RefAntPcvF =RefAntPcvF;
     optDialog->RovAntF    =RovAntF;
     optDialog->RefAntF    =RefAntF;
-    
+
     optDialog->SatPcvFileF=SatPcvFileF;
     optDialog->AntPcvFileF=AntPcvFileF;
     optDialog->StaPosFileF=StaPosFileF;
@@ -393,7 +391,7 @@ void  MainWindow::BtnOptClick()
     optDialog->TLEFileF   =TLEFileF;
     optDialog->TLESatFileF=TLESatFileF;
     optDialog->LocalDirectory=LocalDirectory;
-    
+
     optDialog->SvrCycle   =SvrCycle;
     optDialog->TimeoutTime=TimeoutTime;
     optDialog->ReconTime  =ReconTime;
@@ -422,7 +420,7 @@ void  MainWindow::BtnOptClick()
     optDialog->exec();
 
     if (optDialog->result()!=QDialog::Accepted) return;
-    
+
     PrcOpt     =optDialog->PrcOpt;
     SolOpt     =optDialog->SolOpt;
     DebugStatusF=optDialog->DebugStatusF;
@@ -430,14 +428,14 @@ void  MainWindow::BtnOptClick()
     BaselineC  =optDialog->BaselineC;
     Baseline[0]=optDialog->Baseline[0];
     Baseline[1]=optDialog->Baseline[1];
-    
+
     RovPosTypeF=optDialog->RovPosTypeF;
     RefPosTypeF=optDialog->RefPosTypeF;
     RovAntPcvF =optDialog->RovAntPcvF;
     RefAntPcvF =optDialog->RefAntPcvF;
     RovAntF    =optDialog->RovAntF;
     RefAntF    =optDialog->RefAntF;
-    
+
     SatPcvFileF=optDialog->SatPcvFileF;
     AntPcvFileF=optDialog->AntPcvFileF;
     StaPosFileF=optDialog->StaPosFileF;
@@ -463,7 +461,7 @@ void  MainWindow::BtnOptClick()
     if (MoniPort!=optDialog->MoniPort) chgmoni=1;
     MoniPort   =optDialog->MoniPort;
     PanelStack =optDialog->PanelStack;
-    
+
     if (SolBuffSize!=optDialog->SolBuffSize) {
         SolBuffSize=optDialog->SolBuffSize;
         InitSolBuff();
@@ -478,16 +476,16 @@ void  MainWindow::BtnOptClick()
         RefPos   [i]=optDialog->RefPos   [i];
     }
     PosFont=optDialog->PosFont;
-    
+
     UpdateFont();
     UpdatePanel();
-    
+
     if (!chgmoni) return;
-    
+
     // send disconnect message
     if (OpenPort>0) {
         strwrite(&monistr,(unsigned char *)MSG_DISCONN,strlen(MSG_DISCONN));
-        
+
         strclose(&monistr);
     }
     // reopen monitor stream
@@ -497,7 +495,7 @@ void  MainWindow::BtnOptClick()
 void  MainWindow::BtnInputStrClick()
 {
     int i,j;
-    
+
     trace(3,"BtnInputStrClick\n");
 
     for (i=0;i<3;i++) {
@@ -505,7 +503,7 @@ void  MainWindow::BtnInputStrClick()
         inputStrDialog->Stream [i]=Stream [i];
         inputStrDialog->Format [i]=Format [i];
         inputStrDialog->RcvOpt [i]=RcvOpt [i];
-        
+
         /* Paths[0]:serial,[1]:tcp,[2]:file,[3]:ftp */
         for (j=0;j<4;j++) inputStrDialog->Paths[i][j]=Paths[i][j];
     }
@@ -525,11 +523,11 @@ void  MainWindow::BtnInputStrClick()
     inputStrDialog->TimeStart =InTimeStart;
     inputStrDialog->NmeaPos[0]=NmeaPos[0];
     inputStrDialog->NmeaPos[1]=NmeaPos[1];
-    
+
     inputStrDialog->exec();
 
     if (inputStrDialog->result()!=QDialog::Accepted) return;
-    
+
     for (i=0;i<3;i++) {
         StreamC[i]=inputStrDialog->StreamC[i];
         Stream [i]=inputStrDialog->Stream[i];
@@ -560,20 +558,20 @@ int  MainWindow::ConfOverwrite(const QString &path)
     int itype[]={STR_SERIAL,STR_TCPCLI,STR_TCPSVR,STR_NTRIPCLI,STR_FILE,STR_FTP,STR_HTTP};
     int i;
     QString buff1, buff2;
-    
+
     trace(3,"ConfOverwrite\n");
-    
+
     buff1=path.mid(path.indexOf("::"));
-        
+
     if (!QFile::exists(buff1)) return 1; // file not exists
-    
+
     // check overwrite input files
     for (i=0;i<3;i++) {
         if (!StreamC[i]||itype[Stream[i]]!=STR_FILE) continue;
-        
+
         buff2=Paths[i][2];
         buff2=buff2.mid(buff2.indexOf("::"));
-        
+
         if (buff1==buff2) {
             Message->setText(QString(tr("invalid output %1")).arg(buff1));
             return 0;
@@ -588,9 +586,9 @@ void  MainWindow::BtnOutputStrClick()
     int otype[]={STR_SERIAL,STR_TCPCLI,STR_TCPSVR,STR_NTRIPSVR,STR_FILE};
     int i,j,str,update[2]={0};
     char path[1024];
-    
+
     trace(3,"BtnOutputStrClick\n");
-    
+
     for (i=3;i<5;i++) {
         outputStrDialog->StreamC[i-3]=StreamC[i];
         outputStrDialog->Stream [i-3]=Stream[i];
@@ -607,7 +605,7 @@ void  MainWindow::BtnOutputStrClick()
     outputStrDialog->exec();
 
     if (outputStrDialog->result()!=QDialog::Accepted) return;
-    
+
     for (i=3;i<5;i++) {
         if (StreamC[i]!=outputStrDialog->StreamC[i-3]||
             Stream [i]!=outputStrDialog->Stream[i-3]||
@@ -628,16 +626,16 @@ void  MainWindow::BtnOutputStrClick()
     OutTimeTag=outputStrDialog->OutTimeTag;
     OutAppend =outputStrDialog->OutAppend;
     OutSwapInterval=outputStrDialog->SwapInterval;
-    
+
     if (BtnStart->isEnabled()) return;
-    
+
     for (i=3;i<5;i++) {
         if (!update[i-3]) continue;
-        
+
         rtksvrclosestr(&rtksvr,i);
-        
+
         if (!StreamC[i]) continue;
-        
+
         str=otype[Stream[i]];
         if      (str==STR_SERIAL)             strncpy(path,qPrintable(Paths[i][0]),1024);
         else if (str==STR_FILE  )             strncpy(path,qPrintable(Paths[i][2]),1024);
@@ -657,9 +655,9 @@ void  MainWindow::BtnLogStrClick()
     int otype[]={STR_SERIAL,STR_TCPCLI,STR_TCPSVR,STR_NTRIPSVR,STR_FILE};
     int i,j,str,update[3]={0};
     char path[1024];
-    
+
     trace(3,"BtnLogStrClick\n");
-    
+
     for (i=5;i<8;i++) {
         logStrDialog->StreamC[i-5]=StreamC[i];
         logStrDialog->Stream [i-5]=Stream [i];
@@ -672,11 +670,11 @@ void  MainWindow::BtnLogStrClick()
     logStrDialog->LogTimeTag=LogTimeTag;
     logStrDialog->LogAppend =LogAppend;
     logStrDialog->SwapInterval=LogSwapInterval;
-    
+
     logStrDialog->exec();
 
     if (logStrDialog->result()!=QDialog::Accepted) return;
-    
+
     for (i=5;i<8;i++) {
         if (StreamC[i]!=outputStrDialog->StreamC[(i-5)%2]||
             Stream [i]!=outputStrDialog->Stream[(i-5)%2]||
@@ -695,16 +693,16 @@ void  MainWindow::BtnLogStrClick()
     LogTimeTag=logStrDialog->LogTimeTag;
     LogAppend =logStrDialog->LogAppend;
     LogSwapInterval=logStrDialog->SwapInterval;
-    
+
     if (BtnStart->isEnabled()) return;
-    
+
     for (i=5;i<8;i++) {
         if (!update[i-5]) continue;
-        
+
         rtksvrclosestr(&rtksvr,i);
-        
+
         if (!StreamC[i]) continue;
-        
+
         str=otype[Stream[i]];
         if      (str==STR_SERIAL)             strncpy(path,qPrintable(Paths[i][0]),1024);
         else if (str==STR_FILE  )             strncpy(path,qPrintable(Paths[i][2]),1024);
@@ -721,7 +719,7 @@ void  MainWindow::BtnLogStrClick()
 void  MainWindow::BtnPanelClick()
 {
     trace(3,"BtnPanelClick\n");
-    
+
     if (++PanelMode>3) PanelMode=0;
     UpdatePanel();
 }
@@ -729,7 +727,7 @@ void  MainWindow::BtnPanelClick()
 void  MainWindow::BtnTimeSysClick()
 {
     trace(3,"BtnTimeSysClick\n");
-    
+
     if (++TimeSys>3) TimeSys=0;
     UpdateTimeSys();
 }
@@ -737,7 +735,7 @@ void  MainWindow::BtnTimeSysClick()
 void  MainWindow::BtnSolTypeClick()
 {
     trace(3,"BtnSolTypeClick\n");
-    
+
     if (++SolType>4) SolType=0;
     UpdateSolType();
 }
@@ -745,7 +743,7 @@ void  MainWindow::BtnSolTypeClick()
 void  MainWindow::BtnPlotType1Click()
 {
     trace(3,"BtnPlotType1Click\n");
-    
+
     if (++PlotType1>6) PlotType1=0;
     UpdatePlot();
     UpdatePos();
@@ -755,7 +753,7 @@ void  MainWindow::BtnPlotType1Click()
 void  MainWindow::BtnPlotType2Click()
 {
     trace(3,"BtnPlotType2Click\n");
-    
+
     if (++PlotType2>6) PlotType2=0;
 
     UpdatePlot();
@@ -766,7 +764,7 @@ void  MainWindow::BtnPlotType2Click()
 void  MainWindow::BtnFreqType1Click()
 {
     trace(3,"BtnFreqType1Click\n");
-    
+
     if (PlotType1==6) {
         if (++TrkType1>1) TrkType1=0;
         UpdatePlot();
@@ -784,7 +782,7 @@ void  MainWindow::BtnFreqType1Click()
 void  MainWindow::BtnFreqType2Click()
 {
     trace(3,"BtnFreqType2Click\n");
-    
+
     if (PlotType2==6) {
         if (++TrkType2>1) TrkType2=0;
         UpdatePlot();
@@ -829,9 +827,9 @@ void MainWindow::BtnShrink2Click()
 // callback on button-rtk-monitor -------------------------------------------
 void  MainWindow::BtnMonitorClick()
 {
-    
+
     trace(3,"BtnMonitorClick\n");
-    
+
     monitor->setWindowTitle(windowTitle()+": RTK Monitor");
     monitor->show();
 }
@@ -839,7 +837,7 @@ void  MainWindow::BtnMonitorClick()
 void  MainWindow::ScbSolChange()
 {
     trace(3,"ScbSolChange\n");
-    
+
     PSol=PSolS+ScbSol->value();
     if (PSol>=SolBuffSize) PSol-=SolBuffSize;
 
@@ -851,14 +849,14 @@ void  MainWindow::ScbSolChange()
 void  MainWindow::BtnSaveClick()
 {
     trace(3,"BtnSaveClick\n");
-    
+
     SaveLog();
 }
 // callback on button-about -------------------------------------------------
 void  MainWindow::BtnAboutClick()
 {
     QString prog=PRGNAME;
-    
+
     trace(3,"BtnAboutClick\n");
 
     aboutDialog=new AboutDialog(this);
@@ -872,7 +870,7 @@ void  MainWindow::BtnAboutClick()
 void  MainWindow::BtnTaskTrayClick()
 {
     trace(3,"BtnTaskTrayClick\n");
-    
+
     setVisible(false);
     systemTray->setToolTip(windowTitle());
     systemTray->setVisible(true);
@@ -890,7 +888,7 @@ void  MainWindow::TrayIconClick(QSystemTrayIcon::ActivationReason reason)
 void  MainWindow::MenuExpandClick()
 {
     trace(3,"MenuExpandClick\n");
-    
+
     setVisible(true);
     systemTray->setVisible(false);
 }
@@ -898,35 +896,35 @@ void  MainWindow::MenuExpandClick()
 void  MainWindow::MenuStartClick()
 {
     trace(3,"MenuStartClick\n");
-    
+
     BtnStartClick();
 }
 // callback on menu-stop ----------------------------------------------------
 void  MainWindow::MenuStopClick()
 {
     trace(3,"MenuStopClick\n");
-    
+
     BtnStopClick();
 }
 // callback on menu-monitor -------------------------------------------------
 void  MainWindow::MenuMonitorClick()
 {
     trace(3,"MenuMonitorClick\n");
-    
+
     BtnMonitorClick();
 }
 // callback on menu-plot ----------------------------------------------------
 void  MainWindow::MenuPlotClick()
 {
     trace(3,"MenuPlotClick\n");
-    
+
     BtnPlotClick();
 }
 // callback on menu-exit ----------------------------------------------------
 void  MainWindow::MenuExitClick()
 {
     trace(3,"MenuExitClick\n");
-    
+
     BtnExitClick();
 }
 // start rtk server ---------------------------------------------------------
@@ -942,14 +940,14 @@ void  MainWindow::SvrStart(void)
     gtime_t time=timeget();
     pcvs_t pcvr,pcvs;
     pcv_t *pcv;
-    
+
     trace(3,"SvrStart\n");
-    
+
     memset(&pcvr,0,sizeof(pcvs_t));
     memset(&pcvs,0,sizeof(pcvs_t));
 
     Message->setText("");
-    
+
     if (RovPosTypeF<=2) { // LLH,XYZ
         PrcOpt.rovpos=0;
         PrcOpt.ru[0]=RovPos[0];
@@ -1061,10 +1059,10 @@ void  MainWindow::SvrStart(void)
     pos[1]=NmeaPos[1]*D2R;
     pos[2]=0.0;
     pos2ecef(pos,nmeapos);
-    
+
     strsetdir(qPrintable(LocalDirectory));
     strsetproxy(qPrintable(ProxyAddr));
-    
+
     for (i=3;i<8;i++) {
         if (strs[i]==STR_FILE&&!ConfOverwrite(paths[i])) return;
     }
@@ -1132,14 +1130,14 @@ void  MainWindow::SvrStop(void)
 {
     char *cmds[3]={0};
     int i,n,m,str;
-    
+
     trace(3,"SvrStop\n");
-    
+
     for (i=0;i<3;i++) {
         cmds[i]=new char[1024];
         cmds[i][0]='\0';
         str=rtksvr.stream[i].type;
-        
+
         if (str==STR_SERIAL) {
             if (CmdEna[i][1]) strcpy(cmds[i],qPrintable(Cmds[i][1]));
         }
@@ -1149,7 +1147,7 @@ void  MainWindow::SvrStop(void)
     }
     rtksvrstop(&rtksvr,cmds);
     for (i=0;i<3;i++) delete[] cmds[i];
-    
+
     BtnStart    ->setVisible(true);
     BtnOpt      ->setEnabled(true);
     BtnExit     ->setEnabled(true);
@@ -1161,7 +1159,7 @@ void  MainWindow::SvrStop(void)
     MenuStopAction    ->setEnabled(false);
     Svr->setStyleSheet("QLabel {background-color: gray;}");
     SetTrayIcon(1);
-    
+
     LabelTime->setStyleSheet("QLabel {color: gray;}");
     IndSol->setStyleSheet("QLabel {color: white; background-color: white;}");
     n=PSolE-PSolS; if (n<0) n+=SolBuffSize;
@@ -1170,7 +1168,7 @@ void  MainWindow::SvrStop(void)
         ScbSol->setMaximum(n-1); ScbSol->setValue(m);
     }
     Message->setText("");
-    
+
     if (DebugTraceF>0) traceclose();
     if (DebugStatusF>0) rtkclosestat();
     if (SolOpt.geoid>0&&GeoidDataFileF!="") closegeoid();
@@ -1181,11 +1179,11 @@ void  MainWindow::TimerTimer()
     static int n=0,inactive=0;
     sol_t *sol;
     int i,update=0;
-    
+
     trace(4,"TimerTimer\n");
-    
+
     rtksvrlock(&rtksvr);
-    
+
     for (i=0;i<rtksvr.nsol;i++) {
         sol=rtksvr.solbuf+i;
         UpdateLog(sol->stat,sol->time,sol->rr,sol->qr,rtksvr.rtk.rb,sol->ns,
@@ -1194,9 +1192,9 @@ void  MainWindow::TimerTimer()
     }
     rtksvr.nsol=0;
     SolCurrentStat=rtksvr.state?rtksvr.rtk.sol.stat:0;
-    
+
     rtksvrunlock(&rtksvr);
-    
+
     if (update) {
         UpdateTime();
         UpdatePos();
@@ -1217,7 +1215,7 @@ void  MainWindow::TimerTimer()
     if (!(++n%5)) UpdatePlot();
 
     UpdateStr();
-    
+
     // keep alive for monitor port
     if (!(++n%(KACYCLE/Timer.interval()))&&OpenPort) {
         unsigned char buf[1];
@@ -1233,9 +1231,9 @@ void  MainWindow::ChangePlot(void)
 void  MainWindow::UpdateTimeSys(void)
 {
     QString label[]={tr("GPST"),tr("UTC"),tr("LT"),tr("GPST")};
-    
+
     trace(3,"UpdateTimeSys\n");
-    
+
     BtnTimeSys->setText(label[TimeSys]);
     UpdateTime();
 }
@@ -1247,7 +1245,7 @@ void  MainWindow::UpdateSolType(void)
         tr("Pitch/Yaw/Length-Baseline"),""
     };
     trace(3,"UpdateSolType\n");
-    
+
     Plabel0->setText(label[SolType]);
 
     UpdatePos();
@@ -1257,11 +1255,11 @@ void  MainWindow::UpdateLog(int stat, gtime_t time, double *rr,
     float *qr, double *rb, int ns, double age, double ratio)
 {
     int i;
-    
+
     if (!stat) return;
-    
+
     trace(4,"UpdateLog\n");
-    
+
     SolStat[PSolE]=stat; Time[PSolE]=time; Nvsat[PSolE]=ns; Age[PSolE]=age;
     Ratio[PSolE]=ratio;
     for (i=0;i<3;i++) {
@@ -1275,7 +1273,7 @@ void  MainWindow::UpdateLog(int stat, gtime_t time, double *rr,
     Qr[1+PSolE*9]=Qr[3+PSolE*9]=qr[3];
     Qr[5+PSolE*9]=Qr[7+PSolE*9]=qr[4];
     Qr[2+PSolE*9]=Qr[6+PSolE*9]=qr[5];
-    
+
     PSol=PSolE;
     if (++PSolE>=SolBuffSize) PSolE=0;
     if (PSolE==PSolS&&++PSolS>=SolBuffSize) PSolS=0;
@@ -1288,9 +1286,9 @@ void  MainWindow::UpdateFont(void)
     };
     QString color=label[7]->styleSheet();
     int i;
-    
+
     trace(4,"UpdateFont\n");
-    
+
     for (i=0;i<10;i++) label[i]->setFont(PosFont);
     QFont tmp=PosFont;
     tmp.setPointSize(9);
@@ -1308,9 +1306,9 @@ void  MainWindow::UpdateTime(void)
     int week;
     char tstr[64];
     QString str;
-    
+
     trace(4,"UpdateTime\n");
-    
+
     if      (TimeSys==0) time2str(time,tstr,1);
     else if (TimeSys==1) time2str(gpst2utc(time),tstr,1);
     else if (TimeSys==2) {
@@ -1336,7 +1334,7 @@ void  MainWindow::UpdatePos(void)
     double *rr=SolRov+PSol*3,*rb=SolRef+PSol*3,*qr=Qr+PSol*9,pos[3]={0},Qe[9]={0};
     double dms1[3]={0},dms2[3]={0},bl[3]={0},enu[3]={0},pitch=0.0,yaw=0.0,len;
     int i,stat=SolStat[PSol];
-    
+
     trace(4,"UpdatePos\n");
 
     if (rtksvr.rtk.opt.mode==PMODE_STATIC||rtksvr.rtk.opt.mode==PMODE_PPP_STATIC) {
@@ -1430,9 +1428,9 @@ void  MainWindow::UpdateStr(void)
     QLabel *ind[MAXSTRRTK]={Str1,Str2,Str3,Str4,Str5,Str6,Str7,Str8};
     int i,sstat[MAXSTRRTK]={0};
     char msg[MAXSTRMSG]="";
-    
+
     trace(4,"UpdateStr\n");
-    
+
     rtksvrsstat(&rtksvr,sstat,msg);
     for (i=0;i<MAXSTRRTK;i++) {
         ind[i]->setStyleSheet(QString("QLabel {background-color: %1}").arg(color[sstat[i]+1]));
@@ -1466,23 +1464,23 @@ void  MainWindow::DrawPlot(QLabel *plot, int type, int freq)
     int *snr0[MAXSAT],*snr1[MAXSAT];
     char name[16];
     double az[2][MAXSAT],el[2][MAXSAT],rr[3],rs[6],e[3],pos[3],azel[2];
-    
+
     trace(4,"DrawPlot\n");
-    
+
     fstr[NFREQ+1]="SYS ";
-    
+
     for (i=0;i<MAXSAT;i++) {
         snr0[i]=snr[0][i];
         snr1[i]=snr[1][i];
     }
     ns[0]=rtksvrostat(&rtksvr,0,&time,sat[0],az[0],el[0],snr0,vsat[0]);
     ns[1]=rtksvrostat(&rtksvr,1,&time,sat[1],az[1],el[1],snr1,vsat[1]);
-    
+
     rtksvrlock(&rtksvr);
     matcpy(rr,rtksvr.rtk.sol.rr,3,1);
     ecef2pos(rr,pos);
     rtksvrunlock(&rtksvr);
-    
+
     for (i=0;i<2;i++) {
         for (j=0;j<ns[i];j++) {
             if (az[i][j]!=0.0||el[i][j]!=0.0) continue;
@@ -1599,7 +1597,7 @@ QColor  MainWindow::SnrColor(int snr)
     QColor c1,c2;
     double a;
     int i;
-    
+
     if (snr<25) return color[5];
     if (snr<27) return color[4];
     if (snr>47) return color[0];
@@ -1611,12 +1609,12 @@ QColor  MainWindow::SnrColor(int snr)
     r1=static_cast<unsigned int>(a*c1.red()  +(1.0-a)*c2.red())&0xFF;
     g1=static_cast<unsigned int>(a*c1.green()+(1.0-a)*c2.green())&0xFF;
     b1=static_cast<unsigned int>(a*c1.blue() +(1.0-a)*c2.blue())&0xFF;
-    
+
     return QColor(r1,g1,b1);
 }
 // draw snr plot ------------------------------------------------------------
 void  MainWindow::DrawSnr(QPainter *c, int w, int h, int x0, int y0,
-	int index, int freq)
+    int index, int freq)
 {
     static const QColor color[]={
         QColor(0,128,0),QColor(0,128,128),QColor(0xA0,0,0xA0),
@@ -1628,7 +1626,7 @@ void  MainWindow::DrawSnr(QPainter *c, int w, int h, int x0, int y0,
     QString s;
     int i,j,k,l,n,x1,y1,y2,y3,hh=h-15,ww,www,snr[NFREQ+1],mask[6]={0};
     char id[16],sys[]="GREJCS",*q;
-    
+
     trace(4,"DrawSnr: w=%d h=%d x0=%d y0=%d index=%d freq=%d\n",w,h,x0,y0,index,freq);
     for (snr[0]=MINSNR+10;snr[0]<MAXSNR;snr[0]+=10) {
         y1=y0+hh-(snr[0]-MINSNR)*hh/(MAXSNR-MINSNR);
@@ -1643,15 +1641,15 @@ void  MainWindow::DrawSnr(QPainter *c, int w, int h, int x0, int y0,
     c->setPen(Qt::gray);
 
     c->drawRect(b);
-    
+
     for (i=0;i<Nsat[index]&&i<MAXSAT;i++) {
-        
+
         ww=(w-16)/Nsat[index];
         www=ww-2<8?ww-2:8;
         x1=x0+i*(w-16)/Nsat[index]+ww/2;
         satno2id(Sat[index][i],id);
         l=(q=strchr(sys,id[0]))?(int)(q-sys):5;
-        
+
         for (j=snr[0]=0;j<NFREQ;j++) {
             snr[j+1]=Snr[index][i][j];
             if ((freq&&freq==j+1)||((!freq||freq>NFREQ)&&snr[j+1]>snr[0])) {
@@ -1664,7 +1662,7 @@ void  MainWindow::DrawSnr(QPainter *c, int w, int h, int x0, int y0,
             y2=y1-y3;
             if (snr[k]>0) y2-=(snr[k]-MINSNR)*hh/(MAXSNR-MINSNR)-y3;
             y2=y2<2?2:(y1<y2?y1:y2);
-            
+
             QRect r1(x1,y1,www,y2-y1);
             if (j==0) {
                 c->setBrush(QBrush(freq<NFREQ?SnrColor(snr[k]):color_sys[l],Qt::SolidPattern));
@@ -1699,11 +1697,11 @@ void  MainWindow::DrawSat(QPainter *c, int w, int h, int x0, int y0,
     double r=MIN(w*0.95,h*0.95)/2,azel[MAXSAT*2],dop[4];
     int i,k,l,d,x[MAXSAT],y[MAXSAT],ns=0,f=!freq?0:freq-1;
     char id[16],sys[]="GREJCS",*q;
-    
+
     trace(4,"DrawSat: w=%d h=%d index=%d freq=%d\n",w,h,index,freq);
-    
+
     DrawSky(c,w,h,x0,y0);
-    
+
     for (i=0,k=Nsat[index]-1;i<Nsat[index]&&i<MAXSAT;i++,k--) {
         if (El[index][k]<=0.0) continue;
         if (Vsat[index][k]) {
@@ -1737,14 +1735,14 @@ void  MainWindow::DrawBL(QPainter *c,QLabel *disp, int w, int h)
     double cp,q,az=0.0;
     QColor col=Qt::white;
     int i,d1=10,d2=16,d3=10,cy=0,sy=0,cya=0,sya=0,a,x1,x2,y1,y2,r1,digit,mode;
-    
+
     trace(4,"DrawBL: w=%d h=%d\n",w,h);
-    
+
     mode=disp==Disp1?BLMode1:BLMode2;
 
     if (PMODE_DGPS<=PrcOpt.mode&&PrcOpt.mode<=PMODE_FIXED) {
         col=rtksvr.state&&SolStat[PSol]&&SolCurrentStat?color[SolStat[PSol]]:Qt::white;
-        
+
         if (norm(rr,3)>0.0&&norm(rb,3)>0.0) {
             for (i=0;i<3;i++) bl[i]=rr[i]-rb[i];
         }
@@ -1764,12 +1762,12 @@ void  MainWindow::DrawBL(QPainter *c,QLabel *disp, int w, int h)
     }
     p1.setX(p.x()-sy); p1.setY(p.y()+cy); // base
     p2.setX(p.x()+sy); p2.setY(p.y()-cy); // rover
-    
+
     c->setPen(Qt::gray);
     c->drawEllipse(p.x()-r,p.y()-r,2*r+1,2*r+1);
     r1=static_cast<int>(r-d1/2);
     c->drawEllipse(p.x()-r1,p.y()-r1,2*r1+1,2*r1+1);
-    
+
     pp=pitch<0.0?p2:p1;
     c->setPen(QColor(0xc0,0xc0,0xc0));
     c->drawLine(p,pp);
@@ -1922,7 +1920,7 @@ void  MainWindow::DrawSky(QPainter *c, int w, int h, int x0, int y0)
     QPoint p(x0+w/2,y0+h/2);
     double r=MIN(w*0.95,h*0.95)/2;
     int a,e,d,x,y;
-    
+
     c->setBrush(Qt::white);
     for (e=0;e<90;e+=30) {
         d=static_cast<int>(r*(90-e)/90);
@@ -1962,10 +1960,10 @@ void  MainWindow::DrawArrow(QPainter *c, int x, int y, int siz,
 {
     QPoint p1[4],p2[4];
     int i;
-    
+
     p1[0].setX(0); p1[1].setX(siz/2); p1[2].setX(-siz/2); p1[3].setX(0);
     p1[0].setY(siz/2); p1[1].setY(-siz/2);p1[2].setY(-siz/2); p1[3].setY(siz/2);
-    
+
     for (i=0;i<4;i++) {
         p2[i].setX(x+static_cast<int>(p1[i].x()*cos(-ang*D2R)-p1[i].y()*sin(-ang*D2R)+0.5));
         p2[i].setY(y-static_cast<int>(p1[i].x()*sin(-ang*D2R)+p1[i].y()*cos(-ang*D2R)+0.5));
@@ -1980,15 +1978,15 @@ void  MainWindow::OpenMoniPort(int port)
     QString s;
     int i;
     char path[64];
-    
+
     if (port<=0) return;
-    
+
     trace(3,"OpenMoniPort: port=%d\n",port);
-    
+
     for (i=0;i<=MAXPORTOFF;i++) {
-        
+
         sprintf(path,":%d",port+i);
-        
+
         if (stropen(&monistr,STR_TCPSVR,STR_MODE_RW,path)) {
             strsettimeout(&monistr,TimeoutTime,ReconTime);
             if (i>0) setWindowTitle(QString(tr("%1 ver.%2 (%3)")).arg(PRGNAME).arg(VER_RTKLIB).arg(i+1));
@@ -2004,13 +2002,13 @@ void  MainWindow::InitSolBuff(void)
 {
     double ep[]={2000,1,1,0,0,0};
     int i,j;
-    
+
     trace(3,"InitSolBuff\n");
-    
+
     delete [] Time;   delete [] SolStat; delete [] Nvsat;  delete [] SolRov;
     delete [] SolRef; delete [] Qr;      delete [] VelRov; delete [] Age;
     delete [] Ratio;
-    
+
     if (SolBuffSize<=0) SolBuffSize=1;
     Time   =new gtime_t[SolBuffSize];
     SolStat=new int[SolBuffSize];
@@ -2041,9 +2039,9 @@ void  MainWindow::SaveLog(void)
     double  ep[6],pos[3];
     QString fileTemplate;
     int i;
-    
+
     trace(3,"SaveLog\n");
-    
+
     time2epoch(timeget(),ep);
     fileTemplate=QString("rtk_%1%2%3%4%5%6.txt")
             .arg(ep[0],4,'f',0,QChar('0')).arg(ep[1],2,'f',0,QChar('0')).arg(ep[2],2,'f',0,QChar('0'))
@@ -2095,9 +2093,9 @@ void  MainWindow::LoadNav(nav_t *nav)
     eph_t eph0;
     char buff[2049],*p;
     int i;
-    
+
     trace(3,"LoadNav\n");
-    
+
     memset(&eph0,0,sizeof(eph_t));
 
     for (i=0;i<MAXSAT;i++) {
@@ -2148,9 +2146,9 @@ void  MainWindow::LoadNav(nav_t *nav)
     tokens=str.split(",");
     for (i=0;i<4;i++) nav->utc_gps[i]=0.0;
     for (i=0;(i<4)&&(i<tokens.size());i++) nav->utc_gps[i]=tokens.at(i).toDouble();
-    
+
     nav->leaps=settings.value("navi/leaps",0).toInt();
-    
+
 }
 // save navigation data -----------------------------------------------------
 void  MainWindow::SaveNav(nav_t *nav)
@@ -2159,9 +2157,9 @@ void  MainWindow::SaveNav(nav_t *nav)
     QString str;
     char id[32];
     int i;
-    
+
     trace(3,"SaveNav\n");
-    
+
     for (i=0;i<MAXSAT;i++) {
         if (nav->eph[i].ttr.time==0) continue;
         str="";
@@ -2202,11 +2200,11 @@ void  MainWindow::SaveNav(nav_t *nav)
     str="";
     for (i=0;i<8;i++) str=str+QString("%1,").arg(nav->ion_gps[i],0,'E',14);
     settings.setValue("navi/ion",str);
-    
+
     str="";
     for (i=0;i<4;i++) str=str+QString("%1,").arg(nav->utc_gps[i],0,'E',14);
     settings.setValue("navi/utc",str);
-    
+
     settings.setValue("navi/leaps",nav->leaps);
 
 }
@@ -2222,7 +2220,7 @@ void  MainWindow::LoadOpt(void)
     QSettings settings(IniFile,QSettings::IniFormat);
     QString s;
     int i,j,no,strno[]={0,1,6,2,3,4,5,7};
-    
+
     trace(3,"LoadOpt\n");
 
     for (i=0;i<8;i++) {
@@ -2302,7 +2300,7 @@ void  MainWindow::LoadOpt(void)
     BaselineC       =settings.value("prcopt/baselinec",       0).toInt();
     Baseline[0]     =settings.value("prcopt/baseline1",     0.0).toDouble();
     Baseline[1]     =settings.value("prcopt/baseline2",     0.0).toDouble();
-    
+
     SolOpt.posf     =settings.value("solopt/posf",            0).toInt();
     SolOpt.times    =settings.value("solopt/times",           0).toInt();
     SolOpt.timef    =settings.value("solopt/timef",           1).toInt();
@@ -2319,7 +2317,7 @@ void  MainWindow::LoadOpt(void)
     SolOpt.nmeaintv[1]=settings.value("solopt/nmeaintv2",     0.0).toDouble();
     DebugStatusF    =settings.value("setting/debugstatus",     0).toInt();
     DebugTraceF     =settings.value("setting/debugtrace",      0).toInt();
-    
+
     RovPosTypeF     =settings.value("setting/rovpostype",      0).toInt();
     RefPosTypeF     =settings.value("setting/refpostype",      0).toInt();
     RovAntPcvF      =settings.value("setting/rovantpcv",       0).toInt();
@@ -2335,7 +2333,7 @@ void  MainWindow::LoadOpt(void)
     TLEFileF        =settings.value("setting/tlefile",        "").toString();
     TLESatFileF     =settings.value("setting/tlesatfile",     "").toString();
     LocalDirectory  =settings.value("setting/localdirectory","C:\\Temp").toString();
-    
+
     SvrCycle        =settings.value("setting/svrcycle",       10).toInt();
     TimeoutTime     =settings.value("setting/timeouttime", 10000).toInt();
     ReconTime       =settings.value("setting/recontime",   10000).toInt();
@@ -2347,7 +2345,7 @@ void  MainWindow::LoadOpt(void)
     PrcOpt.sbassatsel=settings.value("setting/sbassat",        0).toInt();
     DgpsCorr        =settings.value("setting/dgpscorr",        0).toInt();
     SbasCorr        =settings.value("setting/sbascorr",        0).toInt();
-    
+
     NmeaReq         =settings.value("setting/nmeareq",         0).toInt();
     InTimeTag       =settings.value("setting/intimetag",       0).toInt();
     InTimeSpeed     =settings.value("setting/intimespeed",  "x1").toString();
@@ -2361,7 +2359,7 @@ void  MainWindow::LoadOpt(void)
     NmeaPos[0]      =settings.value("setting/nmeapos1",      0.0).toDouble();
     NmeaPos[1]      =settings.value("setting/nmeapos2",      0.0).toDouble();
     FileSwapMargin  =settings.value("setting/fswapmargin",    30).toInt();
-    
+
     TimeSys         =settings.value("setting/timesys",         0).toInt();
     SolType         =settings.value("setting/soltype",         0).toInt();
     PlotType1       =settings.value("setting/plottype",        0).toInt();
@@ -2403,12 +2401,12 @@ void  MainWindow::LoadOpt(void)
 //    PosFont.setStyle(QColor(settings.value("setting/posfontcolor",(int)clBlack).toInt());
     if (settings.value("setting/posfontbold",  0).toInt()) PosFont.setBold(true);
     if (settings.value("setting/posfontitalic",0).toInt()) PosFont.setItalic(true);;
-    
+
     TextViewer::Color1=QColor(static_cast<QRgb>(settings.value("viewer/color1",static_cast<int>(Qt::black)).toInt()));
     TextViewer::Color2=QColor(static_cast<QRgb>(settings.value("viewer/color2",static_cast<int>(Qt::white)).toInt()));
     TextViewer::FontD.setFamily(settings.value("viewer/fontname","Courier New").toString());
     TextViewer::FontD.setPointSize(settings.value("viewer/fontsize",9).toInt());
-    
+
     UpdatePanel();
 
     Splitter1->restoreState(settings.value("window/splitpos").toByteArray());
@@ -2422,9 +2420,9 @@ void  MainWindow::SaveOpt(void)
 {
     QSettings settings(IniFile,QSettings::IniFormat);
     int i,j,no,strno[]={0,1,6,2,3,4,5,7};
-    
+
     trace(3,"SaveOpt\n");
-    
+
     for (i=0;i<8;i++) {
         no=strno[i];
         settings.setValue(QString("stream/streamc%1").arg(no),StreamC[i]);
@@ -2502,7 +2500,7 @@ void  MainWindow::SaveOpt(void)
     settings.setValue("prcopt/baselinec",  BaselineC          );
     settings.setValue("prcopt/baseline1",  Baseline[0]        );
     settings.setValue("prcopt/baseline2",  Baseline[1]        );
-    
+
     settings.setValue("solopt/posf",       SolOpt.posf        );
     settings.setValue("solopt/times",      SolOpt.times       );
     settings.setValue("solopt/timef",      SolOpt.timef       );
@@ -2518,7 +2516,7 @@ void  MainWindow::SaveOpt(void)
     settings.setValue("solopt/nmeaintv2",  SolOpt.nmeaintv[1] );
     settings.setValue("setting/debugstatus",DebugStatusF       );
     settings.setValue("setting/debugtrace", DebugTraceF        );
-    
+
     settings.setValue("setting/rovpostype", RovPosTypeF        );
     settings.setValue("setting/refpostype", RefPosTypeF        );
     settings.setValue("setting/rovantpcv",  RovAntPcvF         );
@@ -2534,7 +2532,7 @@ void  MainWindow::SaveOpt(void)
     settings.setValue("setting/tlefile",    TLEFileF           );
     settings.setValue("setting/tlesatfile", TLESatFileF        );
     settings.setValue("setting/localdirectory",LocalDirectory  );
-    
+
     settings.setValue("setting/svrcycle",   SvrCycle           );
     settings.setValue("setting/timeouttime",TimeoutTime        );
     settings.setValue("setting/recontime",  ReconTime          );
@@ -2546,7 +2544,7 @@ void  MainWindow::SaveOpt(void)
     settings.setValue("setting/sbassat",    PrcOpt.sbassatsel  );
     settings.setValue("setting/dgpscorr",   DgpsCorr           );
     settings.setValue("setting/sbascorr",   SbasCorr           );
-    
+
     settings.setValue("setting/nmeareq",    NmeaReq            );
     settings.setValue("setting/intimetag",  InTimeTag          );
     settings.setValue("setting/intimespeed",InTimeSpeed        );
@@ -2560,7 +2558,7 @@ void  MainWindow::SaveOpt(void)
     settings.setValue("setting/nmeapos1",   NmeaPos[0]         );
     settings.setValue("setting/nmeapos2",   NmeaPos[1]         );
     settings.setValue("setting/fswapmargin",FileSwapMargin     );
-    
+
     settings.setValue("setting/timesys",    TimeSys            );
     settings.setValue("setting/soltype",    SolType            );
     settings.setValue("setting/plottype",   PlotType1          );
@@ -2606,7 +2604,7 @@ void  MainWindow::SaveOpt(void)
     settings.setValue("viewer/color2",  static_cast<int>(TextViewer::Color2.rgb()));
     settings.setValue("viewer/fontname",TextViewer::FontD.family());
     settings.setValue("viewer/fontsize",TextViewer::FontD.pointSize());
-    
+
     settings.setValue("window/width",    size().width());
     settings.setValue("window/height",   size().height());
 

@@ -137,6 +137,8 @@ Plot::Plot(QWidget *parent) : QMainWindow(parent)
     Az=El=NULL;
     for (i=0;i<NFREQ+NEXOBS;i++) Mp[i]=NULL;
 
+
+
     GraphT =new Graph(Disp);
     GraphT->Fit=0;
     
@@ -161,9 +163,10 @@ Plot::Plot(QWidget *parent) : QMainWindow(parent)
     MapLat=MapLon=0.0;
     PointType=0;
 
+
     NWayPnt=0;
     SelWayPnt=-1;
-    
+
     SkySize[0]=SkySize[1]=0;
     SkyCent[0]=SkyCent[1]=0;
     SkyScale=SkyScaleR=240.0;
@@ -174,6 +177,11 @@ Plot::Plot(QWidget *parent) : QMainWindow(parent)
     SkyBinarize=0;
     SkyBinThres1=0.3;
     SkyBinThres2=0.1;
+
+
+
+
+
     
     for (i=0;i<3;i++) TimeEna[i]=0;
     TimeLabel=AutoScale=ShowStats=0;
@@ -332,10 +340,10 @@ Plot::Plot(QWidget *parent) : QMainWindow(parent)
     widget->setAttribute(Qt::WA_TransparentForMouseEvents);
     centralwidget->setAttribute(Qt::WA_TransparentForMouseEvents);
     setMouseTracking(true);
-
     LoadOpt();
 
     updateTime.start();
+
 }
 // destructor ---------------------------------------------------------------
 Plot::~Plot()
@@ -478,15 +486,16 @@ void Plot::paintEvent(QPaintEvent *)
 void Plot::resizeEvent(QResizeEvent *)
 {
     trace(3,"FormResize\n");
-    
+
     // suppress repeated resize callback
     if (FormWidth==width()&&FormHeight==height()) return;
-    
+
     UpdateSize();
     Refresh();
-    
+
     FormWidth =width();
     FormHeight=height();
+
 }
 // callback on drag-and-drop files ------------------------------------------
 void Plot::dragEnterEvent(QDragEnterEvent *event)
@@ -507,19 +516,19 @@ void Plot::dropEvent(QDropEvent *event)
         return;
     };
     foreach (QUrl url, event->mimeData()->urls()) {
-        files.append(url.toString());
+        files.append(url.toLocalFile());
     }
-    
-    if (files.size()==1&&(n=files.at(0).lastIndexOf('.'))!=-1) {
-        QString ext=files.at(0).mid(n).toLower();
-        if ((ext=="jpg")||(ext=="jpeg")){
+    n=files.at(0).lastIndexOf('.');
+    QString ext=files.at(0).mid(n).toLower();
+    if (files.size()==1&&(n!=-1)&&((ext==".jpg")||(ext==".jpeg"))) {
+
             if (PlotType==PLOT_TRK) {
                 ReadMapData(files.at(0));
             }
             else if (PlotType==PLOT_SKY||PlotType==PLOT_MPS) {
                 ReadSkyData(files.at(0));
             }
-        };
+
     }
     else if (CheckObs(files.at(0))) {
         ReadObs(files);
@@ -2016,14 +2025,6 @@ void Plot::UpdateSize(void)
     bmargin=static_cast<int>(Disp->font().pointSize()*1.5)+3; // bottom
     rmargin=8;                                     // right
     lmargin=Disp->font().pointSize()*3+15;         // left
-    
-    GraphT->resize();
-    GraphS->resize();
-    GraphR->resize();
-    for (int i=0;i<3;i++)
-        GraphG[i]->resize();
-    for (int i=0;i<2;i++)
-        GraphE[i]->resize();
 
     GraphT->SetPos(p1,p2);
     GraphS->SetPos(p1,p2);

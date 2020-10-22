@@ -9,7 +9,7 @@
 #include "graph.h"
 #include "console.h"
 #include "rtklib.h"
-
+#include <QPainter>
 #include "ui_plotmain.h"
 
 #define MAXNFILE    256                 // max number of solution files

@@ -10,7 +10,7 @@
 #include "refdlg.h"
 #include "geview.h"
 #include "gmview.h"
-
+#include <QDebug>
 #define COL_ELMASK  Qt::red
 #define ATAN2(x,y)  ((x)*(x)+(y)*(y)>1E-12?atan2(x,y):0.0)
 
@@ -35,35 +35,40 @@ void Plot::Refresh(void)
 void Plot::UpdateDisp(void)
 {
     int level=Drag?0:1;
-    
+
     trace(3,"UpdateDisp\n");
     
     if (Flush) {
-        Buff=QPixmap(Disp->size());
+        Buff    =QPixmap(Disp->size());
         if (Buff.isNull()) return;
         Buff.fill(CColor[0]);
 
-        QPainter c(&Buff);
 
-        c.setFont(Disp->font());
-        c.setPen(CColor[0]);
-        c.setBrush(CColor[0]);
+        QPainter *c= new QPainter(&Buff);
+        c->setFont(Disp->font());
+        c->setPen(CColor[0]);
+        c->setBrush(CColor[0]);
+        c->setBrush(Qt::white);
 
         switch (PlotType) {
-            case  PLOT_TRK : DrawTrk (c,level);   break;
-            case  PLOT_SOLP: DrawSol (c,level,0); break;
-            case  PLOT_SOLV: DrawSol (c,level,1); break;
-            case  PLOT_SOLA: DrawSol (c,level,2); break;
-            case  PLOT_NSAT: DrawNsat(c,level);   break;
-            case  PLOT_OBS : DrawObs (c,level);   break;
-            case  PLOT_SKY : DrawSky (c,level);   break;
-            case  PLOT_DOP : DrawDop (c,level);   break;
-            case  PLOT_RES : DrawRes (c,level);   break;
-            case  PLOT_SNR : DrawSnr (c,level);   break;
-            case  PLOT_SNRE: DrawSnrE(c,level);   break;
-            case  PLOT_MPS : DrawMpS (c,level);   break;
+            case  PLOT_TRK : DrawTrk (*c,level);   break;
+            case  PLOT_SOLP: DrawSol (*c,level,0); break;
+            case  PLOT_SOLV: DrawSol (*c,level,1); break;
+            case  PLOT_SOLA: DrawSol (*c,level,2); break;
+            case  PLOT_NSAT: DrawNsat(*c,level);   break;
+            case  PLOT_OBS : DrawObs (*c,level);   break;
+            case  PLOT_SKY : DrawSky (*c,level);   break;
+            case  PLOT_DOP : DrawDop (*c,level);   break;
+            case  PLOT_RES : DrawRes (*c,level);   break;
+            case  PLOT_SNR : DrawSnr (*c,level);   break;
+            case  PLOT_SNRE: DrawSnrE(*c,level);   break;
+            case  PLOT_MPS : DrawMpS (*c,level);   break;
         }
-
+        Disp->setPixmap(Buff);
+        qDebug()<< Disp->minimumSizeHint()<<','<<Disp->width()<<','<<Disp->height();
+        delete c;
+    }
+    else{
         Disp->setPixmap(Buff);
     }
 

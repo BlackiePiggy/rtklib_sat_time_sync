@@ -1455,7 +1455,7 @@ void  MainWindow::DrawPlot(QLabel *plot, int type, int freq)
 
     QPainter *c= new QPainter(&buffer);
     QFont font;
-    font.setPixelSize(8);
+    font.setPixelSize(11);
     c->setFont(font);
 
     QString fstr[]={"","L1 ","L2 ","L5 ","L6 ","L7 ","L8 ","","","",""};

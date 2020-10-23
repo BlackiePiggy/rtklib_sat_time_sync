@@ -1214,6 +1214,7 @@ static int decode_eph(double ver, int sat, gtime_t toc, const double *data,
         
         eph->tgd[0]=   data[25];      /* TGD1 B1/B3 */
         eph->tgd[1]=   data[26];      /* TGD2 B2/B3 */
+		eph->iode = ((int)eph->toes / 720) % 240; /*added to change BDS IODE by xiang*/
     }
     else if (sys==SYS_IRN) { /* IRNSS v.3.03 */
         eph->iode=(int)data[ 3];      /* IODEC */

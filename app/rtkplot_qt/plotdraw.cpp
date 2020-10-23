@@ -39,7 +39,7 @@ void Plot::UpdateDisp(void)
     trace(3,"UpdateDisp\n");
     
     if (Flush) {
-        Buff    =QPixmap(Disp->size());
+        Buff = QPixmap(Disp->size());
         if (Buff.isNull()) return;
         Buff.fill(CColor[0]);
 
@@ -65,11 +65,7 @@ void Plot::UpdateDisp(void)
             case  PLOT_MPS : DrawMpS (*c,level);   break;
         }
         Disp->setPixmap(Buff);
-        qDebug()<< Disp->minimumSizeHint()<<','<<Disp->width()<<','<<Disp->height();
         delete c;
-    }
-    else{
-        Disp->setPixmap(Buff);
     }
 
     Flush=0;

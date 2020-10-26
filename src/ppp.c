@@ -1215,10 +1215,10 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
                 if (rtk->x[II(sat,opt)]==0.0) continue;
                 H[II(sat,opt)+nx*nv]=C;
             }
-            if (j/2==2&&j%2==1) { /* L5 (j=5) or B2(j=3) -receiver-dcb */
-                dcb+=rtk->x[ID(opt)];
+          /*  if (j/2==2&&j%2==1) { /* L5 (j=5) or B2(j=3) -receiver-dcb */
+              /*  dcb+=rtk->x[ID(opt)];
                 H[ID(opt)+nx*nv]=1.0;
-            }
+            }*/
             if (j%2==0) { /* phase bias */
                 if ((bias=x[IB(sat,j/2,opt)])==0.0) continue;
                 H[IB(sat,j/2,opt)+nx*nv]=1.0;
@@ -1230,8 +1230,8 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
             else        rtk->ssat[sat-1].resp[j/2]=v[nv];
             
             /* variance */
-			var[nv] = varerr(obs[i].sat, sys, azel[1 + i * 2], 0.25*rtk->ssat[sat - 1].snr_rover[j / 2], j / 2, j % 2, opt);/* +
-                    vart+SQR(C)*vari+var_rs[i];*/
+			var[nv] = varerr(obs[i].sat, sys, azel[1 + i * 2], 0.25*rtk->ssat[sat - 1].snr_rover[j / 2], j / 2, j % 2, opt) +
+                    vart+SQR(C)*vari+var_rs[i];
             if (sys==SYS_GLO&&j%2==1) var[nv]+=VAR_GLO_IFB;
             
             trace(3,"%s sat=%2d %s%d res=%9.4f sig=%9.4f el=%4.1f\n",str,sat,
@@ -1400,7 +1400,7 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     nv=n*rtk->opt.nf*2+MAXSAT+3;
     xp=mat(rtk->nx,1); Pp=zeros(rtk->nx,rtk->nx);
     v=mat(nv,1); H=mat(rtk->nx,nv); R=mat(nv,nv);
-
+	/************************************************************************/
 	/* determine the real cycle slip based on GF*/
 	for (i = 0; i < MAXSAT; i++){
 		if (rtk->ssat[i].slipGF[0]){
@@ -1433,7 +1433,7 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 			if (!m && f > 0) break;
 			for (i = 0; i < MAXOBS; i++) exc[i] = 0;
 			nExc = 0; nvPhase = 0;
-
+			/*****************************************************************************/
 			for (i = 0; i < MAX_ITER; i++) {
 				matcpy(xp, rtk->x, rtk->nx, 1);
 				matcpy(Pp, rtk->P, rtk->nx, rtk->nx);
@@ -1459,7 +1459,7 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 			if (i >= MAX_ITER) {
 				trace(2, "%s ppp (%d) iteration overflows\n", str, i);
 			}
-
+			/************************************************************************/
         /*keep the last iteration information using only phase redisuals*/
 			for (j = 0; j < nv; j++){
 				if (fabs(v[j]) <0.01) { vPhase[nvPhase++] = v[j]; }
@@ -1505,7 +1505,7 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 
 		}
 	}
-
+	/**************************************************************************/
 	/*choose the solution that is the best solutions with smallest residuals.*/
     if (stat==SOLQ_PPP) {
         

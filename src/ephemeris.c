@@ -84,7 +84,7 @@
 #define RTOL_KEPLER 1E-13         /* relative tolerance for Kepler equation */
 
 #define DEFURASSR 0.15            /* default accurary of ssr corr (m) */
-#define MAXECORSSR 20.0           /* max orbit correction of ssr (m) */
+#define MAXECORSSR 10.0           /* max orbit correction of ssr (m) */
 #define MAXCCORSSR (1E-6*CLIGHT)  /* max clock correction of ssr (m) */
 #define MAXAGESSR 90.0            /* max age of ssr orbit and clock (s) */
 #define MAXAGESSR_HRCLK 10.0      /* max age of ssr high-rate clock (s) */

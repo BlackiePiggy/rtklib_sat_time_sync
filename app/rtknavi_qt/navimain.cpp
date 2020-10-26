@@ -217,7 +217,6 @@ void  MainWindow::showEvent(QShowEvent *event)
     connect(BtnOpt,SIGNAL(clicked(bool)),this,SLOT(BtnOptClick()));
     connect(BtnOutputStr,SIGNAL(clicked(bool)),this,SLOT(BtnOutputStrClick()));
     connect(BtnPanel,SIGNAL(clicked(bool)),this,SLOT(BtnPanelClick()));
-    connect(BtnPlot,SIGNAL(clicked(bool)),this,SLOT(BtnPlotClick()));
     connect(BtnPlotType1,SIGNAL(clicked(bool)),this,SLOT(BtnPlotType1Click()));
     connect(BtnPlotType2,SIGNAL(clicked(bool)),this,SLOT(BtnPlotType2Click()));
     connect(BtnSave,SIGNAL(clicked(bool)),this,SLOT(BtnSaveClick()));

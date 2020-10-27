@@ -1631,11 +1631,11 @@ void  MainWindow::DrawSnr(QPainter *c, int w, int h, int x0, int y0,
         y1=y0+hh-(snr[0]-MINSNR)*hh/(MAXSNR-MINSNR);
         c->setPen(QColor(0x0c,0x0c,0x0c));
         c->drawLine(x0+3,y1,x0+w-13,y1);
-        DrawText(c,x0+w-9,y1,QString::number(snr[0]),Qt::gray,1);
+        DrawText(c,x0+w-9,y1-5,QString::number(snr[0]),Qt::gray,1);
     }
 
     y1=y0+hh;
-    QRect b(x0+1,y0,x0+w-2,y1);
+    QRect b(x0+1,y0,x0+w-2,y1-15);
     c->setBrush(Qt::NoBrush);
     c->setPen(Qt::gray);
 

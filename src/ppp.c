@@ -1230,8 +1230,8 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
             else        rtk->ssat[sat-1].resp[j/2]=v[nv];
             
             /* variance */
-			var[nv] = varerr(obs[i].sat, sys, azel[1 + i * 2], 0.25*rtk->ssat[sat - 1].snr_rover[j / 2], j / 2, j % 2, opt) +
-                    vart+SQR(C)*vari+var_rs[i];
+			var[nv] = varerr(obs[i].sat, sys, azel[1 + i * 2], 0.25*rtk->ssat[sat - 1].snr_rover[j / 2], j / 2, j % 2, opt);/* +
+                    vart+SQR(C)*vari+var_rs[i];*/
             if (sys==SYS_GLO&&j%2==1) var[nv]+=VAR_GLO_IFB;
             
             trace(3,"%s sat=%2d %s%d res=%9.4f sig=%9.4f el=%4.1f\n",str,sat,
@@ -1358,7 +1358,7 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     double *rs,*dts,*var,*v,*H,*R,*azel,*xp,*Pp,dr[3]={0},std[3];
     char str[32],id[32];
     int i,j,jAmb, k,nv,info,svh[MAXOBS],exc[MAXOBS]={0},stat=SOLQ_SINGLE;
-	int m, f, sat = 0, nslipGF = 0, nSlip = 0, satNoSlipGF[20] = { 0 }, nGF = 0, nvPhase = 0, nExc = 0, nExcLast;
+	int m, f, sat = 0, nslipGF = 0, nSlip = 0, satNoSlipGF[MAXOBS] = { 0 }, nGF = 0, nvPhase = 0, nExc = 0, nExcLast;
 	double *xLast,*PLast, *xGFm, *PGFm;/*xLast is the last iteration in m when there is slip.*/
 	double vv=0, vvLast=0, ita=0, vPhase[MAXOBS] = { 0 }, ratio=0;
 	int week;
@@ -1402,37 +1402,37 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     v=mat(nv,1); H=mat(rtk->nx,nv); R=mat(nv,nv);
 	/************************************************************************/
 	/* determine the real cycle slip based on GF*/
-	for (i = 0; i < MAXSAT; i++){
-		if (rtk->ssat[i].slipGF[0]){
-			nslipGF += rtk->ssat[i].slipGF[0];
-			satNoSlipGF[nSlip] = i + 1;
-			nSlip++;
-		}
-	}
-	   /*m starts from 1. skip the m==0 interation without doing anything*/
-	for (m = 0; m < nslipGF + 1; m++){
+	//for (i = 0; i < MAXSAT; i++){
+	//	if (rtk->ssat[i].slipGF[0]){
+	//		nslipGF += rtk->ssat[i].slipGF[0];
+	//		satNoSlipGF[nSlip] = i + 1;
+	//		nSlip++;
+	//	}
+	//}
+	//   /*m starts from 1. skip the m==0 interation without doing anything*/
+	//for (m = 0; m < nslipGF + 1; m++){
 
-		if (m){
-			sat = satNoSlipGF[m - 1];
-			satno2id(sat, id);
-			if (rtk->ssat[sat - 1].azel[1] < opt->elmin) continue;
-		}
-		for (f = 0; f < NF(&rtk->opt); f++) {
-			if (m){
-				jAmb = IB(sat, f, &rtk->opt);
-				if (!PLast[jAmb + jAmb*rtk->nx]) continue;
-				matcpy(xGFm, rtk->x, rtk->nx, 1);
-				matcpy(PGFm, rtk->P, rtk->nx, rtk->nx);
-				initx(rtk, xLast[jAmb], PLast[jAmb + jAmb*rtk->nx], jAmb);
-				for (i = 0; i < n; i++) {
-					if (obs[i].sat == sat) { nGF = i; break; }
-				}
-				if (!obs[nGF].L[f]) continue;
-			}
-			/*only run one time when m==0*/
-			if (!m && f > 0) break;
-			for (i = 0; i < MAXOBS; i++) exc[i] = 0;
-			nExc = 0; nvPhase = 0;
+	//	if (m){
+	//		sat = satNoSlipGF[m - 1];
+	//		satno2id(sat, id);
+	//		if (rtk->ssat[sat - 1].azel[1] < opt->elmin) continue;
+	//	}
+	//	for (f = 0; f < NF(&rtk->opt); f++) {
+	//		if (m){
+	//			jAmb = IB(sat, f, &rtk->opt);
+	//			if (!PLast[jAmb + jAmb*rtk->nx]) continue;
+	//			matcpy(xGFm, rtk->x, rtk->nx, 1);
+	//			matcpy(PGFm, rtk->P, rtk->nx, rtk->nx);
+	//			initx(rtk, xLast[jAmb], PLast[jAmb + jAmb*rtk->nx], jAmb);
+	//			for (i = 0; i < n; i++) {
+	//				if (obs[i].sat == sat) { nGF = i; break; }
+	//			}
+	//			if (!obs[nGF].L[f]) continue;
+	//		}
+	//		/*only run one time when m==0*/
+	//		if (!m && f > 0) break;
+	//		for (i = 0; i < MAXOBS; i++) exc[i] = 0;
+	//		nExc = 0; nvPhase = 0;
 			/*****************************************************************************/
 			for (i = 0; i < MAX_ITER; i++) {
 				matcpy(xp, rtk->x, rtk->nx, 1);
@@ -1460,51 +1460,51 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 				trace(2, "%s ppp (%d) iteration overflows\n", str, i);
 			}
 			/************************************************************************/
-        /*keep the last iteration information using only phase redisuals*/
-			for (j = 0; j < nv; j++){
-				if (fabs(v[j]) <0.01) { vPhase[nvPhase++] = v[j]; }
-			}
-			for (j = 0; j < n; j++){
-				if (exc[j] ==1) { nExc++; }
-			}
-			if (!m)
-			{
-				vvLast = sqrt(dot(vPhase, vPhase, nvPhase) / nvPhase);
-				nExcLast = nExc;
-			}
-			/*compare current and previous solution*/
+ //       /*keep the last iteration information using only phase redisuals*/
+	//		for (j = 0; j < nv; j++){
+	//			if (fabs(v[j]) <0.01) { vPhase[nvPhase++] = v[j]; }
+	//		}
+	//		for (j = 0; j < n; j++){
+	//			if (exc[j] ==1) { nExc++; }
+	//		}
+	//		if (!m)
+	//		{
+	//			vvLast = sqrt(dot(vPhase, vPhase, nvPhase) / nvPhase);
+	//			nExcLast = nExc;
+	//		}
+	//		/*compare current and previous solution*/
 
-			if (m){
+	//		if (m){
 
-                                ita = fabs(rtk->x[jAmb] - xGFm[jAmb]);/* SQRT(PGFm[jAmb + jAmb*rtk->nx] + rtk->P[jAmb + jAmb*rtk->nx]);*/
-				vv = sqrt(dot(vPhase, vPhase, nvPhase) / nvPhase);
-				ratio = vv / vvLast;
-				if (nExcLast >= nExc && !exc[nGF]){
-					if ((vv / vvLast) < 1.5 && ita <1.5){
-						rtk->ssat[sat - 1].slipGF[f] = 0;
-						/*rtk->ssat[sat - 1].slip[f] = 0;
-						/*if (j%2==0) rtk->ssat[sat-1].vsat[j/2]=1; shall vsat==0*/
+ //                               ita = fabs(rtk->x[jAmb] - xGFm[jAmb]);/* SQRT(PGFm[jAmb + jAmb*rtk->nx] + rtk->P[jAmb + jAmb*rtk->nx]);*/
+	//			vv = sqrt(dot(vPhase, vPhase, nvPhase) / nvPhase);
+	//			ratio = vv / vvLast;
+	//			if (nExcLast >= nExc && !exc[nGF]){
+	//				if ((vv / vvLast) < 1.5 && ita <1.5){
+	//					rtk->ssat[sat - 1].slipGF[f] = 0;
+	//					/*rtk->ssat[sat - 1].slip[f] = 0;
+	//					/*if (j%2==0) rtk->ssat[sat-1].vsat[j/2]=1; shall vsat==0*/
 
-						/*output the spurious slip detected by GF*/
-						trace(2, "spurious cycle slip GF:  %s tow=%.3f sat=%3d %3s el=%8.3f f= %3d gf=%.3f ita=%.3f ratio=%.3f exc=%2d %2d vv=%.6f vvLast=%.6f\n",
-							str, tow, sat, id, rtk->ssat[sat - 1].azel[1] * R2D, f, rtk->ssat[sat - 1].gf, ita, ratio, nExcLast, nExc, vv, vvLast);/*, g2, g2 - g1*/
-						vvLast = vv; /*change after output*/
-					}
-				}
-				else {
-					matcpy(rtk->x, xGFm, rtk->nx, 1);/*whether xp, Pp are the last data.*/
-					matcpy(rtk->P, PGFm, rtk->nx, rtk->nx);
-					
-					/*output the spurious slip detected by GF*/
-					trace(2, "real cycle slip GF:  %s tow=%.3f sat=%3d %3s el=%8.3f f= %3d gf=%.3f ita=%.3f ratio=%.3f exc=%2d %2d vv=%.6f vvLast=%.6f\n",
-						str, tow, sat, id, rtk->ssat[sat - 1].azel[1] * R2D, f, rtk->ssat[sat - 1].gf, ita, ratio, nExcLast, nExc, vv, vvLast);
-					exc[nGF] = 0;
-				}
-				
-			}
+	//					/*output the spurious slip detected by GF*/
+	//					trace(2, "spurious cycle slip GF:  %s tow=%.3f sat=%3d %3s el=%8.3f f= %3d gf=%.3f ita=%.3f ratio=%.3f exc=%2d %2d vv=%.6f vvLast=%.6f\n",
+	//						str, tow, sat, id, rtk->ssat[sat - 1].azel[1] * R2D, f, rtk->ssat[sat - 1].gf, ita, ratio, nExcLast, nExc, vv, vvLast);/*, g2, g2 - g1*/
+	//					vvLast = vv; /*change after output*/
+	//				}
+	//			}
+	//			else {
+	//				matcpy(rtk->x, xGFm, rtk->nx, 1);/*whether xp, Pp are the last data.*/
+	//				matcpy(rtk->P, PGFm, rtk->nx, rtk->nx);
+	//				
+	//				/*output the spurious slip detected by GF*/
+	//				trace(2, "real cycle slip GF:  %s tow=%.3f sat=%3d %3s el=%8.3f f= %3d gf=%.3f ita=%.3f ratio=%.3f exc=%2d %2d vv=%.6f vvLast=%.6f\n",
+	//					str, tow, sat, id, rtk->ssat[sat - 1].azel[1] * R2D, f, rtk->ssat[sat - 1].gf, ita, ratio, nExcLast, nExc, vv, vvLast);
+	//				exc[nGF] = 0;
+	//			}
+	//			
+	//		}
 
-		}
-	}
+	//	}
+	//}
 	/**************************************************************************/
 	/*choose the solution that is the best solutions with smallest residuals.*/
     if (stat==SOLQ_PPP) {

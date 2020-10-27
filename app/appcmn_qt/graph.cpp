@@ -324,24 +324,28 @@ void Graph::DrawMark(QPainter &c,const QPoint &p, int mark, const QColor &color,
 	
 	if (size<1) size=1;
 	int n,s=size/2;
-    int x1=p.x()-s,w1=size+1,y1=p.y()-s,h1=size+1;
+    int x1=p.x()-s,w1=size,y1=p.y()-s,h1=size;
 	int xs1[]={-7,0,-7,0},ys1[]={2,0,-2,0};
 	int xs2[]={-1,-1,-1,1,1,1},ys2[]={-1,1,0,0,-1,1};
 	int xs3[]={3,-4,0,0,0,-8,8},ys3[]={0,5,20,-20,-10,-10,-10};
     QPoint ps[32],pr[32],pd(0,size/2+12),pt;
 
+
     QPen pen=c.pen();
     pen.setColor(color);
+    pen.setStyle(Qt::SolidLine);
     c.setPen(pen);
     QBrush brush(color);
+    c.setBackgroundMode(Qt::TransparentMode);
 
 	switch (mark) {
 		case 0: // dot
             brush.setStyle(Qt::SolidPattern);
+
             c.setBrush(brush);
 
             c.drawEllipse(x1,y1,w1,h1);
-			return;
+            return;
 		case 1: // circle
             brush.setStyle(Qt::NoBrush);
             c.setBrush(brush);
@@ -435,7 +439,7 @@ void Graph::DrawMarks(QPainter &c,const double *x, const double *y, const QVecto
 {
     QPoint p,pp;
 	for (int i=0;i<n;i++) {
-        if (!ToPoint(x[i],y[i],p)||(pp==p)) continue;
+        if (!ToPoint(x[i],y[i],p)||(pp.x()==p.x()&&pp.y()==p.y())) continue;
         DrawMark(c,p,mark,colors.at(i),size,rot);
 		pp=p;
 	}

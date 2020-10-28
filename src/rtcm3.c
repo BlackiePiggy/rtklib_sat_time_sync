@@ -2086,6 +2086,21 @@ static void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
             else if (freq[i]==4) freq[i]=3; /* B3 */
 			else if (freq[i] == 5) freq[i] = 2; /*B2*/
         }
+		/* frequency index for beidou */
+		if (sys == SYS_CMP) {
+			if (freq[i] == 3 || freq[i] == 10) freq[i] = 5; /* change 5X 5D 5P to B2a*/
+			else if (freq[i] == 5) freq[i] = 6; /* 8X to B2ab */
+			else if (freq[i] == 4 || freq[i] == 8) freq[i] = 3; /* 6I 6Q 6X 6A to B3I */
+			else if (freq[i] == 1 || freq[i] == 9) freq[i] = 4; /* 1D 1P 1X 1A 1N to B1C */
+			else if (freq[i] == 7) freq[i] = 1; /* 2I 2Q to B1I */
+			else if (freq[i] == 11) freq[i] = 1; /* 2X */
+		}
+		if (sys == SYS_GPS || sys == SYS_QZS) {
+			if (freq[i] == 11) freq[i] = 2;/*2X*/
+		}
+		if (sys == SYS_GLO) {
+			if (freq[i] == 4) freq[i] = 2;/*6A 6B 6X*/
+		}
         else if (sys==SYS_GAL) {
             if (freq[i]==5) freq[i]=2; /* E5b */
         }

@@ -2024,7 +2024,7 @@ static void sigindex(int sys, const unsigned char *code, const int *freq, int n,
         pri=getcodepri(sys,code[i],opt);
         
         /* select highest priority signal */
-        if (pri>pri_h[freq[i]-1]) {
+        if (pri>=pri_h[freq[i]-1]) {
             if (index[freq[i]-1]) ex[index[freq[i]-1]-1]=1;
             pri_h[freq[i]-1]=pri;
             index[freq[i]-1]=i+1;
@@ -2080,12 +2080,6 @@ static void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
         /* signal to rinex obs type */
         code[i]=obs2code(sig[i],freq+i);
         
-        /* freqency index for beidou and galileo */
-        if (sys==SYS_CMP) {
-            if      (freq[i]==2) freq[i]=1; /* C2I as the first freq for beidou */
-            else if (freq[i]==4) freq[i]=3; /* B3 */
-			else if (freq[i] == 5) freq[i] = 2; /*B2*/
-        }
 		/* frequency index for beidou */
 		if (sys == SYS_CMP) {
 			if (freq[i] == 3 || freq[i] == 10) freq[i] = 5; /* change 5X 5D 5P to B2a*/
@@ -2101,7 +2095,7 @@ static void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
 		if (sys == SYS_GLO) {
 			if (freq[i] == 4) freq[i] = 2;/*6A 6B 6X*/
 		}
-        else if (sys==SYS_GAL) {
+        if (sys==SYS_GAL) {
             if (freq[i]==5) freq[i]=2; /* E5b */
         }
         if (code[i]!=CODE_NONE) {

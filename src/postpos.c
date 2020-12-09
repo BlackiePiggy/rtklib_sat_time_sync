@@ -415,7 +415,7 @@ static void procpos(FILE *fp, FILE *fptm, const prcopt_t *popt, const solopt_t *
     gtime_t time={0};
     sol_t sol={{0}},oldsol={{0}},newsol={{0}};
     obsd_t obs[MAXOBS*2]; /* for rover and base */
-	double rb[3] = { 0 }, ep_debug[6] = {2015,3,17,9,24,0};
+	double rb[3] = { 0 }, ep_debug[6] = {2020,8,16,7,14,0};
     int i,nobs,n,solstatic,num=0,pri[]={0,1,2,3,4,5,1,6};
 
     trace(3,"procpos : mode=%d\n",mode);
@@ -444,7 +444,7 @@ static void procpos(FILE *fp, FILE *fptm, const prcopt_t *popt, const solopt_t *
         if (n<=0) continue;
 
 		/* carrier-phase bias correction */
-        if (navs.nf>0) {
+        if (navs.nf>0 && navs.fcb) {
             corr_phase_bias_fcb(obs,n,&navs);
         }
         else if (!strstr(popt->pppopt,"-DIS_FCB")) {
@@ -685,6 +685,9 @@ static void readpreceph(char **infile, int n, const prcopt_t *prcopt,
             (!strcmp(ext,".fcb")||!strcmp(ext,".FCB"))) {
             readfcb(infile[i],nav);
         }
+		if ((ext = strrchr(infile[i], '.')) && (!strcmp(ext, ".BIA") || !strcmp(ext, ".bia"))){
+			read_snxbias(infile[i], nav);
+		}
     }
     /* read solution status files for ppp correction */
     for (i=0;i<n;i++) {

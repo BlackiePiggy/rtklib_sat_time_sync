@@ -937,23 +937,23 @@ static void set_index(double ver, int sys, const char *opt,
     for (i=n=0;*tobs[i];i++,n++) {
         ind->code[i]=obs2code(tobs[i]+1,ind->frq+i);
         ind->type[i]=(p=strchr(obscodes,tobs[i][0]))?(int)(p-obscodes):0;
-        ind->pri[i]=getcodepri(sys,ind->code[i],opt);
+		ind->pri[i] = getcodepri(sys, ind->code[i], opt);/*the larger the high priority*/
         ind->pos[i]=-1;
         
         /* frequency index for beidou */
 		if (sys == SYS_CMP) {
-			if (ind->frq[i] == 3 || ind->frq[i] == 10) ind->frq[i] = 5; /* change 5X 5D 5P to B2a*/
-			else if (ind->frq[i] == 5) ind->frq[i] = 6; /* 8X to B2ab */
-			else if (ind->frq[i] == 4 || ind->frq[i] == 8) ind->frq[i] = 3; /* 6I 6Q 6X 6A to B3I */
-			else if (ind->frq[i] == 1 || ind->frq[i] == 9) ind->frq[i] = 4; /* 1D 1P 1X 1A 1N to B1C */
-			else if (ind->frq[i] == 7) ind->frq[i] = 1; /* 2I 2Q to B1I */
-			else if (ind->frq[i] == 11) ind->frq[i] = 1; /* 2X */
+			if (ind->frq[i] == 2) ind->frq[i] = 1; /* 2I 2Q to B1I */
+			else if (ind->frq[i] == 5) ind->frq[i] = 2; /* 7I to B2I */
+			else if (ind->frq[i] == 4 ) ind->frq[i] = 3; /* 6I 6Q 6X 6A to B3I */
 		}
 		if (sys == SYS_GPS || sys == SYS_QZS) {
 			if (ind->frq[i] == 11) ind->frq[i] = 2;/*2X*/
 		}
 		if (sys == SYS_GLO) {
 			if (ind->frq[i] == 4) ind->frq[i] = 2;/*6A 6B 6X*/
+		}
+		if (sys == SYS_GAL) {
+			if (ind->frq[i] == 5) ind->frq[i] = 2;/*E5b*/
 		}
     }
     /* parse phase shift options */

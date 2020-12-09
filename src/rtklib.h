@@ -79,7 +79,7 @@ extern "C" {
 
 #define HION        350000.0            /* ionosphere height (m) */
 
-#define MAXFREQ     7                   /* max NFREQ */
+#define MAXFREQ     9                   /* max NFREQ */
 
 #define FREQL1      1.57542E9           /* L1/E1/B1  frequency (Hz) */
 #define FREQL2      1.22760E9           /* L2     frequency (Hz) */
@@ -343,10 +343,13 @@ extern "C" {
 #define CODE_L5P    60                  /* obs code: L5S(Q)     (QZS) */
 #define CODE_L5Z    61                  /* obs code: L5S(I+Q)   (QZS) */
 #define CODE_L6E    62                  /* obs code: L6(E)      (QZS) */
-#define CODE_L1D    63                  /* obs code: B1a data   (BDS) */
-#define CODE_L8D    64                  /* obs code: B2 data    (BDS) */
-#define CODE_L8P    65                  /* obs code: B2 pilot   (BDS) */
-#define MAXCODE     55                  /* max number of obs code */
+#define CODE_L1D    63                  /* obs code: B1a data   (BDS3) */
+#define CODE_L8D    64                  /* obs code: B2 data    (BDS3) */
+#define CODE_L8P    65                  /* obs code: B2 pilot   (BDS3) */
+#define CODE_L7D    66                  /* obs code: B2b data   (BDS3) */
+#define CODE_L7P    67                  /* obs code: B2b pilot  (BDS3) */
+#define CODE_L7Z    68                  /* obs code: B2b (D+P)  (BDS3) */
+#define MAXCODE     69                  /* max number of obs code */
 
 #define PMODE_SINGLE 0                  /* positioning mode: single */
 #define PMODE_DGPS   1                  /* positioning mode: DGPS/DGNSS */
@@ -741,6 +744,14 @@ typedef struct {        /* satellite fcb data type */
     double std [MAXSAT][3]; /* fcb std-dev (cyc) */
 } fcbd_t;
 
+typedef struct {        /* satellite fcb data type */
+	gtime_t ts, te;      /* start/end time (GPST) */
+	double cBias[MAXOBSTYPE]; /* code bias value   (m) */
+	double cStd[MAXOBSTYPE]; /* fcb code bias std-dev (m) */
+	double lBias[MAXOBSTYPE]; /* phase bias value   (m) */
+	double lStd[MAXOBSTYPE]; /* phase bias std-dev (m) */
+} biad_t;
+
 typedef struct {        /* SBAS message type */
     int week,tow;       /* receiption time */
     int prn;            /* SBAS satellite PRN number */
@@ -923,6 +934,7 @@ typedef struct {        /* navigation data type */
     alm_t *alm;         /* almanac data */
     tec_t *tec;         /* tec grid data */
     fcbd_t *fcb;        /* satellite fcb data */
+	biad_t bia[MAXSAT];        /* satellite fcb data */
     erp_t  erp;         /* earth rotation parameters */
     double utc_gps[4];  /* GPS delta-UTC parameters {A0,A1,T,W} */
     double utc_glo[4];  /* GLONASS UTC GPS time parameters */
@@ -941,6 +953,8 @@ typedef struct {        /* navigation data type */
     double cbias[MAXSAT][3]; /* satellite dcb (0:p1-p2,1:p1-c1,2:p2-c2) (m) */
     double rbias[MAXRCV][2][3]; /* receiver dcb (0:p1-p2,1:p1-c1,2:p2-c2) (m) */
     double wlbias[MAXSAT];   /* wide-lane bias (cycle) */
+	double fcbcbias[MAXSAT][MAXOBSTYPE]; /*absolute code bias for BDS are B1,B2,B3, for Galileo are E1, E5b, E5a*/
+	double fcbpbias[MAXSAT][4]; /*fcb absolute phase bias*/
     double glo_cpbias[4];    /* glonass code-phase bias {1C,1P,2C,2P} (m) */
     char glo_fcn[MAXPRNGLO+1]; /* glonass frequency channel number + 8 */
     pcv_t pcvs[MAXSAT]; /* satellite antenna pcv */
@@ -1716,6 +1730,7 @@ EXPORT void readsp3(const char *file, nav_t *nav, int opt);
 EXPORT int  readsap(const char *file, gtime_t time, nav_t *nav);
 EXPORT int  readdcb(const char *file, nav_t *nav, const sta_t *sta);
 EXPORT int  readfcb(const char *file, nav_t *nav);
+EXPORT int	read_snxbias(const char *file, nav_t *nav);
 EXPORT void alm2pos(gtime_t time, const alm_t *alm, double *rs, double *dts);
 
 EXPORT int tle_read(const char *file, tle_t *tle);

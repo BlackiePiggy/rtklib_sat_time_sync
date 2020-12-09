@@ -494,6 +494,65 @@ extern int readfcb(const char *file, nav_t *nav)
     }
     return 1;
 }
+/* read Bias-SINEX absolute value generated from GBM0MGXRAP_20201330000_01D_01D_ABS.BIA*/
+extern int read_snxbias(const char *file, nav_t *nav)
+{
+	FILE *fp;
+	double ep[6] = { 0, 1, 1 }, syear, eyear, sdoy, edoy, stod, etod, bias = 0, std = 0;
+	char buff[1024], str1[32], str2[32], *p;
+	int sat, sec, type = NULL, iscode = NULL, i, j,frq=0,codeIdx;
+
+	biad_t nav_bia = { { { 0 } } };
+
+	for (i = 0; i<MAXSAT; i++) {
+		nav->bia[i] = nav_bia;
+	}
+
+	trace(3, "read_snxbias: file=%s\n", file);
+
+	if (!(fp = fopen(file, "r"))) {
+		trace(2, "sinex bias parameters file open error: %s\n", file);
+		return 0;
+	}
+	if (!fgets(buff, sizeof(buff), fp) || strstr(buff, "%=BIA") != buff) {
+		trace(2, "sinex bias file read error: %s\n", file);
+		fclose(fp);
+		return 0;
+	}
+	while (fgets(buff, sizeof(buff), fp)) {
+		if (buff[0] == '-') sec = 0;
+		else if (strstr(buff, "+BIAS/SOLUTION")) { sec = 1; }
+		if (sec == 1){
+			/*for CODE BIA*/
+			/*if (sscanf(buff, "%*s %*s %s %*s %lf:%lf:%lf %lf:%lf:%lf %*s %lf %lf", str,
+			&syear, &sdoy, &stod, &eyear, &edoy, &etod, &bias, &std)<8) continue;*/
+			/*for GBM0MGXRAP BIA*/
+			if (sscanf(buff, "%*s %s %s %lf:%lf:%lf %lf:%lf:%lf %*s %lf", str1,str2,
+				&syear, &sdoy, &stod, &eyear, &edoy, &etod, &bias)<9) continue;
+			if (!(sat = satid2no(str1))) continue;
+			if (!(codeIdx = obs2code(str2 + 1, frq))) continue;
+
+			/*save the OSB value into bia */
+			ep[0] = syear;
+			nav->bia[sat - 1].ts = timeadd(epoch2time(ep), (sdoy - 1)*86400.0 + stod);
+			nav->bia[sat - 1].te = timeadd(epoch2time(ep), (edoy - 1)*86400.0 + etod);
+			if (str2[0] == 'C'){
+				nav->bia[sat - 1].cBias[codeIdx - 1] = bias*1E-9*CLIGHT; /* ns -> m*/
+				nav->bia[sat - 1].cStd[codeIdx - 1] = std*1E-9*CLIGHT; /* ns -> m */
+			}
+			else
+			{
+				nav->bia[sat - 1].lBias[codeIdx - 1] = bias*1E-9*CLIGHT; /* ns -> m */
+				nav->bia[sat - 1].lStd[codeIdx - 1] = std*1E-9*CLIGHT; /* ns -> m */
+
+			}
+		}
+	}
+	nav->nf = 1; /*absolute FCB for each frequency, not sure what is the no. of fcbs*/
+	fclose(fp);
+	return 1;
+}
+
 /* polynomial interpolation by Neville's algorithm ---------------------------*/
 static double interppol(const double *x, double *y, int n)
 {

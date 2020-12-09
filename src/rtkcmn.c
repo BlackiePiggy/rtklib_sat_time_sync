@@ -249,11 +249,11 @@ static char *obscodes[] = {       /* observation code strings revised by Lye */
 	"2W", "2Y", "2M", "2N", "5I",  "5Q", "5X", "7I", "7Q", "7X", /* 20-29 */
 	"6A", "6B", "6C", "6X", "6Z",  "6S", "6L", "8L", "8Q", "8X", /* 30-39 */
 	"2I", "2Q", "6I", "6Q", "3I",  "3Q", "3X", "1I", "1Q", "5A", /* 40-49 */
-	"5B", "5C", "9A", "9B", "9C",  "9X", "1D", "5P", "5D", "8D", /* 50-59 */
-	"8P", "7D", "7P", "7Z"                                 /* 60-69 */
+	"5B", "5C", "9A", "9B", "9C",  "9X", "4A", "4B", "4X", "5D", /* 50-59 */
+	"5P", "5Z", "6E", "1D", "8D",  "8P", "7D", "7P", "7Z"       /* 60-69 */
 };
 /*static unsigned char obsfreqs[] = {
-	/* 1:L1/E1, 2:L2/B1, 3:L5/E5a/L3, 4:L6/LEX/B3, 5:E5b/B2, 6:E5(a+b), 7:S */
+	/* 1:L1/E1, 2:L2/B1, 3:L5/E5a/L3, 4:L6/LEX/B3, 5:E5b/B2, 6:E5(a+b), 7:S, 8:G1a*/
     /*0, 1, 1, 1, 1,  1, 1, 1, 1, 1, /*  0- 9 */
     /*1, 1, 1, 1, 2,  2, 2, 2, 2, 2, /* 10-19 */
     /*2, 2, 2, 2, 3,  3, 3, 5, 5, 5, /* 20-29 */
@@ -262,25 +262,24 @@ static char *obscodes[] = {       /* observation code strings revised by Lye */
     /*3, 3, 7, 7, 7,  7, 0, 0, 0, 0  /* 50-59 */
 /*};*/
 static unsigned char obsfreqs[] = {
-	/* 1:L1/E1/B1, 2:L2/E5b/B2, 3:L5/E5a, 4:E6/LEX/B3, 5:E5(a+b), 6:S */
-	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, /*  0- 9 */
-	1, 1, 1, 1, 2, 2, 2, 2, 11, 2, /* 10-19 */
-	2, 2, 2, 2, 3, 3, 3, 2, 2, 2, /* 20-29 */
-	4, 4, 4, 4, 4, 4, 4, 5, 5, 5, /* 30-39 */
-	7, 7, 8, 8, 3, 3, 3, 1, 1, 3, /* 40-49 */
-	3, 3, 6, 6, 6, 6, 9, 10, 10, 6, /* 50-59 */
-	6, 2, 2, 2                       /* 60-69 */
+	/* 1:L1/E1/B1C, 2:L2/B1I, 3:L5/E5a/L3, 4:E6/LEX/B3/G2a, 5:B2I/E5b,6:E5(a+b)/, 7:S  8:G1a */
+	0, 1, 1, 1, 1,  1, 1, 1, 1, 1, /*  0- 9 */
+	1, 1, 1, 1, 2,  2, 2, 2, 2, 2, /* 10-19 */
+	2, 2, 2, 2, 3,  3, 3, 5, 5, 5, /* 20-29 */
+	4, 4, 4, 4, 4,  4, 4, 6, 6, 6, /* 30-39 */
+	2, 2, 4, 4, 3,  3, 3, 1, 1, 3, /* 40-49 */
+	3, 3, 7, 7, 7,  7, 8, 8, 8, 3, /* 50-59 */
+	3, 3, 4, 1, 6,  6, 5, 5, 5          /* 60-69 */
 };
 static char codepris[7][MAXFREQ][16]={  /* code priority table */
-
-   /* L1/E1/B1   L2/E5b/B2   L5/E5a/L3 E6/LEX  E5(a+b)  S */
-    {"PWCSLXYMN","PWCSLXYMN","IQX"     ,""       ,""       ,""      ,""    }, /* GPS CPYWMNSL, PYWCMNDSLX*/
-    {"PC"      ,"PC"        ,"IQX"   ,""        ,""      ,""    }, /* GLO */
-    {"CABXZ"   ,"IQX"       ,"IQX"   ,"ABCXZ"   ,"IQX"   ,""    }, /* GAL */
-    {"CSLXZ"   ,"SLX"       ,"IQX"   ,"SLX"     ,""      ,""    }, /* QZS */
-    {"C"       ,""          ,"IQX"   ,""        ,""      ,""    }, /* SBS */
-    {"IQX"     ,"IQX"       ,"IQX"   ,"IQX"     ,""      ,""    }, /* BDS */
-    {""        ,""          ,"ABCX"  ,""        ,""      ,"ABCX"}  /* IRN */
+	/* 1:L1/E1/B1C, 2:L2/B1I, 3:L5/E5a/L3, 4:E6/LEX/B3/G2a, 5:B2I/E5b, 6:E5(a+b)/, 7:S  8:G1a */
+    {"PWCSLXYMN","PWCSLXYMN","IQX"     ,""       ,""       ,""      ,""  ,"" ,""   }, /* GPS CPYWMNSL, PYWCMNDSLX*/
+	{ "PC", "PC", "IQX", "", "", "", "", "" }, /* GLO */
+	{ "CABXZ", "IQX", "IQX", "ABCXZ", "IQX", "IQX", "", "" }, /* GAL */
+	{ "CSLXZ", "SLX", "IQX", "SLX", "", "", "", "" }, /* QZS */
+	{ "C", "", "IQX", "", "", "", "", "" }, /* SBS */
+	{ "IQX", "IQX", "IQX", "IQX", "IQXDPZ", "", "", "" }, /* BDS */
+	{ "", "", "ABCX", "", "", "ABCX", "", "" }  /* IRN */
 };
 static fatalfunc_t *fatalfunc=NULL; /* fatal callback function */
 

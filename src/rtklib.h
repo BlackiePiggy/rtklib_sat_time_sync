@@ -6,7 +6,7 @@
 * options : -DENAGLO   enable GLONASS
 *           -DENAGAL   enable Galileo
 *           -DENAQZS   enable QZSS
-*           -DENACMP   enable BeiDou
+*           -DENABDS   enable BeiDou
 *           -DENAIRN   enable IRNSS
 *           -DNFREQ=n  set number of obs codes/frequencies
 *           -DNEXOBS=n set number of extended obs codes
@@ -93,15 +93,15 @@ extern "C" {
 #define FREQ2_GLO   1.24600E9           /* GLONASS G2 base frequency (Hz) */
 #define DFRQ2_GLO   0.43750E6           /* GLONASS G2 bias frequency (Hz/n) */
 #define FREQ3_GLO   1.202025E9          /* GLONASS G3 frequency (Hz) */
-#define FREQ1_CMP   1.561098E9          /* BeiDou B1 frequency (Hz) */
-#define FREQ2_CMP   1.20714E9           /* BeiDou B2 frequency (Hz) */
-#define FREQ3_CMP   1.26852E9           /* BeiDou B3 frequency (Hz) */
+#define FREQ1_BDS   1.561098E9          /* BeiDou B1 frequency (Hz) */
+#define FREQ2_BDS   1.20714E9           /* BeiDou B2 frequency (Hz) */
+#define FREQ3_BDS   1.26852E9           /* BeiDou B3 frequency (Hz) */
 
 #define EFACT_GPS   1.0                 /* error factor: GPS */
 #define EFACT_GLO   1.5                 /* error factor: GLONASS */
 #define EFACT_GAL   1.0                 /* error factor: Galileo */
 #define EFACT_QZS   1.0                 /* error factor: QZSS */
-#define EFACT_CMP   1.0                 /* error factor: BeiDou */
+#define EFACT_BDS   1.0                 /* error factor: BeiDou */
 #define EFACT_IRN   1.5                 /* error factor: IRNSS */
 #define EFACT_SBS   3.0                 /* error factor: SBAS */
 
@@ -111,7 +111,7 @@ extern "C" {
 #define SYS_GLO     0x04                /* navigation system: GLONASS */
 #define SYS_GAL     0x08                /* navigation system: Galileo */
 #define SYS_QZS     0x10                /* navigation system: QZSS */
-#define SYS_CMP     0x20                /* navigation system: BeiDou */
+#define SYS_BDS     0x20                /* navigation system: BeiDou */
 #define SYS_IRN     0x40                /* navigation system: IRNS */
 #define SYS_LEO     0x80                /* navigation system: LEO */
 #define SYS_ALL     0xFF                /* navigation system: all */
@@ -121,7 +121,7 @@ extern "C" {
 #define TSYS_GLO    2                   /* time system: GLONASS time */
 #define TSYS_GAL    3                   /* time system: Galileo time */
 #define TSYS_QZS    4                   /* time system: QZSS time */
-#define TSYS_CMP    5                   /* time system: BeiDou time */
+#define TSYS_BDS    5                   /* time system: BeiDou time */
 #define TSYS_IRN    6                   /* time system: IRNSS time */
 
 #ifndef NFREQ
@@ -175,16 +175,16 @@ extern "C" {
 #define NSATQZS     0
 #define NSYSQZS     0
 #endif
-#ifdef ENACMP
-#define MINPRNCMP   1                   /* min satellite sat number of BeiDou */
-#define MAXPRNCMP   80                  /* max satellite sat number of BeiDou */
-#define NSATCMP     (MAXPRNCMP-MINPRNCMP+1) /* number of BeiDou satellites */
-#define NSYSCMP     1
+#ifdef ENABDS
+#define MINPRNBDS   1                   /* min satellite sat number of BeiDou */
+#define MAXPRNBDS   80                  /* max satellite sat number of BeiDou */
+#define NSATBDS     (MAXPRNBDS-MINPRNBDS+1) /* number of BeiDou satellites */
+#define NSYSBDS     1
 #else
-#define MINPRNCMP   0
-#define MAXPRNCMP   0
-#define NSATCMP     0
-#define NSYSCMP     0
+#define MINPRNBDS   0
+#define MAXPRNBDS   0
+#define NSATBDS     0
+#define NSYSBDS     0
 #endif
 #ifdef ENAIRN
 #define MINPRNIRN   1                   /* min satellite sat number of IRNSS */
@@ -208,13 +208,13 @@ extern "C" {
 #define NSATLEO     0
 #define NSYSLEO     0
 #endif
-#define NSYS        (NSYSGPS+NSYSGLO+NSYSGAL+NSYSQZS+NSYSCMP+NSYSIRN+NSYSLEO) /* number of systems */
+#define NSYS        (NSYSGPS+NSYSGLO+NSYSGAL+NSYSQZS+NSYSBDS+NSYSIRN+NSYSLEO) /* number of systems */
 
 #define MINPRNSBS   120                 /* min satellite PRN number of SBAS */
 #define MAXPRNSBS   158                 /* max satellite PRN number of SBAS */
 #define NSATSBS     (MAXPRNSBS-MINPRNSBS+1) /* number of SBAS satellites */
 
-#define MAXSAT      (NSATGPS+NSATGLO+NSATGAL+NSATQZS+NSATCMP+NSATIRN+NSATSBS+NSATLEO)
+#define MAXSAT      (NSATGPS+NSATGLO+NSATGAL+NSATQZS+NSATBDS+NSATIRN+NSATSBS+NSATLEO)
                                         /* max satellite number (1 to MAXSAT) */
 #define MAXSTA      255
 
@@ -231,7 +231,7 @@ extern "C" {
 #define MAXDTOE     7200.0              /* max time difference to GPS Toe (s) */
 #define MAXDTOE_QZS 7200.0              /* max time difference to QZSS Toe (s) */
 #define MAXDTOE_GAL 14400.0             /* max time difference to Galileo Toe (s) */
-#define MAXDTOE_CMP 21600.0             /* max time difference to BeiDou Toe (s) */
+#define MAXDTOE_BDS 21600.0             /* max time difference to BeiDou Toe (s) */
 #define MAXDTOE_GLO 1800.0              /* max time difference to GLONASS Toe (s) */
 #define MAXDTOE_SBS 360.0               /* max time difference to SBAS Toe (s) */
 #define MAXDTOE_S   86400.0             /* max time difference to ephem toe (s) for other */
@@ -298,7 +298,7 @@ extern "C" {
 #define CODE_L2D    15                  /* obs code: L2 L1C/A-(P2-P1) (GPS) */
 #define CODE_L2S    16                  /* obs code: L2C(M)     (GPS,QZS) */
 #define CODE_L2L    17                  /* obs code: L2C(L)     (GPS,QZS) */
-#define CODE_L2X    18                  /* obs code: L2C(M+L),B1I+Q (GPS,QZS,CMP) */
+#define CODE_L2X    18                  /* obs code: L2C(M+L),B1I+Q (GPS,QZS,BDS) */
 #define CODE_L2P    19                  /* obs code: L2P,G2P    (GPS,GLO) */
 #define CODE_L2W    20                  /* obs code: L2 Z-track (GPS) */
 #define CODE_L2Y    21                  /* obs code: L2Y        (GPS) */
@@ -307,13 +307,13 @@ extern "C" {
 #define CODE_L5I    24                  /* obs code: L5/E5aI    (GPS,GAL,QZS,SBS) */
 #define CODE_L5Q    25                  /* obs code: L5/E5aQ    (GPS,GAL,QZS,SBS) */
 #define CODE_L5X    26                  /* obs code: L5/E5aI+Q/L5B+C (GPS,GAL,QZS,IRN,SBS) */
-#define CODE_L7I    27                  /* obs code: E5bI,B2I   (GAL,CMP) */
-#define CODE_L7Q    28                  /* obs code: E5bQ,B2Q   (GAL,CMP) */
-#define CODE_L7X    29                  /* obs code: E5bI+Q,B2I+Q (GAL,CMP) */
+#define CODE_L7I    27                  /* obs code: E5bI,B2I   (GAL,BDS) */
+#define CODE_L7Q    28                  /* obs code: E5bQ,B2Q   (GAL,BDS) */
+#define CODE_L7X    29                  /* obs code: E5bI+Q,B2I+Q (GAL,BDS) */
 #define CODE_L6A    30                  /* obs code: E6A        (GAL) */
 #define CODE_L6B    31                  /* obs code: E6B        (GAL) */
 #define CODE_L6C    32                  /* obs code: E6C        (GAL) */
-#define CODE_L6X    33                  /* obs code: E6B+C,LEXS+L,B3I+Q (GAL,QZS,CMP) */
+#define CODE_L6X    33                  /* obs code: E6B+C,LEXS+L,B3I+Q (GAL,QZS,BDS) */
 #define CODE_L6Z    34                  /* obs code: E6A+B+C    (GAL) */
 #define CODE_L6S    35                  /* obs code: LEXS       (QZS) */
 #define CODE_L6L    36                  /* obs code: LEXL       (QZS) */
@@ -653,7 +653,7 @@ typedef struct {        /* GPS/QZS/GAL broadcast ephemeris type */
     double tgd[4];      /* group delay parameters */
                         /* GPS/QZS:tgd[0]=TGD */
                         /* GAL    :tgd[0]=BGD E5a/E1,tgd[1]=BGD E5b/E1 */
-                        /* CMP    :tgd[0]=BGD1,tgd[1]=BGD2 */
+                        /* BDS    :tgd[0]=BGD1,tgd[1]=BGD2 */
     double Adot,ndot;   /* Adot,ndot for CNAV */
 } eph_t;
 
@@ -940,13 +940,13 @@ typedef struct {        /* navigation data type */
     double utc_glo[4];  /* GLONASS UTC GPS time parameters */
     double utc_gal[4];  /* Galileo UTC GPS time parameters */
     double utc_qzs[4];  /* QZS UTC GPS time parameters */
-    double utc_cmp[4];  /* BeiDou UTC parameters */
+    double utc_bds[4];  /* BeiDou UTC parameters */
     double utc_irn[4];  /* IRNSS UTC parameters */
     double utc_sbs[4];  /* SBAS UTC parameters */
     double ion_gps[8];  /* GPS iono model parameters {a0,a1,a2,a3,b0,b1,b2,b3} */
     double ion_gal[4];  /* Galileo iono model parameters {ai0,ai1,ai2,0} */
     double ion_qzs[8];  /* QZSS iono model parameters {a0,a1,a2,a3,b0,b1,b2,b3} */
-    double ion_cmp[8];  /* BeiDou iono model parameters {a0,a1,a2,a3,b0,b1,b2,b3} */
+    double ion_bds[8];  /* BeiDou iono model parameters {a0,a1,a2,a3,b0,b1,b2,b3} */
     double ion_irn[8];  /* IRNSS iono model parameters {a0,a1,a2,a3,b0,b1,b2,b3} */
     int leaps;          /* leap seconds (s) */
     double lam[MAXSAT][NFREQ]; /* carrier wave lengths (m) */
@@ -1225,7 +1225,7 @@ typedef struct {        /* RINEX options type */
     int navsys;         /* navigation system */
     int obstype;        /* observation type */
     int freqtype;       /* frequency type */
-    char mask[7][64];   /* code mask {GPS,GLO,GAL,QZS,SBS,CMP,IRN} */
+    char mask[7][64];   /* code mask {GPS,GLO,GAL,QZS,SBS,BDS,IRN} */
     char staid [32];    /* station id for rinex file name */
     char prog  [32];    /* program */
     char runby [32];    /* run-by */
@@ -1250,8 +1250,8 @@ typedef struct {        /* RINEX options type */
     gtime_t tstart;     /* first obs time */
     gtime_t tend;       /* last obs time */
     gtime_t trtcm;      /* approx log start time for rtcm */
-    char tobs[7][MAXOBSTYPE][4]; /* obs types {GPS,GLO,GAL,QZS,SBS,CMP,IRN} */
-    int nobs[7];        /* number of obs types {GPS,GLO,GAL,QZS,SBS,CMP,IRN} */
+    char tobs[7][MAXOBSTYPE][4]; /* obs types {GPS,GLO,GAL,QZS,SBS,BDS,IRN} */
+    int nobs[7];        /* number of obs types {GPS,GLO,GAL,QZS,SBS,BDS,IRN} */
 } rnxopt_t;
 
 typedef struct {        /* satellite status type */

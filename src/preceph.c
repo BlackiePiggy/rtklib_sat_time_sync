@@ -58,7 +58,7 @@ static int code2sys(char code)
     if (code=='R') return SYS_GLO;
     if (code=='E') return SYS_GAL; /* extension to sp3-c */
     if (code=='J') return SYS_QZS; /* extension to sp3-c */
-    if (code=='C') return SYS_CMP; /* extension to sp3-c */
+    if (code=='C') return SYS_BDS; /* extension to sp3-c */
     if (code=='L') return SYS_LEO; /* extension to sp3-c */
     return SYS_NONE;
 }
@@ -735,7 +735,7 @@ extern void satantoff(gtime_t time, const double *rs, int sat, const nav_t *nav,
     if (!normv3(r,ey)) return;
     cross3(ey,ez,ex);
     
-	if (NFREQ >= 3 && (satsys(sat, NULL)&(SYS_GAL | SYS_SBS | SYS_CMP))) k = 2;
+	if (NFREQ >= 3 && (satsys(sat, NULL)&(SYS_GAL | SYS_SBS | SYS_BDS))) k = 2;
     
     if (NFREQ<2||lam[j]==0.0||lam[k]==0.0) return;
     

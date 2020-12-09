@@ -439,7 +439,7 @@ static int decode_sbstype31(const sbsmsg_t *msg, sbssat_t *sbssat)
            else if (i<=111) sat=satno(SYS_GAL,i-74); /*  75-111: gal */
            else if (i<=119) sat=0;                   /* 112-119: reserved */
            else if (i<=158) sat=satno(SYS_SBS,i);    /* 120-158: geo/waas */
-           else if (i<=195) sat=satno(SYS_CMP,i-158);/* 159-195: beidou */
+           else if (i<=195) sat=satno(SYS_BDS,i-158);/* 159-195: beidou */
            else             sat=0;                   /* 196-   : reserved */
            sbssat->sat[n++].sat=sat;
         }
@@ -468,7 +468,7 @@ static int slot2prn(int slot,int *sys)
 		*sys=SYS_SBS;
 		prn = slot;
 	} else if (slot>=159&&slot<=195) {
-		*sys=SYS_CMP;
+		*sys=SYS_BDS;
 		prn = slot-158;
 	}
 	return prn;

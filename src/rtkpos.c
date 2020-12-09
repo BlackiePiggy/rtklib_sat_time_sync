@@ -1187,7 +1187,7 @@ static int test_sys(int sys, int m)
         case SYS_SBS: return m==0;
         case SYS_GLO: return m==1;
         case SYS_GAL: return m==2;
-        case SYS_CMP: return m==3;
+        case SYS_BDS: return m==3;
         case SYS_QZS: return m==4;
     }
     return 0;

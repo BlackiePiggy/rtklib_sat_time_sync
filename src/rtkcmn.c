@@ -426,19 +426,19 @@ extern int satno(int sys, int prn)
         case SYS_QZS:
             if (prn<MINPRNQZS||MAXPRNQZS<prn) return 0;
             return NSATGPS+NSATGLO+NSATGAL+prn-MINPRNQZS+1;
-        case SYS_CMP:
-            if (prn<MINPRNCMP||MAXPRNCMP<prn) return 0;
-            return NSATGPS+NSATGLO+NSATGAL+NSATQZS+prn-MINPRNCMP+1;
+        case SYS_BDS:
+			if (prn<MINPRNBDS || MAXPRNBDS<prn) return 0;
+            return NSATGPS+NSATGLO+NSATGAL+NSATQZS+prn-MINPRNBDS+1;
         case SYS_IRN:
             if (prn<MINPRNIRN||MAXPRNIRN<prn) return 0;
-            return NSATGPS+NSATGLO+NSATGAL+NSATQZS+NSATCMP+prn-MINPRNIRN+1;
+            return NSATGPS+NSATGLO+NSATGAL+NSATQZS+NSATBDS+prn-MINPRNIRN+1;
         case SYS_LEO:
             if (prn<MINPRNLEO||MAXPRNLEO<prn) return 0;
-            return NSATGPS+NSATGLO+NSATGAL+NSATQZS+NSATCMP+NSATIRN+
+            return NSATGPS+NSATGLO+NSATGAL+NSATQZS+NSATBDS+NSATIRN+
                    prn-MINPRNLEO+1;
         case SYS_SBS:
             if (prn<MINPRNSBS||MAXPRNSBS<prn) return 0;
-            return NSATGPS+NSATGLO+NSATGAL+NSATQZS+NSATCMP+NSATIRN+NSATLEO+
+            return NSATGPS+NSATGLO+NSATGAL+NSATQZS+NSATBDS+NSATIRN+NSATLEO+
                    prn-MINPRNSBS+1;
     }
     return 0;
@@ -465,10 +465,10 @@ extern int satsys(int sat, int *prn)
     else if ((sat-=NSATGAL)<=NSATQZS) {
         sys=SYS_QZS; sat+=MINPRNQZS-1; 
     }
-    else if ((sat-=NSATQZS)<=NSATCMP) {
-        sys=SYS_CMP; sat+=MINPRNCMP-1; 
+    else if ((sat-=NSATQZS)<=NSATBDS) {
+        sys=SYS_BDS; sat+=MINPRNBDS-1; 
     }
-    else if ((sat-=NSATCMP)<=NSATIRN) {
+    else if ((sat-=NSATBDS)<=NSATIRN) {
         sys=SYS_IRN; sat+=MINPRNIRN-1; 
     }
     else if ((sat-=NSATIRN)<=NSATLEO) {
@@ -506,7 +506,7 @@ extern int satid2no(const char *id)
         case 'R': sys=SYS_GLO; prn+=MINPRNGLO-1; break;
         case 'E': sys=SYS_GAL; prn+=MINPRNGAL-1; break;
         case 'J': sys=SYS_QZS; prn+=MINPRNQZS-1; break;
-        case 'C': sys=SYS_CMP; prn+=MINPRNCMP-1; break;
+        case 'C': sys=SYS_BDS; prn+=MINPRNBDS-1; break;
         case 'I': sys=SYS_IRN; prn+=MINPRNIRN-1; break;
         case 'L': sys=SYS_LEO; prn+=MINPRNLEO-1; break;
         case 'S': sys=SYS_SBS; prn+=100; break;
@@ -528,7 +528,7 @@ extern void satno2id(int sat, char *id)
         case SYS_GLO: sprintf(id,"R%02d",prn-MINPRNGLO+1); return;
         case SYS_GAL: sprintf(id,"E%02d",prn-MINPRNGAL+1); return;
         case SYS_QZS: sprintf(id,"J%02d",prn-MINPRNQZS+1); return;
-        case SYS_CMP: sprintf(id,"C%02d",prn-MINPRNCMP+1); return;
+        case SYS_BDS: sprintf(id,"C%02d",prn-MINPRNBDS+1); return;
         case SYS_IRN: sprintf(id,"I%02d",prn-MINPRNIRN+1); return;
         case SYS_LEO: sprintf(id,"L%02d",prn-MINPRNLEO+1); return;
         case SYS_SBS: sprintf(id,"%03d" ,prn); return;
@@ -643,7 +643,7 @@ extern void setcodepri(int sys, int freq, const char *pri)
     if (sys&SYS_GAL) strcpy(codepris[2][freq-1],pri);
     if (sys&SYS_QZS) strcpy(codepris[3][freq-1],pri);
     if (sys&SYS_SBS) strcpy(codepris[4][freq-1],pri);
-    if (sys&SYS_CMP) strcpy(codepris[5][freq-1],pri);
+    if (sys&SYS_BDS) strcpy(codepris[5][freq-1],pri);
     if (sys&SYS_IRN) strcpy(codepris[6][freq-1],pri);
 }
 /* get code priority -----------------------------------------------------------
@@ -665,7 +665,7 @@ extern int getcodepri(int sys, unsigned char code, const char *opt)
         case SYS_GAL: i=2; optstr="-EL%2s"; break;
         case SYS_QZS: i=3; optstr="-JL%2s"; break;
         case SYS_SBS: i=4; optstr="-SL%2s"; break;
-        case SYS_CMP: i=5; optstr="-CL%2s"; break;
+        case SYS_BDS: i=5; optstr="-CL%2s"; break;
         case SYS_IRN: i=6; optstr="-IL%2s"; break;
         default: return 0;
     }
@@ -3409,10 +3409,10 @@ extern double satwavelen(int sat, int frq, const nav_t *nav)
             return CLIGHT/FREQ3_GLO;
         }
     }
-    else if (sys==SYS_CMP) {
-        if      (frq==0) return CLIGHT/FREQ1_CMP; /* B1 */
-        else if (frq==1) return CLIGHT/FREQ2_CMP; /* B2 */
-        else if (frq==2) return CLIGHT/FREQ3_CMP; /* B3 */
+    else if (sys==SYS_BDS) {
+        if      (frq==0) return CLIGHT/FREQ1_BDS; /* B1 */
+        else if (frq==1) return CLIGHT/FREQ2_BDS; /* B2 */
+        else if (frq==2) return CLIGHT/FREQ3_BDS; /* B3 */
     }
     else if (sys==SYS_GAL) {
         if      (frq==0) return CLIGHT/FREQL1; /* E1 */

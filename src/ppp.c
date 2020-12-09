@@ -431,7 +431,7 @@ static void initx(rtk_t *rtk, double xi, double var, int i)
 static double gfmeas(const obsd_t *obs, const nav_t *nav)
 {
     const double *lam=nav->lam[obs->sat-1];
-	int i = (satsys(obs->sat, NULL)&(SYS_GAL | SYS_SBS | SYS_CMP)) ? 2 : 1;
+	int i = (satsys(obs->sat, NULL)&(SYS_GAL | SYS_SBS | SYS_BDS)) ? 2 : 1;
     
     if (lam[0]==0.0||lam[i]==0.0||obs->L[0]==0.0||obs->L[i]==0.0) return 0.0;
     return lam[0]*obs->L[0]-lam[i]*obs->L[i];
@@ -440,7 +440,7 @@ static double gfmeas(const obsd_t *obs, const nav_t *nav)
 static double mwmeas(const obsd_t *obs, const nav_t *nav)
 {
     const double *lam=nav->lam[obs->sat-1];
-	int i = (satsys(obs->sat, NULL)&(SYS_GAL | SYS_SBS | SYS_CMP)) ? 2 : 1;
+	int i = (satsys(obs->sat, NULL)&(SYS_GAL | SYS_SBS | SYS_BDS)) ? 2 : 1;
     
     if (lam[0]==0.0||lam[i]==0.0||obs->L[0]==0.0||obs->L[i]==0.0||
         obs->P[0]==0.0||obs->P[i]==0.0) return 0.0;
@@ -487,7 +487,7 @@ static void corr_meas(const obsd_t *obs, const nav_t *nav, const double *azel,
 				if (i == 0)		{ ix = CODE_L1X - 1; break; }
 				else if (i == 1) { ix = CODE_L7X-1; break; }
 				else if (i == 2) { ix = CODE_L5X-1; break; }
-			case SYS_CMP: 
+			case SYS_BDS: 
 				if (i == 0)		{ ix = CODE_L2I - 1; break; }
 				else if (i == 1) { ix = CODE_L7I - 1; break; }
 				else if (i == 2) { ix = CODE_L6I - 1; break; }
@@ -510,7 +510,7 @@ static void corr_meas(const obsd_t *obs, const nav_t *nav, const double *azel,
     }
     /* iono-free LC */
     *Lc=*Pc=0.0;
-	i = (sys&(SYS_GAL | SYS_SBS| SYS_CMP)) ? 2 : 1; /* L1/L2 or L1/L5  */
+	i = (sys&(SYS_GAL | SYS_SBS| SYS_BDS)) ? 2 : 1; /* L1/L2 or L1/L5  */
 
     if (lam[0]==0.0||lam[i]==0.0) return;
     
@@ -534,7 +534,7 @@ static void corr_meas(const obsd_t *obs, const nav_t *nav, const double *azel,
 			C3= SQR(lam[0]) / (SQR(lam[2]) - SQR(lam[0]));
 			if (P[2] != 0) P[2] -= (C3/C2*DCB12-DCB15);
 		}
-		if (sys&(SYS_CMP)) {
+		if (sys&(SYS_BDS)) {
 			double DCB12 = nav->bia[obs->sat - 1].cBias[CODE_L2I - 1] - nav->bia[obs->sat - 1].cBias[CODE_L7I - 1];/*B2b 1207.14*/
 			double DCB13 = nav->bia[obs->sat - 1].cBias[CODE_L2I - 1] - nav->bia[obs->sat - 1].cBias[CODE_L6I - 1];/*B3 1268.52*/
 			C3= SQR(lam[0]) / (SQR(lam[1]) - SQR(lam[0]));
@@ -844,7 +844,7 @@ static void udiono_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         j=II(obs[i].sat,&rtk->opt);
         if (rtk->x[j]==0.0) {
 			s = satsys(obs[i].sat, NULL);
-			k = (s&(SYS_GAL | SYS_SBS | SYS_CMP)) ? 2 : 1;
+			k = (s&(SYS_GAL | SYS_SBS | SYS_BDS)) ? 2 : 1;
             lam=nav->lam[obs[i].sat-1];
             if (obs[i].P[0]==0.0||obs[i].P[k]==0.0||lam[0]==0.0||lam[k]==0.0) {
                 continue;
@@ -852,7 +852,7 @@ static void udiono_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
             ion=(obs[i].P[0]-obs[i].P[k])/(1.0-SQR(lam[k]/lam[0]));
 #if 0
 			/*in case that receiver can only receive B1 AND B2 for BDS, GALILEO not the same as precise clock*/
-			if ((ion == 0)(s&(SYS_GAL | SYS_SBS | SYS_CMP)) ){
+			if ((ion == 0)(s&(SYS_GAL | SYS_SBS | SYS_BDS)) ){
 				ion = (obs[i].P[0]-obs[i].P[1])/(1.0-SQR(lam[1]/lam[0]));
 			}
 #endif
@@ -947,7 +947,7 @@ static void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
             }
             else if (L[f]!=0.0&&P[f]!=0.0) {
                 slip[i]=rtk->ssat[sat-1].slip[f];
-				l = (satsys(sat, NULL) & (SYS_GAL | SYS_SBS | SYS_CMP) )? 2 : 1;
+				l = (satsys(sat, NULL) & (SYS_GAL | SYS_SBS | SYS_BDS) )? 2 : 1;
                 lam=nav->lam[sat-1];
                 if (obs[i].P[0]==0.0||obs[i].P[l]==0.0||lam[0]==0.0||lam[l]==0.0||lam[f]==0.0)
                     ion=0;
@@ -1225,7 +1225,7 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
             continue;
         }
 		/*correct BDS-2 satellite multipath*/
-		if (sys& SYS_CMP) corr_bds2_multipath(obs+i,azel+i*2);
+		if (sys& SYS_BDS) corr_bds2_multipath(obs+i,azel+i*2);
 
         /* corrected phase and code measurements */
         corr_meas(obs+i,nav,azel+i*2,&rtk->opt,dantr,dants,
@@ -1233,7 +1233,7 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
         
         /* stack phase and code residuals {L1,P1,L2,P2,...} */
         for (j=0;j<2*NF(opt);j++) {
-			if (sys == SYS_CMP)	if (j == 2 || j == 3) continue; /*only B1 and B3 are needed*/
+			if (sys == SYS_BDS)	if (j == 2 || j == 3) continue; /*only B1 and B3 are needed*/
             dcb=bias=0.0;
             
             if (opt->ionoopt==IONOOPT_IFLC) {
@@ -1250,7 +1250,7 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
             for (k=0;k<nx;k++) H[k+nx*nv]=k<3?-e[k]:0.0;
             
             /* receiver clock */
-            k=sys==SYS_GLO?1:(sys==SYS_GAL?2:(sys==SYS_CMP?3:0));
+            k=sys==SYS_GLO?1:(sys==SYS_GAL?2:(sys==SYS_BDS?3:0));
             cdtr=x[IC(k,opt)];
             H[IC(k,opt)+nx*nv]=1.0;
             
@@ -1263,7 +1263,7 @@ static int ppp_res(int post, const obsd_t *obs, int n, const double *rs,
                 if (rtk->x[II(sat,opt)]==0.0) continue;
                 H[II(sat,opt)+nx*nv]=C;
             }
-			if (sys&(SYS_GAL | SYS_SBS | SYS_CMP)){
+			if (sys&(SYS_GAL | SYS_SBS | SYS_BDS)){
 				if (j / 2 == 1 && j % 2 == 1) { /* B2(j=3) -receiver-dcb */
 					dcb += rtk->x[ID(opt)];
 					H[ID(opt) + nx*nv] = 1.0;

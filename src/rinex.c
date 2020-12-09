@@ -107,7 +107,7 @@
 #define NINCOBS     262144              /* inclimental number of obs data */
 
 static const int navsys[]={             /* satellite systems */
-    SYS_GPS,SYS_GLO,SYS_GAL,SYS_QZS,SYS_SBS,SYS_CMP,SYS_IRN,0
+    SYS_GPS,SYS_GLO,SYS_GAL,SYS_QZS,SYS_SBS,SYS_BDS,SYS_IRN,0
 };
 static const char syscodes[]="GREJSCI"; /* satellite system codes */
 
@@ -180,7 +180,7 @@ static int sat2code(int sat, char *code)
         case SYS_GAL: sprintf(code,"E%2d",prn-MINPRNGAL+1); break;
         case SYS_SBS: sprintf(code,"S%2d",prn-100); break;
         case SYS_QZS: sprintf(code,"J%2d",prn-MINPRNQZS+1); break;
-        case SYS_CMP: sprintf(code,"C%2d",prn-MINPRNCMP+1); break;
+        case SYS_BDS: sprintf(code,"C%2d",prn-MINPRNBDS+1); break;
         case SYS_IRN: sprintf(code,"I%2d",prn-MINPRNIRN+1); break;
         default: return 0;
     }
@@ -282,7 +282,7 @@ static void convcode(double ver, int sys, const char *str, char *type)
         }
         else if (sys==SYS_GLO) sprintf(type,"%c2C",'C');
         else if (sys==SYS_QZS) sprintf(type,"%c2X",'C');
-        else if (sys==SYS_CMP) sprintf(type,"%c1X",'C'); /* ver.2.12 B1 */
+        else if (sys==SYS_BDS) sprintf(type,"%c1X",'C'); /* ver.2.12 B1 */
     }
     else if (ver>=2.12&&str[1]=='A') { /* ver.2.12 L1C/A */
         if      (sys==SYS_GPS) sprintf(type,"%c1C",str[0]);
@@ -305,7 +305,7 @@ static void convcode(double ver, int sys, const char *str, char *type)
         if      (sys==SYS_GPS) sprintf(type,"%c1W",str[0]);
         else if (sys==SYS_GLO) sprintf(type,"%c1P",str[0]);
         else if (sys==SYS_GAL) sprintf(type,"%c1X",str[0]); /* tentative */
-        else if (sys==SYS_CMP) sprintf(type,"%c1X",str[0]); /* extension */
+        else if (sys==SYS_BDS) sprintf(type,"%c1X",str[0]); /* extension */
     }
     else if (ver<2.12&&str[1]=='1') {
         if      (sys==SYS_GPS) sprintf(type,"%c1C",str[0]);
@@ -318,7 +318,7 @@ static void convcode(double ver, int sys, const char *str, char *type)
         if      (sys==SYS_GPS) sprintf(type,"%c2W",str[0]);
         else if (sys==SYS_GLO) sprintf(type,"%c2P",str[0]);
         else if (sys==SYS_QZS) sprintf(type,"%c2X",str[0]);
-        else if (sys==SYS_CMP) sprintf(type,"%c1X",str[0]); /* ver.2.12 B1 */
+        else if (sys==SYS_BDS) sprintf(type,"%c1X",str[0]); /* ver.2.12 B1 */
     }
     else if (str[1]=='5') {
         if      (sys==SYS_GPS) sprintf(type,"%c5X",str[0]);
@@ -329,11 +329,11 @@ static void convcode(double ver, int sys, const char *str, char *type)
     else if (str[1]=='6') {
         if      (sys==SYS_GAL) sprintf(type,"%c6X",str[0]);
         else if (sys==SYS_QZS) sprintf(type,"%c6X",str[0]);
-        else if (sys==SYS_CMP) sprintf(type,"%c6X",str[0]); /* ver.2.12 B3 */
+        else if (sys==SYS_BDS) sprintf(type,"%c6X",str[0]); /* ver.2.12 B3 */
     }
     else if (str[1]=='7') {
         if      (sys==SYS_GAL) sprintf(type,"%c7X",str[0]);
-        else if (sys==SYS_CMP) sprintf(type,"%c7X",str[0]); /* ver.2.12 B2 */
+        else if (sys==SYS_BDS) sprintf(type,"%c7X",str[0]); /* ver.2.12 B2 */
     }
     else if (str[1]=='8') {
         if      (sys==SYS_GAL) sprintf(type,"%c8X",str[0]);
@@ -446,7 +446,7 @@ static void decode_obsh(FILE *fp, char *buff, double ver, int *tsys,
                 convcode(ver,SYS_GAL,str,tobs[2][nt]);
                 convcode(ver,SYS_QZS,str,tobs[3][nt]);
                 convcode(ver,SYS_SBS,str,tobs[4][nt]);
-                convcode(ver,SYS_CMP,str,tobs[5][nt]);
+                convcode(ver,SYS_BDS,str,tobs[5][nt]);
             }
             nt++;
         }
@@ -459,7 +459,7 @@ static void decode_obsh(FILE *fp, char *buff, double ver, int *tsys,
         else if (!strncmp(buff+48,"GLO",3)) *tsys=TSYS_UTC;
         else if (!strncmp(buff+48,"GAL",3)) *tsys=TSYS_GAL;
         else if (!strncmp(buff+48,"QZS",3)) *tsys=TSYS_QZS; /* ver.3.02 */
-        else if (!strncmp(buff+48,"BDT",3)) *tsys=TSYS_CMP; /* ver.3.02 */
+        else if (!strncmp(buff+48,"BDT",3)) *tsys=TSYS_BDS; /* ver.3.02 */
         else if (!strncmp(buff+48,"IRN",3)) *tsys=TSYS_IRN; /* ver.3.03 */
     }
     else if (strstr(label,"TIME OF LAST OBS"    )) ; /* opt */
@@ -538,10 +538,10 @@ static void decode_navh(char *buff, nav_t *nav)
                 for (i=0,j=5;i<4;i++,j+=12) nav->ion_qzs[i+4]=str2num(buff,j,12);
             }
             else if (!strncmp(buff,"BDSA",4)) { /* v.3.02 */
-                for (i=0,j=5;i<4;i++,j+=12) nav->ion_cmp[i]=str2num(buff,j,12);
+                for (i=0,j=5;i<4;i++,j+=12) nav->ion_bds[i]=str2num(buff,j,12);
             }
             else if (!strncmp(buff,"BDSB",4)) { /* v.3.02 */
-                for (i=0,j=5;i<4;i++,j+=12) nav->ion_cmp[i+4]=str2num(buff,j,12);
+                for (i=0,j=5;i<4;i++,j+=12) nav->ion_bds[i+4]=str2num(buff,j,12);
             }
             else if (!strncmp(buff,"IRNA",4)) { /* v.3.03 */
                 for (i=0,j=5;i<4;i++,j+=12) nav->ion_irn[i]=str2num(buff,j,12);
@@ -576,16 +576,16 @@ static void decode_navh(char *buff, nav_t *nav)
                 nav->utc_qzs[3]=str2num(buff,45, 5);
             }
             else if (!strncmp(buff,"BDUT",4)) { /* v.3.02 */
-                nav->utc_cmp[0]=str2num(buff, 5,17);
-                nav->utc_cmp[1]=str2num(buff,22,16);
-                nav->utc_cmp[2]=str2num(buff,38, 7);
-                nav->utc_cmp[3]=str2num(buff,45, 5);
+                nav->utc_bds[0]=str2num(buff, 5,17);
+                nav->utc_bds[1]=str2num(buff,22,16);
+                nav->utc_bds[2]=str2num(buff,38, 7);
+                nav->utc_bds[3]=str2num(buff,45, 5);
             }
             else if (!strncmp(buff,"SBUT",4)) { /* v.3.02 */
-                nav->utc_cmp[0]=str2num(buff, 5,17);
-                nav->utc_cmp[1]=str2num(buff,22,16);
-                nav->utc_cmp[2]=str2num(buff,38, 7);
-                nav->utc_cmp[3]=str2num(buff,45, 5);
+                nav->utc_bds[0]=str2num(buff, 5,17);
+                nav->utc_bds[1]=str2num(buff,22,16);
+                nav->utc_bds[2]=str2num(buff,38, 7);
+                nav->utc_bds[3]=str2num(buff,45, 5);
             }
             else if (!strncmp(buff,"IRUT",4)) { /* v.3.03 */
                 nav->utc_irn[0]=str2num(buff, 5,17);
@@ -652,7 +652,7 @@ static int readrnxh(FILE *fp, double *ver, char *type, int *sys, int *tsys,
                 case 'E': *sys=SYS_GAL;  *tsys=TSYS_GAL; break; /* v.2.12 */
                 case 'S': *sys=SYS_SBS;  *tsys=TSYS_GPS; break;
                 case 'J': *sys=SYS_QZS;  *tsys=TSYS_QZS; break; /* v.3.02 */
-                case 'C': *sys=SYS_CMP;  *tsys=TSYS_CMP; break; /* v.2.12 */
+                case 'C': *sys=SYS_BDS;  *tsys=TSYS_BDS; break; /* v.2.12 */
                 case 'I': *sys=SYS_IRN;  *tsys=TSYS_IRN; break; /* v.3.03 */
                 case 'M': *sys=SYS_NONE; *tsys=TSYS_GPS; break; /* mixed */
                 default :
@@ -786,7 +786,7 @@ static int decode_obsdata(FILE *fp, char *buff, double ver, int mask,
         case SYS_GAL: ind=index+2; break;
         case SYS_QZS: ind=index+3; break;
         case SYS_SBS: ind=index+4; break;
-        case SYS_CMP: ind=index+5; break;
+        case SYS_BDS: ind=index+5; break;
         default:      ind=index  ; break;
     }
     for (i=0,j=ver<=2.99?0:3;i<ind->n;i++,j+=16) {
@@ -918,7 +918,7 @@ static int set_sysmask(const char *opt)
             case 'R': mask|=SYS_GLO; break;
             case 'E': mask|=SYS_GAL; break;
             case 'J': mask|=SYS_QZS; break;
-            case 'C': mask|=SYS_CMP; break;
+            case 'C': mask|=SYS_BDS; break;
             case 'I': mask|=SYS_IRN; break;
             case 'S': mask|=SYS_SBS; break;
         }
@@ -941,7 +941,7 @@ static void set_index(double ver, int sys, const char *opt,
         ind->pos[i]=-1;
         
         /* frequency index for beidou */
-		if (sys == SYS_CMP) {
+		if (sys == SYS_BDS) {
 			if (ind->frq[i] == 2) ind->frq[i] = 1; /* 2I 2Q to B1I */
 			else if (ind->frq[i] == 5) ind->frq[i] = 2; /* 7I to B2I */
 			else if (ind->frq[i] == 4 ) ind->frq[i] = 3; /* 6I 6Q 6X 6A to B3I */
@@ -963,7 +963,7 @@ static void set_index(double ver, int sys, const char *opt,
         case SYS_GAL: optstr="-EL%2s=%lf"; break;
         case SYS_QZS: optstr="-JL%2s=%lf"; break;
         case SYS_SBS: optstr="-SL%2s=%lf"; break;
-        case SYS_CMP: optstr="-CL%2s=%lf"; break;
+        case SYS_BDS: optstr="-CL%2s=%lf"; break;
         case SYS_IRN: optstr="-IL%2s=%lf"; break;
     }
     for (p=opt;p&&(p=strchr(p,'-'));p++) {
@@ -1032,7 +1032,7 @@ static int readrnxobsb(FILE *fp, const char *opt, double ver, int *tsys,
     set_index(ver,SYS_GAL,opt,tobs[2],index+2);
     set_index(ver,SYS_QZS,opt,tobs[3],index+3);
     set_index(ver,SYS_SBS,opt,tobs[4],index+4);
-    set_index(ver,SYS_CMP,opt,tobs[5],index+5);
+    set_index(ver,SYS_BDS,opt,tobs[5],index+5);
     set_index(ver,SYS_IRN,opt,tobs[6],index+6);
     
     /* read record */
@@ -1143,7 +1143,7 @@ static int decode_eph(double ver, int sat, gtime_t toc, const double *data,
     
     sys=satsys(sat,NULL);
     
-    if (!(sys&(SYS_GPS|SYS_GAL|SYS_QZS|SYS_CMP|SYS_IRN))) {
+    if (!(sys&(SYS_GPS|SYS_GAL|SYS_QZS|SYS_BDS|SYS_IRN))) {
         trace(3,"ephemeris error: invalid satellite sat=%2d\n",sat);
         return 0;
     }
@@ -1207,7 +1207,7 @@ static int decode_eph(double ver, int sat, gtime_t toc, const double *data,
         eph->tgd[0]=   data[25];      /* BGD E5a/E1 */
         eph->tgd[1]=   data[26];      /* BGD E5b/E1 */
     }
-    else if (sys==SYS_CMP) { /* BeiDou v.3.02 */
+    else if (sys==SYS_BDS) { /* BeiDou v.3.02 */
         eph->toc=bdt2gpst(eph->toc);  /* bdt -> gpst */
         eph->iode=(int)data[ 3];      /* AODE */
         eph->iodc=(int)data[28];      /* AODC */
@@ -1958,7 +1958,7 @@ static void outobstype_ver3(FILE *fp, const rnxopt_t *opt)
             strcpy(tobs,opt->tobs[i][j]);
             
             /* beidou B1x -> 1x (3.02), 2x (other) */
-            if (navsys[i]==SYS_CMP) {
+            if (navsys[i]==SYS_BDS) {
                 if (opt->rnxver==3.02&&tobs[1]=='2') tobs[1]='1';
                 if (opt->rnxver!=3.02&&tobs[1]=='1') tobs[1]='2';
             }
@@ -1997,7 +1997,7 @@ extern int outrnxobsh(FILE *fp, const rnxopt_t *opt, const nav_t *nav)
         else if (opt->navsys==SYS_GLO) sys="R: GLONASS";
         else if (opt->navsys==SYS_GAL) sys="E: Galielo";
         else if (opt->navsys==SYS_QZS) sys="J: QZSS";   /* ver.3.02 */
-        else if (opt->navsys==SYS_CMP) sys="C: BeiDou"; /* ver.3.02 */
+        else if (opt->navsys==SYS_BDS) sys="C: BeiDou"; /* ver.3.02 */
         else if (opt->navsys==SYS_IRN) sys="I: IRNSS";  /* ver.3.03 */
         else if (opt->navsys==SYS_SBS) sys="S: SBAS Payload";
         else sys="M: Mixed";
@@ -2109,7 +2109,7 @@ static int obsindex(double ver, int sys, const unsigned char *code,
         
         if (ver<=2.99) { /* ver.2 */
             if (!strcmp(tobs,"C1")&&(sys==SYS_GPS||sys==SYS_GLO||sys==SYS_QZS||
-                sys==SYS_SBS||sys==SYS_CMP)) {
+                sys==SYS_SBS||sys==SYS_BDS)) {
                 if (code[i]==CODE_L1C) return i;
             }
             else if (!strcmp(tobs,"P1")) {
@@ -2141,7 +2141,7 @@ static int obsindex(double ver, int sys, const unsigned char *code,
             else if (ver>=2.12&&tobs[1]=='D'&&sys==SYS_GLO) { /* GLO L2C/A */
                 if (code[i]==CODE_L2C) return i;
             }
-            else if (tobs[1]=='2'&&sys==SYS_CMP) { /* BDS B1 */
+            else if (tobs[1]=='2'&&sys==SYS_BDS) { /* BDS B1 */
                 if (code[i]==CODE_L1I||code[i]==CODE_L1Q||code[i]==CODE_L1X)
                     return i;
             }
@@ -2209,7 +2209,7 @@ extern int outrnxobsb(FILE *fp, const rnxopt_t *opt, const obsd_t *obs, int n,
             case SYS_GAL: s[ns]=2; break;
             case SYS_QZS: s[ns]=3; break;
             case SYS_SBS: s[ns]=4; break;
-            case SYS_CMP: s[ns]=5; break;
+            case SYS_BDS: s[ns]=5; break;
             case SYS_IRN: s[ns]=6; break;
         }
         if (!opt->nobs[opt->rnxver<=2.99?0:s[ns]]) continue;
@@ -2309,7 +2309,7 @@ extern int outrnxnavh(FILE *fp, const rnxopt_t *opt, const nav_t *nav)
         else if (opt->navsys==SYS_GLO) sys="R: GLONASS";
         else if (opt->navsys==SYS_GAL) sys="E: Galileo";
         else if (opt->navsys==SYS_QZS) sys="J: QZSS";   /* v.3.02 */
-        else if (opt->navsys==SYS_CMP) sys="C: BeiDou"; /* v.3.02 */
+        else if (opt->navsys==SYS_BDS) sys="C: BeiDou"; /* v.3.02 */
         else if (opt->navsys==SYS_IRN) sys="I: IRNSS";  /* v.3.03 */
         else if (opt->navsys==SYS_SBS) sys="S: SBAS Payload";
         else sys="M: Mixed";
@@ -2398,11 +2398,11 @@ extern int outrnxnavh(FILE *fp, const rnxopt_t *opt, const nav_t *nav)
                         nav->utc_qzs[3],"","","TIME SYSTEM CORR");
             }
         }
-        if ((opt->navsys&SYS_CMP)&&opt->rnxver>=3.02) { /* ver.3.02 */
+        if ((opt->navsys&SYS_BDS)&&opt->rnxver>=3.02) { /* ver.3.02 */
             if (opt->outtime) {
                 fprintf(fp,"BDUT %17.10E%16.9E%7.0f%5.0f %-5s %-2s %-20s\n",
-                        nav->utc_cmp[0],nav->utc_cmp[1],nav->utc_cmp[2],
-                        nav->utc_cmp[3],"","","TIME SYSTEM CORR");
+                        nav->utc_bds[0],nav->utc_bds[1],nav->utc_bds[2],
+                        nav->utc_bds[3],"","","TIME SYSTEM CORR");
             }
         }
         if ((opt->navsys&SYS_IRN)&&opt->rnxver>=3.03) { /* ver.3.03 */
@@ -2435,13 +2435,13 @@ extern int outrnxnavb(FILE *fp, const rnxopt_t *opt, const eph_t *eph)
     
     if (!(sys=satsys(eph->sat,&prn))||!(sys&opt->navsys)) return 0;
     
-    if (sys!=SYS_CMP) {
+    if (sys!=SYS_BDS) {
         time2epoch(eph->toc,ep);
     }
     else {
         time2epoch(gpst2bdt(eph->toc),ep); /* gpst -> bdt */
     }
-    if (opt->rnxver>2.99||sys==SYS_GAL||sys==SYS_CMP) { /* ver.3 or ver.2 GAL */
+    if (opt->rnxver>2.99||sys==SYS_GAL||sys==SYS_BDS) { /* ver.3 or ver.2 GAL */
         if (!sat2code(eph->sat,code)) return 0;
         fprintf(fp,"%-3s %04.0f %2.0f %2.0f %2.0f %2.0f %2.0f",code,ep[0],ep[1],
                 ep[2],ep[3],ep[4],ep[5]);
@@ -2496,7 +2496,7 @@ extern int outrnxnavb(FILE *fp, const rnxopt_t *opt, const eph_t *eph)
     outnavf(fp,uravalue(eph->sva));
     outnavf(fp,eph->svh    );
     outnavf(fp,eph->tgd[0] ); /* GPS/QZS:TGD, GAL:BGD E5a/E1, BDS: TGD1 B1/B3 */
-    if (sys==SYS_GAL||sys==SYS_CMP) {
+    if (sys==SYS_GAL||sys==SYS_BDS) {
         outnavf(fp,eph->tgd[1]); /* GAL:BGD E5b/E1, BDS: TGD2 B2/B3 */
     }
     else {
@@ -2504,7 +2504,7 @@ extern int outrnxnavb(FILE *fp, const rnxopt_t *opt, const eph_t *eph)
     }
     fprintf(fp,"\n%s",sep  );
     
-    if (sys!=SYS_CMP) {
+    if (sys!=SYS_BDS) {
         ttr=time2gpst(eph->ttr,&week);
     }
     else {
@@ -2518,7 +2518,7 @@ extern int outrnxnavb(FILE *fp, const rnxopt_t *opt, const eph_t *eph)
     else if (sys==SYS_QZS) {
         outnavf(fp,eph->fit>2.0?1.0:0.0);
     }
-    else if (sys==SYS_CMP) {
+    else if (sys==SYS_BDS) {
         outnavf(fp,eph->iodc); /* AODC */
     }
     else {

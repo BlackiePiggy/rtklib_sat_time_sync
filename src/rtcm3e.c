@@ -59,7 +59,7 @@ extern const char *msm_sig_glo[32];
 extern const char *msm_sig_gal[32];
 extern const char *msm_sig_qzs[32];
 extern const char *msm_sig_sbs[32];
-extern const char *msm_sig_cmp[32];
+extern const char *msm_sig_bds[32];
 
 /* ssr update intervals ------------------------------------------------------*/
 static const double ssrudint[16]={
@@ -1194,7 +1194,7 @@ static int encode_type1042(rtcm_t *rtcm, int sync)
     
     trace(3,"encode_type1042: sync=%d\n",sync);
     
-    if (satsys(rtcm->ephsat,&prn)!=SYS_CMP) return 0;
+    if (satsys(rtcm->ephsat,&prn)!=SYS_BDS) return 0;
     eph=rtcm->nav.eph+rtcm->ephsat-1;
     if (eph->sat!=rtcm->ephsat) return 0;
     week =eph->week%8192;
@@ -1263,7 +1263,7 @@ static int encode_type63(rtcm_t *rtcm, int sync)
     
     trace(3,"encode_type63: sync=%d\n",sync);
     
-    if (satsys(rtcm->ephsat,&prn)!=SYS_CMP) return 0;
+    if (satsys(rtcm->ephsat,&prn)!=SYS_BDS) return 0;
     eph=rtcm->nav.eph+rtcm->ephsat-1;
     if (eph->sat!=rtcm->ephsat) return 0;
     week =eph->week%8192;
@@ -1340,7 +1340,7 @@ static int encode_ssr_head(int type, rtcm_t *rtcm, int sys, int nsat, int sync,
         case SYS_GLO: msgno=(type==7)? 0:1062+type; break;
         case SYS_GAL: msgno=(type==7)?12:1239+type; break;
         case SYS_QZS: msgno=(type==7)?13:1245+type; break;
-        case SYS_CMP: msgno=(type==7)?14:1257+type; break;
+        case SYS_BDS: msgno=(type==7)?14:1257+type; break;
         case SYS_SBS: msgno=(type==7)? 0:1251+type; break;
         default: return 0;
     }
@@ -1415,7 +1415,7 @@ static int encode_ssr1(rtcm_t *rtcm, int sys, int sync)
         case SYS_GLO: np=5; ni= 8; nj= 0; offp=  0; break;
         case SYS_GAL: np=6; ni=10; nj= 0; offp=  0; break;
         case SYS_QZS: np=4; ni= 8; nj= 0; offp=192; break;
-        case SYS_CMP: np=6; ni=10; nj=24; offp=  1; break;
+        case SYS_BDS: np=6; ni=10; nj=24; offp=  1; break;
         case SYS_SBS: np=6; ni= 9; nj=24; offp=120; break;
         default: return 0;
     }
@@ -1469,7 +1469,7 @@ static int encode_ssr2(rtcm_t *rtcm, int sys, int sync)
         case SYS_GLO: np=5; offp=  0; break;
         case SYS_GAL: np=6; offp=  0; break;
         case SYS_QZS: np=4; offp=192; break;
-        case SYS_CMP: np=6; offp=  1; break;
+        case SYS_BDS: np=6; offp=  1; break;
         case SYS_SBS: np=6; offp=120; break;
         default: return 0;
     }
@@ -1515,7 +1515,7 @@ static int encode_ssr3(rtcm_t *rtcm, int sys, int sync)
         case SYS_GLO: np=5; offp=  0; codes=codes_glo; ncode= 4; break;
         case SYS_GAL: np=6; offp=  0; codes=codes_gal; ncode=19; break;
         case SYS_QZS: np=4; offp=192; codes=codes_qzs; ncode=13; break;
-        case SYS_CMP: np=6; offp=  1; codes=codes_bds; ncode=12; break;
+        case SYS_BDS: np=6; offp=  1; codes=codes_bds; ncode=12; break;
         case SYS_SBS: np=6; offp=120; codes=codes_sbs; ncode= 4; break;
         default: return 0;
     }
@@ -1562,7 +1562,7 @@ static int encode_ssr4(rtcm_t *rtcm, int sys, int sync)
         case SYS_GLO: np=5; ni= 8; nj= 0; offp=  0; break;
         case SYS_GAL: np=6; ni=10; nj= 0; offp=  0; break;
         case SYS_QZS: np=4; ni= 8; nj= 0; offp=192; break;
-        case SYS_CMP: np=6; ni=10; nj=24; offp=  1; break;
+        case SYS_BDS: np=6; ni=10; nj=24; offp=  1; break;
         case SYS_SBS: np=6; ni= 9; nj=24; offp=120; break;
         default: return 0;
     }
@@ -1622,7 +1622,7 @@ static int encode_ssr5(rtcm_t *rtcm, int sys, int sync)
         case SYS_GLO: np=5; offp=  0; break;
         case SYS_GAL: np=6; offp=  0; break;
         case SYS_QZS: np=4; offp=192; break;
-        case SYS_CMP: np=6; offp=  1; break;
+        case SYS_BDS: np=6; offp=  1; break;
         case SYS_SBS: np=6; offp=120; break;
         default: return 0;
     }
@@ -1659,7 +1659,7 @@ static int encode_ssr6(rtcm_t *rtcm, int sys, int sync)
         case SYS_GLO: np=5; offp=  0; break;
         case SYS_GAL: np=6; offp=  0; break;
         case SYS_QZS: np=4; offp=192; break;
-        case SYS_CMP: np=6; offp=  1; break;
+        case SYS_BDS: np=6; offp=  1; break;
         case SYS_SBS: np=6; offp=120; break;
         default: return 0;
     }
@@ -1699,7 +1699,7 @@ static int encode_ssr7(rtcm_t *rtcm, int sys, int sync)
         case SYS_GLO: np=5; offp=  0; codes=codes_glo; ncode= 4; break;
         case SYS_GAL: np=6; offp=  0; codes=codes_gal; ncode=19; break;
         case SYS_QZS: np=4; offp=192; codes=codes_qzs; ncode=13; break;
-        case SYS_CMP: np=6; offp=  1; codes=codes_bds; ncode=12; break;
+        case SYS_BDS: np=6; offp=  1; codes=codes_bds; ncode=12; break;
         default: return 0;
     }
     /* number of satellites */
@@ -1777,11 +1777,11 @@ static int to_sigid(int sys, unsigned char code, int *freq)
         case SYS_GAL: msm_sig=msm_sig_gal; break;
         case SYS_QZS: msm_sig=msm_sig_qzs; break;
         case SYS_SBS: msm_sig=msm_sig_sbs; break;
-        case SYS_CMP: msm_sig=msm_sig_cmp; break;
+        case SYS_BDS: msm_sig=msm_sig_bds; break;
         default: return 0;
     }
     /* freqency index for beidou and galileo */
-    if (sys==SYS_CMP) {
+    if (sys==SYS_BDS) {
         if      (*freq==5) *freq=2; /* B2 */
         else if (*freq==4) *freq=3; /* B3 */
     }
@@ -1944,7 +1944,7 @@ static int encode_msm_head(int type, rtcm_t *rtcm, int sys, int sync, int *nsat,
         case SYS_GAL: type+=1090; break;
         case SYS_QZS: type+=1110; break;
         case SYS_SBS: type+=1100; break;
-        case SYS_CMP: type+=1120; break;
+        case SYS_BDS: type+=1120; break;
         default: return 0;
     }
     /* generate msm satellite, signal and cell index */
@@ -1956,7 +1956,7 @@ static int encode_msm_head(int type, rtcm_t *rtcm, int sys, int sync, int *nsat,
         dow=(unsigned int)(tow/86400.0);
         epoch=(dow<<27)+ROUND_U(fmod(tow,86400.0)*1E3);
     }
-    else if (sys==SYS_CMP) {
+    else if (sys==SYS_BDS) {
         /* beidou time (tow-ms) */
         epoch=ROUND_U(time2gpst(gpst2bdt(rtcm->time),NULL)*1E3);
     }
@@ -2496,13 +2496,13 @@ extern int encode_rtcm3(rtcm_t *rtcm, int type, int sync)
         case 1115: ret=encode_msm5(rtcm,SYS_QZS,sync); break;
         case 1116: ret=encode_msm6(rtcm,SYS_QZS,sync); break;
         case 1117: ret=encode_msm7(rtcm,SYS_QZS,sync); break;
-        case 1121: ret=encode_msm1(rtcm,SYS_CMP,sync); break;
-        case 1122: ret=encode_msm2(rtcm,SYS_CMP,sync); break;
-        case 1123: ret=encode_msm3(rtcm,SYS_CMP,sync); break;
-        case 1124: ret=encode_msm4(rtcm,SYS_CMP,sync); break;
-        case 1125: ret=encode_msm5(rtcm,SYS_CMP,sync); break;
-        case 1126: ret=encode_msm6(rtcm,SYS_CMP,sync); break;
-        case 1127: ret=encode_msm7(rtcm,SYS_CMP,sync); break;
+        case 1121: ret=encode_msm1(rtcm,SYS_BDS,sync); break;
+        case 1122: ret=encode_msm2(rtcm,SYS_BDS,sync); break;
+        case 1123: ret=encode_msm3(rtcm,SYS_BDS,sync); break;
+        case 1124: ret=encode_msm4(rtcm,SYS_BDS,sync); break;
+        case 1125: ret=encode_msm5(rtcm,SYS_BDS,sync); break;
+        case 1126: ret=encode_msm6(rtcm,SYS_BDS,sync); break;
+        case 1127: ret=encode_msm7(rtcm,SYS_BDS,sync); break;
         case 1240: ret=encode_ssr1(rtcm,SYS_GAL,sync); break;
         case 1241: ret=encode_ssr2(rtcm,SYS_GAL,sync); break;
         case 1242: ret=encode_ssr3(rtcm,SYS_GAL,sync); break;
@@ -2521,16 +2521,16 @@ extern int encode_rtcm3(rtcm_t *rtcm, int type, int sync)
         case 1255: ret=encode_ssr4(rtcm,SYS_SBS,sync); break;
         case 1256: ret=encode_ssr5(rtcm,SYS_SBS,sync); break;
         case 1257: ret=encode_ssr6(rtcm,SYS_SBS,sync); break;
-        case 1258: ret=encode_ssr1(rtcm,SYS_CMP,sync); break;
-        case 1259: ret=encode_ssr2(rtcm,SYS_CMP,sync); break;
-        case 1260: ret=encode_ssr3(rtcm,SYS_CMP,sync); break;
-        case 1261: ret=encode_ssr4(rtcm,SYS_CMP,sync); break;
-        case 1262: ret=encode_ssr5(rtcm,SYS_CMP,sync); break;
-        case 1263: ret=encode_ssr6(rtcm,SYS_CMP,sync); break;
+        case 1258: ret=encode_ssr1(rtcm,SYS_BDS,sync); break;
+        case 1259: ret=encode_ssr2(rtcm,SYS_BDS,sync); break;
+        case 1260: ret=encode_ssr3(rtcm,SYS_BDS,sync); break;
+        case 1261: ret=encode_ssr4(rtcm,SYS_BDS,sync); break;
+        case 1262: ret=encode_ssr5(rtcm,SYS_BDS,sync); break;
+        case 1263: ret=encode_ssr6(rtcm,SYS_BDS,sync); break;
         case   11: ret=encode_ssr7(rtcm,SYS_GPS,sync); break; /* tentative */
         case   12: ret=encode_ssr7(rtcm,SYS_GAL,sync); break; /* tentative */
         case   13: ret=encode_ssr7(rtcm,SYS_QZS,sync); break; /* tentative */
-        case   14: ret=encode_ssr7(rtcm,SYS_CMP,sync); break; /* tentative */
+        case   14: ret=encode_ssr7(rtcm,SYS_BDS,sync); break; /* tentative */
     }
     if (ret>0) {
         type-=1000;

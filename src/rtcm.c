@@ -290,7 +290,7 @@ extern int input_rtcm3(rtcm_t *rtcm, unsigned char data)
     }
     /* decode rtcm3 message */
 	temp = decode_rtcm3(rtcm);
-	/*if (sys == SYS_CMP)
+	/*if (sys == SYS_BDS)
 		rtcm->ssr[sat - 1].iode = temp;*/
 	return temp;
 }

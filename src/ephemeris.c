@@ -69,12 +69,12 @@
 #define MU_GPS   3.9860050E14     /* gravitational constant         ref [1] */
 #define MU_GLO   3.9860044E14     /* gravitational constant         ref [2] */
 #define MU_GAL   3.986004418E14   /* earth gravitational constant   ref [7] */
-#define MU_CMP   3.986004418E14   /* earth gravitational constant   ref [9] */
+#define MU_BDS   3.986004418E14   /* earth gravitational constant   ref [9] */
 #define J2_GLO   1.0826257E-3     /* 2nd zonal harmonic of geopot   ref [2] */
 
 #define OMGE_GLO 7.292115E-5      /* earth angular velocity (rad/s) ref [2] */
 #define OMGE_GAL 7.2921151467E-5  /* earth angular velocity (rad/s) ref [7] */
-#define OMGE_CMP 7.292115E-5      /* earth angular velocity (rad/s) ref [9] */
+#define OMGE_BDS 7.292115E-5      /* earth angular velocity (rad/s) ref [9] */
 
 #define SIN_5 -0.0871557427476582 /* sin(-5.0 deg) */
 #define COS_5  0.9961946980917456 /* cos(-5.0 deg) */
@@ -226,7 +226,7 @@ extern void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     
     switch ((sys=satsys(eph->sat,&prn))) {
         case SYS_GAL: mu=MU_GAL; omge=OMGE_GAL; break;
-        case SYS_CMP: mu=MU_CMP; omge=OMGE_CMP; break;
+        case SYS_BDS: mu=MU_BDS; omge=OMGE_BDS; break;
         default:      mu=MU_GPS; omge=OMGE;     break;
     }
     M=eph->M0+(sqrt(mu/(eph->A*eph->A*eph->A))+eph->deln)*tk;
@@ -252,7 +252,7 @@ extern void eph2pos(gtime_t time, const eph_t *eph, double *rs, double *dts,
     x=r*cos(u); y=r*sin(u); cosi=cos(i);
     
     /* beidou geo satellite */
-    if (sys==SYS_CMP&&(eph->flag==2||(eph->flag==0&&prn<=5))) {
+    if (sys==SYS_BDS&&(eph->flag==2||(eph->flag==0&&prn<=5))) {
         O=eph->OMG0+eph->OMGd*tk-omge*eph->toes;
         sinO=sin(O); cosO=cos(O);
         xg=x*cosO-y*cosi*sinO;
@@ -425,7 +425,7 @@ static eph_t *seleph(gtime_t time, int sat, int iode, const nav_t *nav)
         case SYS_GPS: tmax=MAXDTOE+1.0    ; sel=eph_sel[0]; break;
         case SYS_GAL: tmax=MAXDTOE_GAL    ; sel=eph_sel[2]; break;
         case SYS_QZS: tmax=MAXDTOE_QZS+1.0; sel=eph_sel[3]; break;
-        case SYS_CMP: tmax=MAXDTOE_CMP+1.0; sel=eph_sel[4]; break;
+        case SYS_BDS: tmax=MAXDTOE_BDS+1.0; sel=eph_sel[4]; break;
         default: tmax=MAXDTOE+1.0; break;
     }
     tmin=tmax+1.0;
@@ -523,7 +523,7 @@ static unsigned int BDs_CRC(eph_t eph)
 /* select BDS ephememeris ---------------------------------------------------*/
 static seph_t *selBeph(gtime_t time, int sat, int iodecrc, const nav_t *nav)
 {
-	double t, tmax = MAXDTOE_CMP, tmin = tmax + 1.0;
+	double t, tmax = MAXDTOE_BDS, tmin = tmax + 1.0;
 	int i, j = -1, week=0;
 	double sec;
 	unsigned int crc, IOD;
@@ -560,7 +560,7 @@ static int ephclk(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     
     sys=satsys(sat,NULL);
     
-    if (sys==SYS_GPS||sys==SYS_GAL||sys==SYS_QZS||sys==SYS_CMP) {
+    if (sys==SYS_GPS||sys==SYS_GAL||sys==SYS_QZS||sys==SYS_BDS) {
         if (!(eph=seleph(teph,sat,-1,nav))) return 0;
         *dts=eph2clk(time,eph);
     }
@@ -592,7 +592,7 @@ static int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     
     *svh=-1;
     
-    if (sys==SYS_GPS||sys==SYS_GAL||sys==SYS_QZS||sys==SYS_CMP) {
+    if (sys==SYS_GPS||sys==SYS_GAL||sys==SYS_QZS||sys==SYS_BDS) {
         if (!(eph=seleph(teph,sat,iode,nav))) return 0;
         eph2pos(time,eph,rs,dts,var);
         time=timeadd(time,tt);
@@ -613,7 +613,7 @@ static int ephpos(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
         seph2pos(time,seph,rst,dtst,var);
         *svh=seph->svh;
     }
-    /*else if (sys == SYS_CMP) {
+    /*else if (sys == SYS_BDS) {
 		if (!(eph = selBeph(teph, sat, iode,nav))) return 0;
 		eph2pos(time, eph, rs, dts, var);
 		time = timeadd(time, tt);
@@ -716,7 +716,7 @@ static int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
     
     /* satellite clock for gps, galileo and qzss */
     sys=satsys(sat,NULL);
-    if (sys==SYS_GPS||sys==SYS_GAL||sys==SYS_QZS||sys==SYS_CMP) {
+    if (sys==SYS_GPS||sys==SYS_GAL||sys==SYS_QZS||sys==SYS_BDS) {
         if (!(eph=seleph(teph,sat,ssr->iode,nav))) return 0;
         
         /* satellite clock by clock parameters */
@@ -881,7 +881,7 @@ extern void satseleph(int sys, int sel)
         case SYS_GLO: eph_sel[1]=sel; break;
         case SYS_GAL: eph_sel[2]=sel; break;
         case SYS_QZS: eph_sel[3]=sel; break;
-        case SYS_CMP: eph_sel[4]=sel; break;
+        case SYS_BDS: eph_sel[4]=sel; break;
         case SYS_SBS: eph_sel[5]=sel; break;
     }
 }

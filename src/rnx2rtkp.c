@@ -140,7 +140,7 @@ int main(int argc, char **argv)
                     case 'R': prcopt.navsys|=SYS_GLO;
                     case 'E': prcopt.navsys|=SYS_GAL;
                     case 'J': prcopt.navsys|=SYS_QZS;
-                    case 'C': prcopt.navsys|=SYS_CMP;
+                    case 'C': prcopt.navsys|=SYS_BDS;
                     case 'I': prcopt.navsys|=SYS_IRN;
                 }
                 if (!(p=strchr(p,','))) break;

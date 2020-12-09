@@ -109,7 +109,7 @@ static int decode_trackstat(unsigned int stat, int *sys, int *code, int *track,
         case 1: *sys=SYS_GLO; break;
         case 2: *sys=SYS_SBS; break;
         case 3: *sys=SYS_GAL; break;
-        case 4: *sys=SYS_CMP; break;
+        case 4: *sys=SYS_BDS; break;
         case 5: *sys=SYS_QZS; break;
         default:
             trace(2,"tersus unknown system: sys=%d\n",satsys);
@@ -143,7 +143,7 @@ static int decode_trackstat(unsigned int stat, int *sys, int *code, int *track,
             default: freq=-1; break;
         }
     }
-    else if (*sys==SYS_CMP) {
+    else if (*sys==SYS_BDS) {
         switch (sigtype) {
             case  0: freq=0; *code=CODE_L1I; break; /* B1 with D1 */
             case  1: freq=1; *code=CODE_L7I; break; /* B2 with D1 */
@@ -220,7 +220,7 @@ static int decode_rangeb(raw_t *raw)
         
         prn=U2(p);
         if      (sys==SYS_GLO) prn-=37;
-        else if (sys==SYS_CMP) prn-=160;
+        else if (sys==SYS_BDS) prn-=160;
         
         if (!(sat=satno(sys,prn))) {
             trace(3,"tersus rangeb satellite number error: sys=%d,prn=%d\n",sys,prn);
@@ -302,7 +302,7 @@ static int decode_rangecmpb(raw_t *raw)
         
         prn=U1(p+17);
         if      (sys==SYS_GLO) prn-=37;
-        else if (sys==SYS_CMP) prn-=160;
+        else if (sys==SYS_BDS) prn-=160;
         
         if (!(sat=satno(sys,prn))) {
             trace(3,"tersus rangecmpb satellite number error: sys=%d,prn=%d\n",sys,prn);
@@ -549,7 +549,7 @@ static int decode_bdsephemerisb(raw_t *raw)
         msg=raw->msgtype+strlen(raw->msgtype);
         sprintf(msg," prn=%3d iod=%3d toes=%6.0f",prn,eph.iode,eph.toes);
     }
-    if (!(eph.sat=satno(SYS_CMP,prn))) {
+    if (!(eph.sat=satno(SYS_BDS,prn))) {
         trace(2,"tersus bdsephemeris satellite error: prn=%d\n",prn);
         return -1;
     }

@@ -145,7 +145,7 @@ static int decode_trackstat(unsigned int stat, int *sys, int *code, int *track,
         case 1: *sys=SYS_GLO; break;
         case 2: *sys=SYS_SBS; break;
         case 3: *sys=SYS_GAL; break; /* OEM6 */
-        case 4: *sys=SYS_CMP; break; /* OEM6 F/W 6.400 */
+        case 4: *sys=SYS_BDS; break; /* OEM6 F/W 6.400 */
         case 5: *sys=SYS_QZS; break; /* OEM6 */
         default:
             trace(2,"cnav unknown system: sys=%d\n",satsys);
@@ -180,7 +180,7 @@ static int decode_trackstat(unsigned int stat, int *sys, int *code, int *track,
             default: freq=-1; break;
         }
     }
-    else if (*sys==SYS_CMP) {
+    else if (*sys==SYS_BDS) {
         switch (sigtype) {
             case  0: freq=0; *code=CODE_L1I; break; /* B1 with D1 (OEM6) */
             case  1: freq=1; *code=CODE_L7I; break; /* B2 with D1 (OEM6) */
@@ -995,7 +995,7 @@ static int decode_bdsephemerisb(raw_t *raw)
         msg=raw->msgtype+strlen(raw->msgtype);
         sprintf(msg," prn=%3d iod=%3d toes=%6.0f",prn,eph.iode,eph.toes);
     }
-    if (!(eph.sat=satno(SYS_CMP,prn))) {
+    if (!(eph.sat=satno(SYS_BDS,prn))) {
         trace(2,"oemv bdsephemeris satellite error: prn=%d\n",prn);
         return -1;
     }

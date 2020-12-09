@@ -699,7 +699,7 @@ static int decode_bnx_01_05(raw_t *raw, unsigned char *buff, int len)
         trace(2,"binex 0x01-05: length error len=%d\n",len);
         return -1;
     }
-    if (!(eph.sat=satno(SYS_CMP,prn))) {
+    if (!(eph.sat=satno(SYS_BDS,prn))) {
         trace(2,"binex 0x01-05: satellite error prn=%d\n",prn);
         return 0;
     }
@@ -962,7 +962,7 @@ static unsigned char *decode_bnx_7f_05_obs(raw_t *raw, unsigned char *buff,
         CODE_L1C ,CODE_L1C ,CODE_NONE,CODE_NONE,CODE_NONE,CODE_NONE, /*  0- 5 */
         CODE_L5X ,CODE_L5I ,CODE_L5Q ,CODE_L5X                       /*  6- 9 */
     };
-    const unsigned char codes_cmp[32]={
+    const unsigned char codes_bds[32]={
         CODE_L1X ,CODE_L1I ,CODE_L1Q ,CODE_L1X ,CODE_L7X ,CODE_L7I , /*  0- 5 */
         CODE_L7Q ,CODE_L7X ,CODE_L6X ,CODE_L6I ,CODE_L6Q ,CODE_L6X , /*  6-11 */
         CODE_L1X ,CODE_L1S ,CODE_L1L ,CODE_L1X                       /* 12-15 */
@@ -991,7 +991,7 @@ static unsigned char *decode_bnx_7f_05_obs(raw_t *raw, unsigned char *buff,
         case SYS_GAL: codes=codes_gal; break;
         case SYS_QZS: codes=codes_qzs; break;
         case SYS_SBS: codes=codes_sbs; break;
-        case SYS_CMP: codes=codes_cmp; break;
+        case SYS_BDS: codes=codes_bds; break;
     }
     for (i=0;i<nobs;i++) {
         
@@ -1060,7 +1060,7 @@ static unsigned char *decode_bnx_7f_05_obs(raw_t *raw, unsigned char *buff,
         pri[i]=getcodepri(sys,codes[code[i]&0x3F],raw->opt);
         
         /* frequency index for beidou */
-        if (sys==SYS_CMP) {
+        if (sys==SYS_BDS) {
             if      (freq[i]==5) freq[i]=2; /* B2 */
             else if (freq[i]==4) freq[i]=3; /* B3 */
         }
@@ -1160,7 +1160,7 @@ static int decode_bnx_7f_05(raw_t *raw, unsigned char *buff, int len)
             case 1: sat=satno(SYS_GLO,prn); break;
             case 2: sat=satno(SYS_SBS,prn); break;
             case 3: sat=satno(SYS_GAL,prn); break;
-            case 4: sat=satno(SYS_CMP,prn); break;
+            case 4: sat=satno(SYS_BDS,prn); break;
             case 5: sat=satno(SYS_QZS,prn); break;
             default: sat=0; break;
         }

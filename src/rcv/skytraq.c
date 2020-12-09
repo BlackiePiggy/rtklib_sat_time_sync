@@ -175,8 +175,8 @@ static int decode_stqraw(raw_t *raw)
         else if (MINPRNQZS<=prn&&prn<=MAXPRNQZS) {
             sys=SYS_QZS;
         }
-        else if (MINPRNCMP<=prn-200&&prn-200<=MAXPRNCMP) {
-            sys=SYS_CMP;
+        else if (MINPRNBDS<=prn-200&&prn-200<=MAXPRNBDS) {
+            sys=SYS_BDS;
             prn-=200;
         }
         else {
@@ -197,7 +197,7 @@ static int decode_stqraw(raw_t *raw)
         raw->obs.data[n].D[0]=!(ind&2)?0.0:R4(p+18);
         raw->obs.data[n].SNR[0]=U1(p+1)*4;
         raw->obs.data[n].LLI[0]=0;
-        raw->obs.data[n].code[0]=sys==SYS_CMP?CODE_L1I:CODE_L1C;
+        raw->obs.data[n].code[0]=sys==SYS_BDS?CODE_L1I:CODE_L1C;
         
         raw->lockt[sat-1][0]=ind&8?1:0; /* cycle slip */
         
@@ -296,7 +296,7 @@ static int decode_stqrawx(raw_t *raw)
             prn=U1(p+1);
         }
         else if (gnss_type==5) { /* BeiDou */
-            sys=SYS_CMP;
+            sys=SYS_BDS;
             switch (signal_type) {
                 case  4: sig=CODE_L7I; break;
                 case  6: sig=CODE_L6I; break;
@@ -326,7 +326,7 @@ static int decode_stqrawx(raw_t *raw)
         raw->obs.data[n].D[0]=!(ind&2)?0.0:R4(p+20);
         raw->obs.data[n].SNR[0]=U1(p+3)*4;
         raw->obs.data[n].LLI[0]=0;
-        raw->obs.data[n].code[0]=sys==SYS_CMP?CODE_L1I:CODE_L1C;
+        raw->obs.data[n].code[0]=sys==SYS_BDS?CODE_L1I:CODE_L1C;
         
         raw->lockt[sat-1][0]=ind&8?1:0; /* cycle slip */
         
@@ -547,7 +547,7 @@ static int decode_stqbds(raw_t *raw)
                 U1(p+1)-200,U1(p+2));
     }
     prn=U1(p+1)-200;
-    if (!(sat=satno(SYS_CMP,prn))) {
+    if (!(sat=satno(SYS_BDS,prn))) {
         trace(2,"stq bds subframe satellite number error: prn=%d\n",prn);
         return -1;
     }

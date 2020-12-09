@@ -132,7 +132,7 @@ void MonitorDialog::Timer1Timer()
 		case  3: ShowGnav();       break;
 		case  4: ShowNav(SYS_GAL); break;
 		case  5: ShowNav(SYS_QZS); break;
-		case  6: ShowNav(SYS_CMP); break;
+		case  6: ShowNav(SYS_BDS); break;
 		case  7: ShowSbsNav();     break;
 		case  8: ShowIonUtc();     break;
 		case  9: ShowStr();        break;
@@ -140,7 +140,7 @@ void MonitorDialog::Timer1Timer()
 		case 11: ShowSat(SYS_GLO); break;
 		case 12: ShowSat(SYS_GAL); break;
 		case 13: ShowSat(SYS_QZS); break;
-		case 14: ShowSat(SYS_CMP); break;
+		case 14: ShowSat(SYS_BDS); break;
 		case 15: ShowSat(SYS_SBS); break;
 		case 16: ShowEst();        break;
 		case 17: ShowCov();        break;
@@ -415,7 +415,7 @@ void MonitorDialog::ShowRtk(void)
     if (rtk.opt.navsys&SYS_GAL) navsys=navsys+tr("Galileo ");
     if (rtk.opt.navsys&SYS_QZS) navsys=navsys+tr("QZSS ");
     if (rtk.opt.navsys&SYS_SBS) navsys=navsys+tr("SBAS ");
-    if (rtk.opt.navsys&SYS_CMP) navsys=navsys+tr("BeiDou ");
+    if (rtk.opt.navsys&SYS_BDS) navsys=navsys+tr("BeiDou ");
     if (rtk.opt.navsys&SYS_IRN) navsys=navsys+tr("IRNSS ");
 
     Label->setText("");

@@ -131,8 +131,8 @@ static bandcode_t rtklib_bandcode_map[CODE_COUNT] =
      {CODE_L5I, SYS_GPS, 3},     /* [CODE_GPS_L5I]  */
      {CODE_L5Q, SYS_GPS, 3},     /* [CODE_GPS_L5Q]  */
      {CODE_L5X, SYS_GPS, 3},     /* [CODE_GPS_L5X]  */
-     {CODE_L1I, SYS_CMP, 0},     /* [CODE_BDS2_B1]  */
-     {CODE_L7I, SYS_CMP, 1},     /* [CODE_BDS2_B2]  */
+     {CODE_L1I, SYS_BDS, 0},     /* [CODE_BDS2_B1]  */
+     {CODE_L7I, SYS_BDS, 1},     /* [CODE_BDS2_B2]  */
      {CODE_L1B, SYS_GAL, 0},     /* [CODE_GAL_E1B]  */
      {CODE_L1C, SYS_GAL, 0},     /* [CODE_GAL_E1C]  */
      {CODE_L1X, SYS_GAL, 0},     /* [CODE_GAL_E1X]  */
@@ -848,7 +848,7 @@ static int decode_bdsnav(raw_t *raw) {
     return -1;
   }
 
-  sat = satno(SYS_CMP, prn);
+  sat = satno(SYS_BDS, prn);
   if (sat == 0)
     return -1;
 

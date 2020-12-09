@@ -310,7 +310,7 @@ void Plot::UpdateSatList(void)
             case SYS_GLO: strcpy(s,"R"); break;
             case SYS_GAL: strcpy(s,"E"); break;
             case SYS_QZS: strcpy(s,"J"); break;
-            case SYS_CMP: strcpy(s,"C"); break;
+            case SYS_BDS: strcpy(s,"C"); break;
             case SYS_SBS: strcpy(s,"S"); break;
         }
         SatList->addItem(s);

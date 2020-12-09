@@ -90,7 +90,7 @@ OptDialog::OptDialog(QWidget* parent)
 {
     QString label;
     int freq[]={1,2,5,6,7,8,9},nglo=MAXPRNGLO,ngal=MAXPRNGAL,nqzs=MAXPRNQZS;
-    int ncmp=MAXPRNCMP,nirn=MAXPRNIRN;
+    int nbds=MAXPRNBDS,nirn=MAXPRNIRN;
 
     setupUi(this);
 
@@ -109,7 +109,7 @@ OptDialog::OptDialog(QWidget* parent)
     if (nglo<=0) NavSys2->setEnabled(false);
     if (ngal<=0) NavSys3->setEnabled(false);
     if (nqzs<=0) NavSys4->setEnabled(false);
-    if (ncmp<=0) NavSys6->setEnabled(false);
+    if (nbds<=0) NavSys6->setEnabled(false);
     if (nirn<=0) NavSys7->setEnabled(false);
 
     QCompleter *fileCompleter=new QCompleter(this);
@@ -471,7 +471,7 @@ void OptDialog::GetOpt(void)
     NavSys3		 ->setChecked(PrcOpt.navsys&SYS_GAL);
     NavSys4		 ->setChecked(PrcOpt.navsys&SYS_QZS);
     NavSys5		 ->setChecked(PrcOpt.navsys&SYS_SBS);
-    NavSys6		 ->setChecked(PrcOpt.navsys&SYS_CMP);
+    NavSys6		 ->setChecked(PrcOpt.navsys&SYS_BDS);
     NavSys7		 ->setChecked(PrcOpt.navsys&SYS_IRN);
     PosOpt1		 ->setChecked(PrcOpt.posopt[0]);
     PosOpt2		 ->setChecked(PrcOpt.posopt[1]);
@@ -598,7 +598,7 @@ void OptDialog::SetOpt(void)
     if (NavSys3->isChecked()) PrcOpt.navsys|=SYS_GAL;
     if (NavSys4->isChecked()) PrcOpt.navsys|=SYS_QZS;
     if (NavSys5->isChecked()) PrcOpt.navsys|=SYS_SBS;
-    if (NavSys6->isChecked()) PrcOpt.navsys|=SYS_CMP;
+    if (NavSys6->isChecked()) PrcOpt.navsys|=SYS_BDS;
     if (NavSys7->isChecked()) PrcOpt.navsys|=SYS_IRN;
     PrcOpt.posopt[0] =PosOpt1   ->isChecked();
     PrcOpt.posopt[1] =PosOpt2   ->isChecked();
@@ -754,7 +754,7 @@ void OptDialog::LoadOpt(const QString &file)
     NavSys3	     ->setChecked(prcopt.navsys&SYS_GAL);
     NavSys4	     ->setChecked(prcopt.navsys&SYS_QZS);
     NavSys5	     ->setChecked(prcopt.navsys&SYS_SBS);
-    NavSys6	     ->setChecked(prcopt.navsys&SYS_CMP);
+    NavSys6	     ->setChecked(prcopt.navsys&SYS_BDS);
     NavSys7	     ->setChecked(prcopt.navsys&SYS_IRN);
     PosOpt1		 ->setChecked(prcopt.posopt[0]);
     PosOpt2		 ->setChecked(prcopt.posopt[1]);
@@ -926,7 +926,7 @@ void OptDialog::SaveOpt(const QString &file)
                       (NavSys3->isChecked()?SYS_GAL:0)|
                       (NavSys4->isChecked()?SYS_QZS:0)|
                       (NavSys5->isChecked()?SYS_SBS:0)|
-                      (NavSys6->isChecked()?SYS_CMP:0)|
+                      (NavSys6->isChecked()?SYS_BDS:0)|
                       (NavSys7->isChecked()?SYS_IRN:0);
     prcopt.posopt[0]=PosOpt1->isChecked();
     prcopt.posopt[1]=PosOpt2->isChecked();

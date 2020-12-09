@@ -824,7 +824,7 @@ static int DecodeBeidouEphemeris(raw_t *Raw)
         return -1;
     }
     prn = U1(p+5);
-    if (!(sat=satno(SYS_CMP, prn)))
+    if (!(sat=satno(SYS_BDS, prn)))
     {
         tracet(2, "RT17: Beidou ephemeris satellite number error, PRN=%d.\n", prn);
         return -1;

@@ -2246,7 +2246,7 @@ void Plot::UpdateSatSel(void)
     else if (SatListText=="R") sys=SYS_GLO;
     else if (SatListText=="E") sys=SYS_GAL;
     else if (SatListText=="J") sys=SYS_QZS;
-    else if (SatListText=="C") sys=SYS_CMP;
+    else if (SatListText=="C") sys=SYS_BDS;
     else if (SatListText=="S") sys=SYS_SBS;
     for (i=0;i<MAXSAT;i++) {
         satno2id(i+1,id);

@@ -77,7 +77,7 @@ typedef struct {                /* stream file type */
 
 /* global variables ----------------------------------------------------------*/
 static const int navsys[]={     /* system codes */
-    SYS_GPS,SYS_GLO,SYS_GAL,SYS_QZS,SYS_SBS,SYS_CMP,SYS_IRN,0
+    SYS_GPS,SYS_GLO,SYS_GAL,SYS_QZS,SYS_SBS,SYS_BDS,SYS_IRN,0
 };
 /* convert rinex obs type ver.3 -> ver.2 -------------------------------------*/
 static void convcode(double ver, int sys, char *type)
@@ -102,7 +102,7 @@ static void convcode(double ver, int sys, char *type)
     else if (ver>=2.12&&sys==SYS_GLO&&!strcmp(type+1,"2C")) { /* L2C/A */
         strcpy(type+1,"D");
     }
-    else if (sys==SYS_CMP&&(!strcmp(type+1,"1I")||!strcmp(type+1,"1Q")||
+    else if (sys==SYS_BDS&&(!strcmp(type+1,"1I")||!strcmp(type+1,"1Q")||
              !strcmp(type+1,"1X"))) { /* B1 */
         strcpy(type+1,"2");
     }
@@ -681,7 +681,7 @@ static int scan_obstype(int format, char **files, int nf, rnxopt_t *opt,
 /* set observation types -----------------------------------------------------*/
 static void set_obstype(int format, rnxopt_t *opt)
 {
-    /* default supported codes for {GPS,GLO,GAL,QZS,SBS,CMP,IRN} */
+    /* default supported codes for {GPS,GLO,GAL,QZS,SBS,BDS,IRN} */
     static const unsigned char codes_rtcm2[NSATSYS][8]={ /* rtcm2 */
         {CODE_L1C,CODE_L1P,CODE_L2C,CODE_L2P},
         {CODE_L1C,CODE_L1P,CODE_L2C,CODE_L2P},
@@ -1113,7 +1113,7 @@ static void convnav(FILE **ofp, rnxopt_t *opt, strfile_t *str, int *n)
             n[5]++;
         }
     }
-    else if (sys==SYS_CMP) {
+    else if (sys==SYS_BDS) {
         if (opt->exsats[str->sat-1]==1||!screent(str->time,ts1,te1,0.0)) return;
         
         if (ofp[1]&&!sep_nav) {

@@ -357,17 +357,17 @@ void CodeOptDialog::UpdateEnable(void)
     J35->setEnabled((NavSys&SYS_QZS)&&(FreqType&FREQTYPE_E6));
     J36->setEnabled((NavSys&SYS_QZS)&&(FreqType&FREQTYPE_E6));
     J33->setEnabled((NavSys&SYS_QZS)&&(FreqType&FREQTYPE_E6));
-    /*C40->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L1));
-    C41->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L1));*/
-    C47->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L2));
-    C48->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L2));
-    C12->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L2));
-    C27->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L2));
-    C28->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L2));
-    C29->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_L2));
-    C42->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_E6));
-    C43->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_E6));
-    C33->setEnabled((NavSys&SYS_CMP)&&(FreqType&FREQTYPE_E6));
+    /*C40->setEnabled((NavSys&SYS_BDS)&&(FreqType&FREQTYPE_L1));
+    C41->setEnabled((NavSys&SYS_BDS)&&(FreqType&FREQTYPE_L1));*/
+    C47->setEnabled((NavSys&SYS_BDS)&&(FreqType&FREQTYPE_L2));
+    C48->setEnabled((NavSys&SYS_BDS)&&(FreqType&FREQTYPE_L2));
+    C12->setEnabled((NavSys&SYS_BDS)&&(FreqType&FREQTYPE_L2));
+    C27->setEnabled((NavSys&SYS_BDS)&&(FreqType&FREQTYPE_L2));
+    C28->setEnabled((NavSys&SYS_BDS)&&(FreqType&FREQTYPE_L2));
+    C29->setEnabled((NavSys&SYS_BDS)&&(FreqType&FREQTYPE_L2));
+    C42->setEnabled((NavSys&SYS_BDS)&&(FreqType&FREQTYPE_E6));
+    C43->setEnabled((NavSys&SYS_BDS)&&(FreqType&FREQTYPE_E6));
+    C33->setEnabled((NavSys&SYS_BDS)&&(FreqType&FREQTYPE_E6));
     I49->setEnabled((NavSys&SYS_IRN)&&(FreqType&FREQTYPE_L5));
     I50->setEnabled((NavSys&SYS_IRN)&&(FreqType&FREQTYPE_L5));
     I26->setEnabled((NavSys&SYS_IRN)&&(FreqType&FREQTYPE_L5));

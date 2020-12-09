@@ -1198,13 +1198,13 @@ void Plot::UpdateMp(void)
             
             code2obs(data->code[j],&f1);
             
-            if (sys==SYS_CMP) {
+            if (sys==SYS_BDS) {
                 if      (f1==5) f1=2; /* B2 */
                 else if (f1==4) f1=3; /* B3 */
             }
             if      (sys==SYS_GAL) f2=f1==1?3:1; /* E1/E5a */
             else if (sys==SYS_SBS) f2=f1==1?3:1; /* L1/L5 */
-            else if (sys==SYS_CMP) f2=f1==1?2:1; /* B1/B2 */
+            else if (sys==SYS_BDS) f2=f1==1?2:1; /* B1/B2 */
             else                   f2=f1==1?2:1; /* L1/L2 */
             
             lam1=satwavelen(data->sat,f1-1,&Nav);
@@ -1226,12 +1226,12 @@ void Plot::UpdateMp(void)
             
             code2obs(Obs.data[j].code[i],&f1);
             
-            if (sys==SYS_CMP) {
+            if (sys==SYS_BDS) {
                 if      (f1==5) f1=2; /* B2 */
                 else if (f1==4) f1=3; /* B3 */
             }
             if      (sys==SYS_GAL) f2=f1==1?3:1;
-            else if (sys==SYS_CMP) f2=f1==1?2:1;
+            else if (sys==SYS_BDS) f2=f1==1?2:1;
             else                   f2=f1==1?2:1;
             
             if ((Obs.data[j].LLI[i]&1)||(Obs.data[j].LLI[f2-1]&1)||

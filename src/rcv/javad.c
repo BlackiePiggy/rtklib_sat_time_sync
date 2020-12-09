@@ -129,7 +129,7 @@ static int tofreq(char sig, int sys, int *type)
         case SYS_SBS: j=2; break;
         case SYS_GAL: j=3; break;
         case SYS_GLO: j=4; break;
-        case SYS_CMP: j=5; break;
+        case SYS_BDS: j=5; break;
         case SYS_IRN: j=6; break;
         default: return -1;
     }
@@ -176,11 +176,11 @@ static double freq_sys(int sys, int freq, int freqn)
         }
         return 0.0;
     }
-    else if (sys==SYS_CMP) {
+    else if (sys==SYS_BDS) {
         switch (freq) {
-            case 0: return FREQ1_CMP; /* B1 */
-            case 1: return FREQ2_CMP; /* B2 */
-            case 2: return FREQ3_CMP; /* B3 */
+            case 0: return FREQ1_BDS; /* B1 */
+            case 1: return FREQ2_BDS; /* B2 */
+            case 2: return FREQ3_BDS; /* B3 */
         }
         return 0.0;
     }
@@ -381,7 +381,7 @@ static int decode_SI(raw_t *raw)
         else if (usi<=192) sat=0;
         else if (usi<=197) sat=satno(SYS_QZS,usi);     /* 193-197: QZSS */
         else if (usi<=210) sat=0;
-        else if (usi<=240) sat=satno(SYS_CMP,usi-210); /* 211-240: BeiDou */
+        else if (usi<=240) sat=satno(SYS_BDS,usi-210); /* 211-240: BeiDou */
         else if (usi<=247) sat=satno(SYS_IRN,usi-240); /* 241-247: IRNSS */
         else               sat=0;
         
@@ -574,7 +574,7 @@ static int decode_eph(raw_t *raw, int sys)
         eph.toc=gpst2time(eph.week,toc);
         eph.ttr=adjweek(eph.toe,tow);
     }
-    else if (sys==SYS_CMP) {
+    else if (sys==SYS_BDS) {
         if (!(eph.sat=satno(sys,prn))) {
             trace(2,"javad ephemeris satellite error: sys=%d prn=%d\n",sys,prn);
             return -1;
@@ -769,7 +769,7 @@ static int decode_CN(raw_t *raw)
         trace(2,"javad QE length error: len=%d\n",raw->len);
         return -1;
     }
-    return decode_eph(raw,SYS_CMP);
+    return decode_eph(raw,SYS_BDS);
 }
 /* decode [IE] irnss ephemeris -----------------------------------------------*/
 static int decode_IE(raw_t *raw)
@@ -1239,7 +1239,7 @@ static int decode_rx(raw_t *raw, char code)
         /*                             Ksys  Asys */
         if      (sys==SYS_SBS) prm=(pr*1E-11+0.125)*CLIGHT; /* [6] */
         else if (sys==SYS_QZS) prm=(pr*2E-11+0.125)*CLIGHT; /* [3] */
-        else if (sys==SYS_CMP) prm=(pr*2E-11+0.105)*CLIGHT; /* [4] */
+        else if (sys==SYS_BDS) prm=(pr*2E-11+0.105)*CLIGHT; /* [4] */
         else if (sys==SYS_GAL) prm=(pr*2E-11+0.085)*CLIGHT; /* [7] */
         else if (sys==SYS_IRN) prm=(pr*2E-11+0.105)*CLIGHT; /* [6] */
         else                   prm=(pr*1E-11+0.075)*CLIGHT;

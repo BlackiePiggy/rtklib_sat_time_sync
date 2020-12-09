@@ -22,7 +22,7 @@ OptDialog::OptDialog(QWidget *parent)
     setupUi(this);
     widget->setVisible(false);
 
-    int nglo=MAXPRNGLO,ngal=MAXPRNGAL,nqzs=MAXPRNQZS,ncmp=MAXPRNCMP;
+    int nglo=MAXPRNGLO,ngal=MAXPRNGAL,nqzs=MAXPRNQZS,nbds=MAXPRNBDS;
     int nirn=MAXPRNIRN;
     
 #if 0
@@ -97,7 +97,7 @@ OptDialog::OptDialog(QWidget *parent)
     if (nglo<=0) NavSys2->setEnabled(false);
     if (ngal<=0) NavSys3->setEnabled(false);
     if (nqzs<=0) NavSys4->setEnabled(false);
-    if (ncmp<=0) NavSys6->setEnabled(false);
+    if (nbds<=0) NavSys6->setEnabled(false);
     if (nirn<=0) NavSys7->setEnabled(false);
 
     UpdateEnable();        
@@ -431,7 +431,7 @@ void OptDialog::GetOpt(void)
     NavSys3	     ->setChecked(mainForm->NavSys&SYS_GAL);
     NavSys4	     ->setChecked(mainForm->NavSys&SYS_QZS);
     NavSys5	     ->setChecked(mainForm->NavSys&SYS_SBS);
-    NavSys6	     ->setChecked(mainForm->NavSys&SYS_CMP);
+    NavSys6	     ->setChecked(mainForm->NavSys&SYS_BDS);
     NavSys7	     ->setChecked(mainForm->NavSys&SYS_IRN);
     PosOpt1	     ->setChecked(mainForm->PosOpt[0]);
     PosOpt2	     ->setChecked(mainForm->PosOpt[1]);
@@ -553,7 +553,7 @@ void OptDialog::SetOpt(void)
     if (NavSys3->isChecked()) mainForm->NavSys|=SYS_GAL;
     if (NavSys4->isChecked()) mainForm->NavSys|=SYS_QZS;
     if (NavSys5->isChecked()) mainForm->NavSys|=SYS_SBS;
-    if (NavSys6->isChecked()) mainForm->NavSys|=SYS_CMP;
+    if (NavSys6->isChecked()) mainForm->NavSys|=SYS_BDS;
     if (NavSys7->isChecked()) mainForm->NavSys|=SYS_IRN;
     mainForm->PosOpt[0]	  	=PosOpt1	->isChecked();
     mainForm->PosOpt[1]	  	=PosOpt2	->isChecked();
@@ -689,7 +689,7 @@ void OptDialog::LoadOpt(const QString &file)
     NavSys3	     ->setChecked(prcopt.navsys&SYS_GAL);
     NavSys4	     ->setChecked(prcopt.navsys&SYS_QZS);
     NavSys5	     ->setChecked(prcopt.navsys&SYS_SBS);
-    NavSys6	     ->setChecked(prcopt.navsys&SYS_CMP);
+    NavSys6	     ->setChecked(prcopt.navsys&SYS_BDS);
     PosOpt1	     ->setChecked(prcopt.posopt[0]);
     PosOpt2	     ->setChecked(prcopt.posopt[1]);
     PosOpt3	     ->setChecked(prcopt.posopt[2]);
@@ -833,7 +833,7 @@ void OptDialog::SaveOpt(const QString &file)
                       (NavSys3->isChecked()?SYS_GAL:0)|
                       (NavSys4->isChecked()?SYS_QZS:0)|
                       (NavSys5->isChecked()?SYS_SBS:0)|
-                      (NavSys6->isChecked()?SYS_CMP:0);
+                      (NavSys6->isChecked()?SYS_BDS:0);
     prcopt.posopt[0]=PosOpt1	->isChecked();
     prcopt.posopt[1]=PosOpt2	->isChecked();
     prcopt.posopt[2]=PosOpt3	->isChecked();

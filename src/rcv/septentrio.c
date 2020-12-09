@@ -64,7 +64,7 @@ static unsigned char locktime[255][32];
 #define ID_GALRAWINAV   4023    /* SBF message id: Galileo raw navigation page or frame */
 #define ID_GALRAWCNAV   4024    /* SBF message id: Galileo raw navigation page or frame */
 #define ID_GLORAWCA     4026    /* SBF message id: GLONASS raw navigation page or frame */
-#define ID_CMPRAW       4047    /* SBF message id: Compass raw navigation page or frame */
+#define ID_BDSRAW       4047    /* SBF message id: Compass raw navigation page or frame */
 #define ID_QZSSL1CA     4066    /* SBF message id: QZSS raw navigation page or frame */
 #define ID_QZSSL2C      4067    /* SBF message id: QZSS raw navigation page or frame */
 #define ID_QZSSL5       4068    /* SBF message id: QZSS raw navigation page or frame */
@@ -100,7 +100,7 @@ static unsigned char locktime[255][32];
 #define ID_GALION   4030        /* SBF message id: Galileo ionosphere data, Klobuchar coefficients */
 #define ID_GALUTC   4031        /* SBF message id: Galileo UTC data */
 
-#define ID_CMPNAV   4081        /* SBF message id: Compass navigation data */
+#define ID_BDSNAV   4081        /* SBF message id: Compass navigation data */
 #define ID_QZSSNAV  4095        /* SBF message id: QZSS navigation data */
 
 #define ID_GALGSTGPS  4032      /* SBF message id: Galileo GPS time offset */
@@ -342,7 +342,7 @@ static int decode_measepoch(raw_t *raw){
             sys = SYS_SBS;                      /* navigation system: SBAS    */
             sat = prn;}
         else if ((prn>=141)&&(prn<=177)){
-            sys = SYS_CMP;                      /* navigation system: BeiDou  */
+            sys = SYS_BDS;                      /* navigation system: BeiDou  */
             sat = prn - 140;}
         else if ((prn>=181)&&(prn<=187)){
             sys = SYS_QZS;                      /* navigation system: QZSS    */
@@ -559,12 +559,12 @@ static double getSigFreq(int _signType, int freqNo){
         return FREQL5;
     case 26:                                                       /* QZSL5   */
         return FREQL5;
-    case 28:                                                       /* CMPL1   */
-        return FREQ1_CMP;
-    case 29:                                                       /* CMPE5B  */
-        return FREQ2_CMP;
-    case 30:                                                       /* CMPB3   */
-        return FREQ3_CMP;
+    case 28:                                                       /* BDSL1   */
+        return FREQ1_BDS;
+    case 29:                                                       /* BDSE5B  */
+        return FREQ2_BDS;
+    case 30:                                                       /* BDSB3   */
+        return FREQ3_BDS;
     }
     return FREQL1;
 }
@@ -659,13 +659,13 @@ static int getSignalCode(int signType){
     case 26:                                                       /* QZSL5   */
         _code=CODE_L5Q;
         break;
-    case 28:                                                       /* CMPL1   */
+    case 28:                                                       /* BDSL1   */
         _code=CODE_L2I;
         break;
-    case 29:                                                       /* CMPE5B  */
+    case 29:                                                       /* BDSE5B  */
         _code=CODE_L7I;
         break;
-    case 30:                                                       /* CMPB3   */
+    case 30:                                                       /* BDSB3   */
         _code=CODE_L6I;
         break;
     default:                                                       /* GPSL1CA */
@@ -749,13 +749,13 @@ static int getFreqNo(int signType){
     case 26:                                                       /* QZSSL5  */
         _freq=2;
         break;
-    case 28:                                                       /* CMPL1   */
+    case 28:                                                       /* BDSL1   */
         _freq=0;
         break;
-    case 29:                                                       /* CMPE5B  */
+    case 29:                                                       /* BDSE5B  */
         _freq=2;
         break;
-    case 30:                                                       /* CMPB3   */
+    case 30:                                                       /* BDSB3   */
         _freq=1;
         break;
     default:                                                       /* GPSL1CA */
@@ -1045,7 +1045,7 @@ static int decode_sbasnav(raw_t *raw){
 #if 0 /* UNUSED */
 
 /* decode SBF nav message for Compass/Beidou (navigation data) --------------------------*/
-static int decode_cmpnav(raw_t *raw){
+static int decode_bdsnav(raw_t *raw){
 
     uint8_t *puiTmp = (raw->buff)+6;
     eph_t eph={0};
@@ -1053,20 +1053,20 @@ static int decode_cmpnav(raw_t *raw){
     int prn, sat;
     uint16_t week_oc,week_oe;
 
-    trace(4,"SBF decode_cmpnav: len=%d\n",raw->len);
+    trace(4,"SBF decode_bdsnav: len=%d\n",raw->len);
 
     if ((raw->len)<140) {
-        trace(2,"SBF decode_cmpnav frame length error: len=%d\n",raw->len);
+        trace(2,"SBF decode_bdsnav frame length error: len=%d\n",raw->len);
         return -1;
     }
 
     prn = U1(puiTmp+8)-140;
-    sat = satno(SYS_CMP,prn);
+    sat = satno(SYS_BDS,prn);
 
     if (sat == 0) return -1;
 
     if (!((prn>=1)&&(prn<=32))){
-        trace(2,"SBF decode_cmpnav prn error: sat=%d\n",prn);
+        trace(2,"SBF decode_bdsnav prn error: sat=%d\n",prn);
         return -1;
     }
 
@@ -1502,7 +1502,7 @@ static int decode_glorawcanav(raw_t *raw){
 #if 0 /* UNUSED */
 
 /* decode SBF raw nav message (raw navigation data) for COMPASS ---------*/
-static int decode_cmpraw(raw_t *raw){
+static int decode_bdsraw(raw_t *raw){
     eph_t eph={0};
     unsigned int words[10];
     uint8_t *p;
@@ -1511,11 +1511,11 @@ static int decode_cmpraw(raw_t *raw){
 
     p=(raw->buff)+6;
     prn=U1(p+8)-140;
-    sat=satno(SYS_CMP,prn);
+    sat=satno(SYS_BDS,prn);
     if (sat == 0) return -1;
 
     if (raw->len<60) {
-        trace(2,"SBF decode_cmprawinav length error: sat=%d len=%d\n",sat,raw->len);
+        trace(2,"SBF decode_bdsrawinav length error: sat=%d len=%d\n",sat,raw->len);
         return -1;
     }
 
@@ -1528,7 +1528,7 @@ static int decode_cmpraw(raw_t *raw){
     satsys(sat,&prn);
     id=(words[0]>>12)&0x07; /* subframe id (3bit) */
     if (id<1||5<id) {
-        trace(2,"SBF decode_cmprawinav length error: sat=%2d\n",sat);
+        trace(2,"SBF decode_bdsrawinav length error: sat=%2d\n",sat);
         return -1;
     }
     if (prn>=5) { /* IGSO/MEO */
@@ -2153,9 +2153,9 @@ static int decode_sbf(raw_t *raw)
         case ID_QZSS_NAV:       return decode_qzssnav(raw);
 #endif
 
-#ifdef ENACMP
-        case ID_CMPRAW:         return decode_cmpraw(raw);
-        case ID_CMPNAV:         return decode_cmpnav(raw);
+#ifdef ENABDS
+        case ID_BDSRAW:         return decode_bdsraw(raw);
+        case ID_BDSNAV:         return decode_bdsnav(raw);
 #endif
 #endif
 

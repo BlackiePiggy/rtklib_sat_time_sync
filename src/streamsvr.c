@@ -140,7 +140,7 @@ static void raw2rtcm(rtcm_t *out, const raw_t *raw, int ret)
             case SYS_GPS:
             case SYS_GAL:
             case SYS_QZS:
-            case SYS_CMP: out->nav.eph [sat-1]=raw->nav.eph [sat-1]; break;
+            case SYS_BDS: out->nav.eph [sat-1]=raw->nav.eph [sat-1]; break;
         }
         out->ephsat=sat;
     }
@@ -177,7 +177,7 @@ static void rtcm2rtcm(rtcm_t *out, const rtcm_t *rtcm, int ret, int stasel)
             case SYS_GPS:
             case SYS_GAL:
             case SYS_QZS:
-            case SYS_CMP: out->nav.eph [sat-1]=rtcm->nav.eph [sat-1]; break;
+            case SYS_BDS: out->nav.eph [sat-1]=rtcm->nav.eph [sat-1]; break;
         }
         out->ephsat=sat;
     }
@@ -206,7 +206,7 @@ static void write_rtcm3_msm(stream_t *str, rtcm_t *out, int msg, int sync)
     else if (1091<=msg&&msg<=1097) sys=SYS_GAL;
     else if (1101<=msg&&msg<=1107) sys=SYS_SBS;
     else if (1111<=msg&&msg<=1117) sys=SYS_QZS;
-    else if (1121<=msg&&msg<=1127) sys=SYS_CMP;
+    else if (1121<=msg&&msg<=1127) sys=SYS_BDS;
     else return;
     
     data=out->obs.data;
@@ -313,7 +313,7 @@ static int nextsat(nav_t *nav, int sat, int msg)
         case 1045:
         case 1046: sys=SYS_GAL; p1=MINPRNGAL; p2=MAXPRNGAL; break;
         case   63:
-        case 1042: sys=SYS_CMP; p1=MINPRNCMP; p2=MAXPRNCMP; break;
+        case 1042: sys=SYS_BDS; p1=MINPRNBDS; p2=MAXPRNBDS; break;
         default: return 0;
     }
     if (satsys(sat,&p0)!=sys) return satno(sys,p1);

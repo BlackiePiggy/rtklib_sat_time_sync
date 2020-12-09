@@ -14,11 +14,11 @@ ConvOptDialog::ConvOptDialog(QWidget *parent)
 
     codeOptDialog = new CodeOptDialog(this,this);
 
-	int glo=MAXPRNGLO,gal=MAXPRNGAL,qzs=MAXPRNQZS,cmp=MAXPRNCMP;
+    int glo=MAXPRNGLO,gal=MAXPRNGAL,qzs=MAXPRNQZS,bds=MAXPRNBDS;
     if (glo<=0) Nav2->setEnabled(false);
     if (gal<=0) Nav3->setEnabled(false);
     if (qzs<=0) Nav4->setEnabled(false);
-    if (cmp<=0) Nav6->setEnabled(false);
+    if (bds<=0) Nav6->setEnabled(false);
 
     connect(BtnCancel,SIGNAL(clicked(bool)),this,SLOT(reject()));
     connect(BtnOk,SIGNAL(clicked(bool)),this,SLOT(BtnOkClick()));
@@ -70,7 +70,7 @@ void ConvOptDialog::showEvent(QShowEvent *event)
     Nav3->setChecked(mainWindow->NavSys&SYS_GAL);
     Nav4->setChecked(mainWindow->NavSys&SYS_QZS);
     Nav5->setChecked(mainWindow->NavSys&SYS_SBS);
-    Nav6->setChecked(mainWindow->NavSys&SYS_CMP);
+    Nav6->setChecked(mainWindow->NavSys&SYS_BDS);
     Nav7->setChecked(mainWindow->NavSys&SYS_IRN);
     Obs1->setChecked(mainWindow->ObsType&OBSTYPE_PR);
     Obs2->setChecked(mainWindow->ObsType&OBSTYPE_CP);
@@ -128,7 +128,7 @@ void ConvOptDialog::BtnOkClick()
     if (Nav3->isChecked()) navsys|=SYS_GAL;
     if (Nav4->isChecked()) navsys|=SYS_QZS;
     if (Nav5->isChecked()) navsys|=SYS_SBS;
-    if (Nav6->isChecked()) navsys|=SYS_CMP;
+    if (Nav6->isChecked()) navsys|=SYS_BDS;
     if (Nav7->isChecked()) navsys|=SYS_IRN;
     if (Obs1->isChecked()) obstype|=OBSTYPE_PR;
     if (Obs2->isChecked()) obstype|=OBSTYPE_CP;
@@ -174,7 +174,7 @@ void ConvOptDialog::BtnMaskClick()
     if (Nav3->isChecked()) codeOptDialog->NavSys|=SYS_GAL;
     if (Nav4->isChecked()) codeOptDialog->NavSys|=SYS_QZS;
     if (Nav5->isChecked()) codeOptDialog->NavSys|=SYS_SBS;
-    if (Nav6->isChecked()) codeOptDialog->NavSys|=SYS_CMP;
+    if (Nav6->isChecked()) codeOptDialog->NavSys|=SYS_BDS;
     if (Nav7->isChecked()) codeOptDialog->NavSys|=SYS_IRN;
     if (Freq1->isChecked()) codeOptDialog->FreqType|=FREQTYPE_L1;
     if (Freq2->isChecked()) codeOptDialog->FreqType|=FREQTYPE_L2;

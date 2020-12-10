@@ -92,7 +92,7 @@ extern int showmsg(char *format, ...)
         va_end(arg);
         QMetaObject::invokeMethod(mainForm, "ShowMsg",Qt::QueuedConnection,
                                   Q_ARG(QString,QString(buff)));
-    }    
+    }
     return !mainForm->AbortFlag;
 }
 // set time span of progress bar --------------------------------------------
@@ -218,7 +218,7 @@ MainForm::MainForm(QWidget *parent)
     dirModel->setFilter(QDir::AllDirs|QDir::Drives|QDir::NoDotAndDotDot);
     dirCompleter->setModel(dirModel);
     OutDir->setCompleter(dirCompleter);
-
+    mainForm->AbortFlag = 1;
 
     connect(BtnPlot,SIGNAL(clicked(bool)),this,SLOT(BtnPlotClick()));
     connect(BtnView,SIGNAL(clicked(bool)),this,SLOT(BtnViewClick()));

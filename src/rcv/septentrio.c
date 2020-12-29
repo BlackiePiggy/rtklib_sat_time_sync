@@ -136,6 +136,7 @@ static int getFreqNo(int signType);
 #define I1(p) (*((signed char *)(p)))
 static unsigned short U2(unsigned char *p) {unsigned short u; memcpy(&u,p,2); return u;}
 static unsigned int   U4(unsigned char *p) {unsigned int   u; memcpy(&u,p,4); return u;}
+static unsigned int   U40(unsigned char *p) {unsigned int   u; memcpy(&u,p,40); return u;}
 static float          R4(unsigned char *p) {float          r; memcpy(&r,p,4); return r;}
 static double         R8(unsigned char *p) {double         r; memcpy(&r,p,8); return r;}
 static signed int     I4(unsigned char *p) {signed int     u; memcpy(&u,p,4); return u;}
@@ -1042,7 +1043,7 @@ static int decode_sbasnav(raw_t *raw){
     return 2;
 }
 
-#if 0 /* UNUSED */
+#if 1 /* UNUSED */
 
 /* decode SBF nav message for Compass/Beidou (navigation data) --------------------------*/
 static int decode_bdsnav(raw_t *raw){
@@ -1499,15 +1500,19 @@ static int decode_glorawcanav(raw_t *raw){
     return 2;
 }
 
-#if 0 /* UNUSED */
+#if 1 /* UNUSED */
 
 /* decode SBF raw nav message (raw navigation data) for COMPASS ---------*/
 static int decode_bdsraw(raw_t *raw){
     eph_t eph={0};
     unsigned int words[10];
+     unsigned int test_words;
+     unsigned int temp_words[10];
     uint8_t *p;
     int sat,prn;
     int i,id,pgn;
+    uint8_t _buf[30]={0};
+    int ii=0;
 
     p=(raw->buff)+6;
     prn=U1(p+8)-140;
@@ -1523,15 +1528,28 @@ static int decode_bdsraw(raw_t *raw){
     {
         return -1;
     }
-    for (i=0;i<10;i++) words[i]=U4(p+12+i*4)&0x3FFFFFFF; /* 30 bits */
+    for (i=0;i<10;i++) temp_words[i]=U4(p+14+i*4); /* 30 bits */
 
+    words[0] = temp_words[0]>>2;
+    words[1] = ((28<<temp_words[0])&0x30000000) | (temp_words[1]>>4);
+    words[2] = ((26<<temp_words[1])&0x3C000000) | (temp_words[2]>>6);
+    words[3] = ((24<<temp_words[2])&0x3F000000) | (temp_words[3]>>8);
+    words[4] = ((22<<temp_words[3])&0x3FC00000) | (temp_words[4]>>10);
+    words[5] = ((20<<temp_words[4])&0x3FF00000) | (temp_words[5]>>12);
+    words[6] = ((18<<temp_words[5])&0x3FFC0000) | (temp_words[6]>>14);
+    words[7] = ((16<<temp_words[6])&0x3FFF0000) | (temp_words[7]>>16);
+    words[8] = ((14<<temp_words[7])&0x3FFFC000) | (temp_words[8]>>18);
+    words[9] = ((12<<temp_words[8])&0x3FFFF000) | (temp_words[9]>>20);
+
+
+    /* Now that we have a classic subframe we call the generic function */
     satsys(sat,&prn);
     id=(words[0]>>12)&0x07; /* subframe id (3bit) */
-    if (id<1||5<id) {
+      if (id<1||5<id) {
         trace(2,"SBF decode_bdsrawinav length error: sat=%2d\n",sat);
         return -1;
     }
-    if (prn>=5) { /* IGSO/MEO */
+    if (prn>5&&prn<59) { /* IGSO/MEO */
 
         for (i=0;i<10;i++) {
             setbitu(raw->subfrm[sat-1]+(id-1)*38,i*30,30,words[i]);
@@ -1557,14 +1575,16 @@ static int decode_bdsraw(raw_t *raw){
 
                 /* decode beidou D2 ephemeris */
                 if (!decode_bds_d2(raw->subfrm[sat-1],&eph)) return 0;
-            }
-            if (!strstr(raw->opt,"-EPHALL")) {
-                if (timediff(eph.toe,raw->nav.eph[sat-1].toe)==0.0) return 0; /* unchanged */
-            }
-            eph.sat=sat;
-            raw->nav.eph[sat-1]=eph;
-            raw->ephsat=sat;
-            return 2;
+     }
+    if (!strstr(raw->opt,"-EPHALL")) {
+        if (timediff(eph.toe,raw->nav.eph[sat-1].toe)==0.0&&
+                eph.iode==raw->nav.eph[sat-1].iode&&
+                eph.iodc==raw->nav.eph[sat-1].iodc) return 0; /* unchanged */
+    }
+    eph.sat=sat;
+    raw->nav.eph[sat-1]=eph;
+    raw->ephsat=sat;
+    return 2;
 }
 
 #endif /* UNUSED */
@@ -2119,7 +2139,7 @@ static int decode_sbf(raw_t *raw)
     switch (type) {
         case ID_MEASEPOCH:      return decode_measepoch(raw);
 
-        case ID_GPSNAV:         return decode_gpsnav(raw);
+
         case ID_GPSION:         return decode_gpsion(raw);
         case ID_GPSUTC:         return decode_gpsutc(raw);
         case ID_GPSALM:         return decode_gpsalm(raw);
@@ -2152,12 +2172,12 @@ static int decode_sbf(raw_t *raw)
         case ID_QZSSL5:         return decode_rawnav(raw, SYS_QZS);
         case ID_QZSS_NAV:       return decode_qzssnav(raw);
 #endif
-
+#endif
 #ifdef ENABDS
         case ID_BDSRAW:         return decode_bdsraw(raw);
         case ID_BDSNAV:         return decode_bdsnav(raw);
 #endif
-#endif
+
 
 #if 0 /* UNUSED */
         case ID_GEOMT00:        return decode_sbsfast(raw);

@@ -696,7 +696,7 @@ static int satpos_ssr(gtime_t time, gtime_t teph, int sat, const nav_t *nav,
         return 0;
     }
     if (ssr->udi[0]>=1.0) t1-=ssr->udi[0]/2.0;
-    if (ssr->udi[1]>=1.0) t2-=ssr->udi[0]/2.0;
+    if (ssr->udi[1]>=1.0) t2-=ssr->udi[1]/2.0;/*changed from 0 to 1 by xiang 2020/12/14*/
     
     for (i=0;i<3;i++) deph[i]=ssr->deph[i]+ssr->ddeph[i]*t1;
     dclk=ssr->dclk[0]+ssr->dclk[1]*t2+ssr->dclk[2]*t2*t2;

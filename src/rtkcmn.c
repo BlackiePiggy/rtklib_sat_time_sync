@@ -1178,6 +1178,31 @@ static int filter_(const double *x, const double *P, const double *H,
 		matmul("NN", n, n, n, 0.0, E, A, 1.0, Pp);*/ /*this addition is not right*/
 
     }
+#if 0
+	/*output filter results for debug by xiang */
+	fprintf(stderr, "x before update is %5d *1:\n", n);
+	matfprint(x, n, 1, 15, 3, stderr);
+	fprintf(stderr, "p before update is %5d * %5d:\n", n, n);
+	matfprint(P, n, n, 15, 3, stderr);
+
+	fprintf(stderr, "x States vector after update is (%5d x1):\n", n);
+	matfprint(xp, n, 1, 15, 7, stderr);
+
+	fprintf(stderr, "P Covariance matrix of states after update is (%5d x %5d):\n", n, n);
+	matfprint(Pp, n, n, 15, 7, stderr);
+
+	fprintf(stderr, "H Transpose of design Matrix is (%5d x %5d): \n", n, m);
+	matfprint(H, n, m, 8, 4, stderr);/*n is the row and m is the column */
+
+	fprintf(stderr, "v Innovation (measurement - model) is (%5d x 1):\n", m);
+	matfprint(v, m, 1, 10, 5, stderr);
+
+	/*fprintf(stderr, "v_ standarized Innovation (measurement - model) is (%5d x 1):\n", m);
+	matfprint(v_, m, 1, 10, 5, stderr);*/
+
+	fprintf(stderr, "R Covariance matrix of measurement error is (%5d x %5d):\n", m, m);
+	matfprint(R, m, m, 10, 7, stderr);
+#endif
 	free(F); free(Q); free(K); free(I); free(A); free(E);
     return info;
 }

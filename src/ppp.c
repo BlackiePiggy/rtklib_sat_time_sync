@@ -587,7 +587,7 @@ static void corr_meas_bia(const obsd_t *obs, const nav_t *nav, const double *aze
 		}
 		if (nav->bia){
 			if (nav->bia[obs->sat - 1].cBias[obs->code[i] - 1] != 0){
-				P[i] -= nav->bia[obs->sat - 1].cBias[obs->code[i] - 1];/*aligh to IF code*/
+				P[i] -= nav->bia[obs->sat - 1].cBias[obs->code[i] - 1];/*aligh to IF clock*/
 			}
 			else P[i] = 0;
 		}
@@ -932,6 +932,10 @@ static void uddcb_ppp(rtk_t *rtk)
         initx(rtk,1E-6,VAR_DCB,i);
 		initx(rtk, 1E-6, VAR_DCB, i+1);
     }
+	else{
+		rtk->P[i + i*rtk->nx] += SQR(0.00001)*fabs(rtk->tt);
+		rtk->P[i+1 + (i+1)*rtk->nx] += SQR(0.01)*fabs(rtk->tt);
+	}
 }
 static int CausedByOneSat(double *a, int n)
 {

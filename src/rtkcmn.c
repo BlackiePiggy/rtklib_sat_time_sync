@@ -196,9 +196,9 @@ const prcopt_t prcopt_default={ /* defaults processing options */
     0,1,0,0,1,0,                /* rcvstds,armaxiter,estion,esttrop,dynamics,tidecorr */
     1,0,0,0,0,                  /* niter,codesmooth,intpref,sbascorr,sbassatsel */
     0,0,                        /* rovpos,refpos */
-    WEIGHTOPT_ELEVATION,        /* weightmode */
+    WEIGHTOPT_SNR,        /* weightmode */
     {300.0,300.0,300.0},        /* eratio[] */
-    {100.0,0.003,0.003,0.0,1.0,52.0}, /* err[] */
+    {100.0,0.003,0.003,0.0,1.0,52}, /* err[] change 52 to 40 with ele_mask as 25dB-Hz*/
     {30.0,0.03,0.3},            /* std[] */
     {1E-4,1E-3,1E-4,1E-1,1E-2,0.0}, /* prn[] */
     5E-12,                      /* sclkstab */
@@ -602,7 +602,7 @@ extern unsigned char obs2code(const char *obs, int *freq)
 {
     int i;
     if (freq) *freq=0;
-    for (i=1;*obscodes[i];i++) {
+	for (i = 1; *obscodes[i] && i<(sizeof(obscodes) / sizeof(obscodes[0])); i++) {
         if (strcmp(obscodes[i],obs)) continue;
         if (freq) *freq=obsfreqs[i];
         return (unsigned char)i;
@@ -935,9 +935,9 @@ extern int normv3(const double *a, double *b)
 *          int    n,m       I   number of rows and columns of matrix
 * return : none
 *-----------------------------------------------------------------------------*/
-extern void matcpy(double *A, const double *B, int n, int m)
+extern void matcpy(double *dest, const double *src, int n, int m)
 {
-    memcpy(A,B,sizeof(double)*n*m);
+    memcpy(dest,src,sizeof(double)*n*m);
 }
 /* matrix routines -----------------------------------------------------------*/
 

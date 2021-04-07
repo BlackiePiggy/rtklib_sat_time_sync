@@ -523,12 +523,12 @@ extern int read_snxbias(const char *file, nav_t *nav)
 		if (buff[0] == '-') sec = 0;
 		else if (strstr(buff, "+BIAS/SOLUTION")) { sec = 1; }
 		if (sec == 1){
-			/*for CODE BIA*/
-			/*if (sscanf(buff, "%*s %*s %s %*s %lf:%lf:%lf %lf:%lf:%lf %*s %lf %lf", str,
-			&syear, &sdoy, &stod, &eyear, &edoy, &etod, &bias, &std)<8) continue;*/
+			/*for CODE/CAS BIA one more string for SVN*/
+			if (sscanf(buff, "%*s %*s %s %s %lf:%lf:%lf %lf:%lf:%lf %*s %lf %lf", str1,str2,
+			&syear, &sdoy, &stod, &eyear, &edoy, &etod, &bias, &std)<10) continue;
 			/*for GBM0MGXRAP BIA*/
-			if (sscanf(buff, "%*s %s %s %lf:%lf:%lf %lf:%lf:%lf %*s %lf", str1,str2,
-				&syear, &sdoy, &stod, &eyear, &edoy, &etod, &bias)<9) continue;
+			/*if (sscanf(buff, "%*s %s %s %lf:%lf:%lf %lf:%lf:%lf %*s %lf", str1,str2,
+				&syear, &sdoy, &stod, &eyear, &edoy, &etod, &bias)<9) continue;*/
 			if (!(sat = satid2no(str1))) continue;
 			if (!(codeIdx = obs2code(str2 + 1, frq))) continue;
 

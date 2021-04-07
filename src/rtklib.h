@@ -224,7 +224,7 @@ extern "C" {
 #define MAXRCV      64                  /* max receiver number (1 to MAXRCV) */
 #define MAXOBSTYPE  128                  /* max number of obs type in RINEX */
 #ifdef OBS_100HZ
-#define DTTOL       0.005               /* tolerance of time difference (s) */
+#define DTTOL       0.005               /* tolerance of time difference (s) 0.005*/
 #else
 #define DTTOL       0.025               /* tolerance of time difference (s) */
 #endif
@@ -1276,6 +1276,7 @@ typedef struct {        /* satellite status type */
     unsigned int rejc [NFREQ]; /* reject counter */
     double  gf;         /* geometry-free phase L1-L2 (m) */
     double  gf2;        /* geometry-free phase L1-L5 (m) */
+	double  gfdiff;
     double  mw;         /* MW-LC (m) */
 	double mwmean;
 	double mwmean2;

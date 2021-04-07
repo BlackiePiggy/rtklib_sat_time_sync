@@ -357,13 +357,13 @@ static void outsolstat(rtk_t *rtk,const nav_t *nav)
         satno2id(i+1,id);
         for (j=0;j<nfreq;j++) {
             k=IB(i+1,j,&rtk->opt);
-            fprintf(fp_stat,"$SAT,%d,%.3f,%s,%d,%.1f,%.1f,%.4f,%.4f,%d,%.0f,%d,%d,%d,%d,%d,%d,%.2f,%.6f,%.5f,%.5f,%.5f,%.5f,%.5f,%d,%d,%d,%.5f,%.5f\n",
+            fprintf(fp_stat,"$SAT,%d,%.3f,%s,%d,%.1f,%.1f,%.4f,%.4f,%d,%.0f,%d,%d,%d,%d,%d,%d,%.2f,%.6f,%.5f,%.5f,%.5f,%.5f,%.5f,%.5f,%d,%d,%d,%.5f,%.5f\n",
                     week,tow,id,j+1,ssat->azel[0]*R2D,ssat->azel[1]*R2D,
                     ssat->resp[j],ssat->resc[j],ssat->vsat[j],ssat->snr_rover[j]*0.25,
                     ssat->fix[j],ssat->slip[j]&3,ssat->lock[j],ssat->outc[j],
                     ssat->slipc[j],ssat->rejc[j],dgps?0:rtk->x[k],
                     dgps?0:rtk->P[k+k*rtk->nx],nav->lam[i][j],ssat->icbias[j],
-					ssat->mw, ssat->mwmean, ssat->gf, ssat->slipLLI[j], ssat->slipMW[j], ssat->slipGF[j],ssat->dion,ssat->vari); /*add mw, GF, slipGF;*/
+					ssat->mw, ssat->mwmean, ssat->gf, ssat->gfdiff, ssat->slipLLI[j], ssat->slipMW[j], ssat->slipGF[j], ssat->dion, ssat->vari); /*add mw, GF, slipGF;*/
         }
     }
 }
@@ -756,29 +756,29 @@ static void detslp_dop(rtk_t *rtk, const obsd_t *obs, int i, int rcv,
                        const nav_t *nav)
 {
     /* detection with doppler disabled because of clock-jump issue (v.2.3.0) */
-#if 0
+#if 1
     int f,sat=obs[i].sat;
     double tt,dph,dpt,lam,thres;
     
     trace(4,"detslp_dop: i=%d rcv=%d\n",i,rcv);
     
     for (f=0;f<rtk->opt.nf;f++) {
-        if (obs[i].L[f]==0.0||obs[i].D[f]==0.0||rtk->ph[rcv-1][sat-1][f]==0.0) {
+        if (obs[i].L[f]==0.0||obs[i].D[f]==0.0|| rtk->ssat[sat - 1].ph[rcv - 1][f]==0.0) {
             continue;
         }
-        if (fabs(tt=timediff(obs[i].time,rtk->pt[rcv-1][sat-1][f]))<DTTOL) continue;
+        if (fabs(tt=timediff(obs[i].time, rtk->ssat[sat - 1].pt[rcv - 1][f]))<DTTOL) continue;
         if ((lam=nav->lam[sat-1][f])<=0.0) continue;
         
         /* cycle slip threshold (cycle) */
         thres=MAXACC*tt*tt/2.0/lam+rtk->opt.err[4]*fabs(tt)*4.0;
         
         /* phase difference and doppler x time (cycle) */
-        dph=obs[i].L[f]-rtk->ph[rcv-1][sat-1][f];
+        dph=obs[i].L[f]-rtk->ssat[sat-1].ph[rcv-1][f];
         dpt=-obs[i].D[f]*tt;
         
         if (fabs(dph-dpt)<=thres) continue;
         
-        rtk->slip[sat-1][f]|=1;
+        rtk->ssat[sat-1].slip[f]|=1;
         
         errmsg(rtk,"slip detected (sat=%2d rcv=%d L%d=%.3f %.3f thres=%.3f)\n",
                sat,rcv,f+1,dph,dpt,thres);

@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>-k pppfloatdemo5.conf -o JFNG00CHN_R_20202290000_01D_30S_MO_SPPC.pos -p 0 -x 2 -y 2 JFNG00CHN_R_20202290000_01D_30S_MO.rnx BRDC00IGS_R_20202290000_01D_MN.rnx GBM0MGXRAP_20202290000_01D_05M_ORB.SP3 GBM0MGXRAP_20202290000_01D_30S_CLK.CLK</LocalDebuggerCommandArguments>
-    <LocalDebuggerWorkingDirectory>D:\GNSS_DATA\data\2020\229</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommandArguments>-k UPPPfloatSFGoogle.conf -o Pixel4_GnssLogPPP.nmea -p 7 -x 2 -y 2 Pixel4_GnssLog.20o brdm1630.20p GBM0MGXRAP_20201630000_01D_05M_ORB.SP3 GBM0MGXRAP_20201630000_01D_30S_CLK.CLK  CAS0MGXRAP_20201630000_01D_01D_OSB.BIA</LocalDebuggerCommandArguments>
+    <LocalDebuggerWorkingDirectory>E:\GNSS_Data\google611</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

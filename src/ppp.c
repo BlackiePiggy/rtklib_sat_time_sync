@@ -92,6 +92,7 @@
 #define ERR_CBIAS   0.3             /* code bias error std (m) */
 #define REL_HUMI    0.7             /* relative humidity for saastamoinen model */
 #define GAP_RESION  120             /* default gap to reset ionos parameters (ep) */
+#define MAXACC      30.0     /* max accel for doppler slip detection (m/s^2) */
 
 #define EFACT_GPS_L5 10.0           /* error factor of GPS/QZS L5 */
 
@@ -587,7 +588,7 @@ static void corr_meas_bia(const obsd_t *obs, const nav_t *nav, const double *aze
 		}
 		if (nav->bia){
 			if (nav->bia[obs->sat - 1].cBias[obs->code[i] - 1] != 0){
-				P[i] -= nav->bia[obs->sat - 1].cBias[obs->code[i] - 1];/*aligh to IF clock*/
+				P[i] -= nav->bia[obs->sat - 1].cBias[obs->code[i] - 1];/*aligh to IF clock using ABS BIA products*/
 			}
 			else P[i] = 0;
 		}
@@ -629,6 +630,45 @@ static void detslp_ll(rtk_t *rtk, const obsd_t *obs, int n)
 		}
 	}
 }
+/* detect cycle slip by doppler and phase difference -------------------------*/
+static void detslp_dop(rtk_t* rtk, const obsd_t* obs, int n,
+    const nav_t* nav)
+{
+    /* detection with doppler disabled because of clock-jump issue (v.2.3.0) */
+#if 1
+    int f,i,sat;
+    double tt, dph, dpt, lam, thres;
+    char str[32], id[32];
+    time2str(obs[0].time, str, 2);
+    
+
+    trace(4, "detslp_dop: n=%d\n", n);
+    for (i = 0; i < n && i < MAXOBS; i++) {
+        sat = obs[i].sat;satno2id(sat, id);
+        for (f = 0;f < rtk->opt.nf;f++) {
+            if (obs[i].L[f] == 0.0 || obs[i].D[f] == 0.0 || rtk->ssat[sat - 1].ph[0][f] == 0.0) {
+                continue;
+            }
+            if (fabs(tt = timediff(obs[i].time, rtk->ssat[sat - 1].pt[0][f])) < DTTOL) continue;
+            if ((lam = nav->lam[sat - 1][f]) <= 0.0) continue;
+
+            /* cycle slip threshold (cycle) */
+            thres = MAXACC * tt * tt / 2.0 / lam + rtk->opt.err[4] * fabs(tt) * 4.0;
+
+            /* phase difference and doppler x time (cycle) */
+            dph = obs[i].L[f] - rtk->ssat[sat - 1].ph[0][f];
+            dpt = -obs[i].D[f] * tt;
+
+            if (fabs(dph - dpt) <= thres) continue;
+
+            rtk->ssat[sat - 1].slip[f] |= 1;
+
+            trace(2, "detslp_dop: slip detected %s sat=%2d %s el=%8.3f SNR=%5.1f L%d=%.3f %.3f thres=%.3f)\n",
+                str, sat, id, rtk->ssat[obs[i].sat - 1].azel[1] * R2D, obs[i].SNR[0] * 0.25, f + 1, dph, dpt, thres);
+        }
+    }
+#endif
+}
 /* detect cycle slip by geometry free phase jump -----------------------------*/
 static void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 {
@@ -645,6 +685,7 @@ static void detslp_gf(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
         
         g0=rtk->ssat[obs[i].sat-1].gf;
         rtk->ssat[obs[i].sat-1].gf=g1;
+		rtk->ssat[obs[i].sat - 1].gfdiff = g1-g0;
         
         trace(4,"detslip_gf: sat=%2d gf0=%8.3f gf1=%8.3f\n",obs[i].sat,g0,g1);
         
@@ -672,7 +713,7 @@ static void detslp_mw(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 	time2str(obs[0].time, str, 2);
 
 
-	trace(3, "detslp_gf: n=%d\n", n);
+	trace(3, "detslp_mw: n=%d\n", n);
 
 	lam = nav->lam[0];
 	lamW = lam[0] * lam[1] / (lam[1] - lam[0]);
@@ -980,6 +1021,9 @@ static void udbias_ppp(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 
 	/* detect cycle slip by geometry-free phase jump */
 	detslp_gf(rtk, obs, n, nav);
+
+    /* detect cycle slip by doppler and phase difference */
+    detslp_dop(rtk, obs, n, nav);
 
     ecef2pos(rtk->sol.rr,pos);
     
@@ -1519,7 +1563,36 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
     v=mat(nv,1); H=mat(rtk->nx,nv); R=mat(nv,nv);
 	/************************************************************************/
 	/* determine the real cycle slip based on GF*/
+	//for (i = 0; i < MAXSAT; i++){
+	//	if (rtk->ssat[i].slipGF[0]){
+	//		/*if(rtk->ssat[i].gfdiff>1.45) continue;*/
+	//		nslipGF += rtk->ssat[i].slipGF[0];
+	//		satNoSlipGF[nSlip] = i + 1;
+	//		nSlip++;
+	//	}
+	//}
+	//   /*m starts from 1. skip the m==0 interation without doing anything*/
+	//for (m = 0; m < nslipGF + 1; m++){
 
+	//	if (m){
+	//		sat = satNoSlipGF[m - 1];
+	//		satno2id(sat, id);
+	//		if (rtk->ssat[sat - 1].azel[1] < opt->elmin) continue;
+	//	}
+	//	for (f = 0; f < NF(&rtk->opt); f++) {
+	//		if (m){
+	//			jAmb = IB(sat, f, &rtk->opt);
+	//			if (!PLast[jAmb + jAmb*rtk->nx]) continue;
+	//			matcpy(xGFm, rtk->x, rtk->nx, 1);/*initialized with the first iterative filter and update if there is spurious Cycle slip.*/
+	//			matcpy(PGFm, rtk->P, rtk->nx, rtk->nx);
+	//			initx(rtk, xLast[jAmb], PLast[jAmb + jAmb*rtk->nx], jAmb);
+	//			for (i = 0; i < n; i++) {if (obs[i].sat == sat) { nGF = i; break; }	} /*check whether this frequency this satellite without cycle slip will be treated as outlier*/
+	//			if (!obs[nGF].L[f]) continue;/*skip the iterative if the carrier phase obs is not available*/
+	//		}
+	//		/*only run one time when m==0*/
+	//		if (!m && f > 0) break;
+	//		for (i = 0; i < MAXOBS; i++) exc[i] = 0;
+	//		nExc = 0; nvPhase = 0;
 			/*****************************************************************************/
 			for (i = 0; i < MAX_ITER; i++) {
 				matcpy(xp, rtk->x, rtk->nx, 1);
@@ -1547,7 +1620,54 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
 				trace(2, "%s ppp (%d) iteration overflows\n", str, i);
 			}
 			/************************************************************************/
+			       /*keep the last iteration information using only phase redisuals*/
+			//		for (j = 0; j < nv; j++){
+			//			if (fabs(v[j]) <0.01) { vPhase[nvPhase++] = v[j]; }
+			//		}
+			//		for (j = 0; j < n; j++){
+			//			if (exc[j] ==1) { nExc++; }
+			//		}
+			//		if (!m)
+			//		{
+			//			/*vvLast = sqrt(dot(vPhase, vPhase, nvPhase) / nvPhase);*/
+			//			vvLast = sqrt(dot(v, v, nv) / nv);
+			//			nExcLast = nExc;
+			//		}
+			//		/*compare current and previous solution*/
 
+			//		if (m){
+
+			//			ita = fabs(rtk->x[jAmb] - xGFm[jAmb]); /* SQRT(PGFm[jAmb + jAmb*rtk->nx] + rtk->P[jAmb + jAmb*rtk->nx]);*/
+			//			/*vv = sqrt(dot(vPhase, vPhase, nvPhase) / nvPhase);*/
+			//			vv = sqrt(dot(v, v, nv) / nv);
+			//			ratio = vv / vvLast;
+			//			if (nExcLast >= nExc && !exc[nGF]){
+			//				if ((vv / vvLast) < 2.0 && ita <2.0){
+			//					rtk->ssat[sat - 1].slipGF[f] = 0;
+			//					rtk->ssat[sat - 1].slip[f] = 0;
+			//					/*if (j%2==0) rtk->ssat[sat-1].vsat[j/2]=1; shall vsat==0*/
+
+			//					/*output the spurious slip detected by GF*/
+			//					trace(2, "spurious cycle slip GF:  %s tow=%.3f sat=%3d %3s el=%8.3f f= %3d gf=%.3f ita=%.3f exc=%2d, %2d ratio=%.3f vv=%.6f vvLast=%.6f\n",
+			//						str, tow, sat, id, rtk->ssat[sat - 1].azel[1] * R2D, f, rtk->ssat[sat - 1].gf, ita, nExcLast, nExc, ratio, vv, vvLast);/*, g2, g2 - g1*/
+			//					vvLast = vv; /*change after output*/
+			//					continue;
+			//				}
+			//			}
+			//			
+			//				matcpy(rtk->x, xGFm, rtk->nx, 1);/*it real cycle slip, rest rtk estimate x to previous.*/
+			//				matcpy(rtk->P, PGFm, rtk->nx, rtk->nx);
+			//
+			//				/*output the spurious slip detected by GF*/
+			//				trace(2, "real cycle slip GF:  %s tow=%.3f sat=%3d %3s el=%8.3f f= %3d gf=%.3f ita=%.3f ratio=%.3f exc=%2d, %2d vv=%.6f vvLast=%.6f\n",
+			//					str, tow, sat, id, rtk->ssat[sat - 1].azel[1] * R2D, f, rtk->ssat[sat - 1].gf, ita, ratio, nExcLast, nExc, vv, vvLast);
+			//				exc[nGF] = 0;
+			//			
+			//
+			//		}
+
+			//	}
+			//}
 	/**************************************************************************/
 	/*choose the solution that is the best solutions with smallest residuals.*/
     if (stat==SOLQ_PPP) {
@@ -1575,6 +1695,11 @@ extern void pppos(rtk_t *rtk, const obsd_t *obs, int n, const nav_t *nav)
             trace(2,"%s hold ambiguity\n",str);
             rtk->nfix=0;
         }
+    }
+    for (i = 0;i < n;i++) for (j = 0;j < NF(opt);j++) {
+        if (obs[i].L[j] == 0.0) continue;
+        rtk->ssat[obs[i].sat - 1].pt[0][j] = obs[i].time;
+        rtk->ssat[obs[i].sat - 1].ph[0][j] = obs[i].L[j];
     }
     free(rs); free(dts); free(var); free(azel);
     free(xp); free(Pp); free(v); free(H); free(R);

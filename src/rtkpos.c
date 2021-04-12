@@ -780,7 +780,7 @@ static void detslp_dop(rtk_t *rtk, const obsd_t *obs, int i, int rcv,
         
         rtk->ssat[sat-1].slip[f]|=1;
         
-        errmsg(rtk,"slip detected (sat=%2d rcv=%d L%d=%.3f %.3f thres=%.3f)\n",
+        errmsg(rtk,"slip detected dop (sat=%2d rcv=%d L%d=%.3f %.3f thres=%.3f)\n",
                sat,rcv,f+1,dph,dpt,thres);
     }
 #endif
@@ -1261,6 +1261,7 @@ static int ddres(rtk_t *rtk, const nav_t *nav, const obsd_t *obs, double dt, con
                 sysi=rtk->ssat[sat[j]-1].sys;
                 if (!test_sys(sysi,m) || sysi==SYS_SBS) continue;
                 if (!validobs(iu[j],ir[j],f,nf,y)) continue;
+                if (rtk->ssat[sat[j] - 1].slip[f]) continue;/*without cycle slip added by xiang*/
                 if (i<0||azel[1+iu[j]*2]>=azel[1+iu[i]*2]) i=j;
             }
             if (i<0) continue;

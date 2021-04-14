@@ -934,7 +934,7 @@ typedef struct {        /* navigation data type */
     alm_t *alm;         /* almanac data */
     tec_t *tec;         /* tec grid data */
     fcbd_t *fcb;        /* satellite fcb data */
-	biad_t bia[MAXSAT];        /* satellite fcb data */
+	biad_t *bia;        /* satellite fcb data */
     erp_t  erp;         /* earth rotation parameters */
     double utc_gps[4];  /* GPS delta-UTC parameters {A0,A1,T,W} */
     double utc_glo[4];  /* GLONASS UTC GPS time parameters */

@@ -501,12 +501,13 @@ extern int read_snxbias(const char *file, nav_t *nav)
 	double ep[6] = { 0, 1, 1 }, syear, eyear, sdoy, edoy, stod, etod, bias = 0, std = 0;
 	char buff[1024], str1[32], str2[32], *p;
 	int sat, sec, type = NULL, iscode = NULL, i, j,frq=0,codeIdx;
-
-	biad_t nav_bia = { { { 0 } } };
-
-	for (i = 0; i<MAXSAT; i++) {
-		nav->bia[i] = nav_bia;
-	}
+    biad_t *nav_bia;
+    
+    if (!(nav_bia = (biad_t*)realloc(nav->bia, sizeof(biad_t) * MAXSAT))) {
+        free(nav->bia);
+        return 0;
+    }
+    nav->bia = nav_bia;
 
 	trace(3, "read_snxbias: file=%s\n", file);
 
@@ -530,7 +531,7 @@ extern int read_snxbias(const char *file, nav_t *nav)
 			/*if (sscanf(buff, "%*s %s %s %lf:%lf:%lf %lf:%lf:%lf %*s %lf", str1,str2,
 				&syear, &sdoy, &stod, &eyear, &edoy, &etod, &bias)<9) continue;*/
 			if (!(sat = satid2no(str1))) continue;
-			if (!(codeIdx = obs2code(str2 + 1, frq))) continue;
+			if (!(codeIdx = obs2code(str2 + 1, &frq))) continue;
 
 			/*save the OSB value into bia */
 			ep[0] = syear;

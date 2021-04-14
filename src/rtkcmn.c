@@ -196,7 +196,7 @@ const prcopt_t prcopt_default={ /* defaults processing options */
     0,1,0,0,1,0,                /* rcvstds,armaxiter,estion,esttrop,dynamics,tidecorr */
     1,0,0,0,0,                  /* niter,codesmooth,intpref,sbascorr,sbassatsel */
     0,0,                        /* rovpos,refpos */
-    WEIGHTOPT_SNR,        /* weightmode */
+    WEIGHTOPT_ELEVATION,        /* weightmode */
     {300.0,300.0,300.0},        /* eratio[] */
     {100.0,0.003,0.003,0.0,1.0,52}, /* err[] change 52 to 40 with ele_mask as 25dB-Hz*/
     {30.0,0.03,0.3},            /* std[] */

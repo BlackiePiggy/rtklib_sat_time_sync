@@ -586,13 +586,25 @@ static void corr_meas_bia(const obsd_t *obs, const nav_t *nav, const double *aze
 				ix = (i == 0 ? CODE_L1P - 1 : CODE_L2P - 1);
 			P[i] += (nav->ssr[obs->sat - 1].cbias[obs->code[i] - 1] - nav->ssr[obs->sat - 1].cbias[ix]); /* ssr correction */
 		}
-		if (nav->bia){
+		else if (nav->bia){
 			if (nav->bia[obs->sat - 1].cBias[obs->code[i] - 1] != 0){
 				P[i] -= nav->bia[obs->sat - 1].cBias[obs->code[i] - 1];/*aligh to IF clock using ABS BIA products*/
 			}
 			else P[i] = 0;
 		}
-
+        else {
+            /* P1-C1,P2-C2 dcb correction (C1->P1,C2->P2) */
+            if (obs->code[i] == CODE_L1C) {
+                P[i] += nav->cbias[obs->sat - 1][1];
+            }
+            else if (obs->code[i] == CODE_L2C || obs->code[i] == CODE_L2X ||
+                obs->code[i] == CODE_L2L || obs->code[i] == CODE_L2S) {
+                P[i] += nav->cbias[obs->sat - 1][2];
+#if 0
+                L[i] -= 0.25 * lam[i]; /* 1/4 cycle-shift */
+#endif
+            }
+        }
 	}
 	/* iono-free LC */
 	*Lc = *Pc = 0.0;
@@ -663,7 +675,7 @@ static void detslp_dop(rtk_t* rtk, const obsd_t* obs, int n,
 
             rtk->ssat[sat - 1].slip[f] |= 1;
 
-            trace(2, "detslp_dop: slip detected %s sat=%2d %s el=%8.3f SNR=%5.1f L%d=%.3f %.3f thres=%.3f)\n",
+            trace(2, "detslp_dop: slip detected %s sat=%2d %s el=%8.3f SNR=%5.1f L%d=%.3f %.3f thres=%.3f\n",
                 str, sat, id, rtk->ssat[obs[i].sat - 1].azel[1] * R2D, obs[i].SNR[0] * 0.25, f + 1, dph, dpt, thres);
         }
     }

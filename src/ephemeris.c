@@ -821,6 +821,8 @@ extern void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
     gtime_t time[2*MAXOBS]={{0}};
     double dt,pr;
     int i,j;
+	char id[32];
+	
     
     trace(3,"satposs : teph=%s n=%d ephopt=%d\n",time_str(teph,3),n,ephopt);
     
@@ -828,12 +830,13 @@ extern void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
         for (j=0;j<6;j++) rs [j+i*6]=0.0;
         for (j=0;j<2;j++) dts[j+i*2]=0.0;
         var[i]=0.0; svh[i]=0;
+		satno2id(obs[i].sat, id);
         
         /* search any pseudorange */
         for (j=0,pr=0.0;j<NFREQ;j++) if ((pr=obs[i].P[j])!=0.0) break;
         
         if (j>=NFREQ) {
-            trace(2,"no pseudorange %s sat=%2d\n",time_str(obs[i].time,3),obs[i].sat);
+            trace(2,"no pseudorange %s sat=%3d %3s\n",time_str(obs[i].time,3),obs[i].sat,id);
             continue;
         }
         /* transmission time by satellite clock */
@@ -841,7 +844,7 @@ extern void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
         
         /* satellite clock bias by broadcast ephemeris */
         if (!ephclk(time[i],teph,obs[i].sat,nav,&dt)) {
-            trace(3,"no broadcast clock %s sat=%2d\n",time_str(time[i],3),obs[i].sat);
+            trace(3,"no broadcast clock %s sat=%3d %3s\n",time_str(time[i],3),obs[i].sat,id);
             continue;
         }
         time[i]=timeadd(time[i],-dt);
@@ -849,7 +852,7 @@ extern void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
         /* satellite position and clock at transmission time */
         if (!satpos(time[i],teph,obs[i].sat,ephopt,nav,rs+i*6,dts+i*2,var+i,
                     svh+i)) {
-            trace(3,"no ephemeris %s sat=%2d\n",time_str(time[i],3),obs[i].sat);
+            trace(3,"no ephemeris %s sat=%3d %3s\n",time_str(time[i],3),obs[i].sat,id);
             continue;
         }
         /* if no precise clock available, use broadcast clock instead */
@@ -860,8 +863,9 @@ extern void satposs(gtime_t teph, const obsd_t *obs, int n, const nav_t *nav,
         }
     }
     for (i=0;i<n&&i<2*MAXOBS;i++) {
-        trace(4,"%s sat=%2d rs=%13.3f %13.3f %13.3f dts=%12.3f var=%7.3f svh=%02X\n",
-              time_str(time[i],6),obs[i].sat,rs[i*6],rs[1+i*6],rs[2+i*6],
+		satno2id(obs[i].sat, id);
+        trace(4,"%s sat=%3d %3s rs=%13.3f %13.3f %13.3f dts=%12.3f var=%7.3f svh=%02X\n",
+              time_str(time[i],6),obs[i].sat, id, rs[i*6],rs[1+i*6],rs[2+i*6],
               dts[i*2]*1E9,var[i],svh[i]);
     }
 }

@@ -1269,6 +1269,7 @@ static int decode_type1042(rtcm_t *rtcm)
 
     rtcm->nav.eph[sat-1]=eph;
     rtcm->ephsat=sat;
+	eph.iode =((int)eph.toes/720)%240;
     return 2;
 }
 /* decode ssr 1,4 message header ---------------------------------------------*/
@@ -1290,6 +1291,8 @@ static int decode_ssr1_head(rtcm_t *rtcm, int sys, int cmode, int *sync, int *io
         }
         else {
             tow=getbitu(rtcm->buff,i,20); i+=20;
+            if (sys == SYS_BDS)
+                tow += 14;
             adjweek(rtcm,tow);
         }
     } else { /* IGS_SSR */
@@ -1443,7 +1446,8 @@ static int decode_ssr1(rtcm_t *rtcm, int sys)
         case SYS_GLO: np=5; ni= 8; nj= 0; offp=  0; break;
         case SYS_GAL: np=6; ni=10; nj= 0; offp=  0; break;
         case SYS_QZS: np=4; ni= 8; nj= 0; offp=192; break;
-        case SYS_BDS: np=6; ni=10; nj=24; offp=  0; break;
+        /*case SYS_BDS: np=6; ni=10; nj=24; offp=  0; break;*/
+		case SYS_BDS: np=6; ni=10; nj= 8; offp= 0; break;
         case SYS_SBS: np=6; ni= 9; nj=24; offp=120; break;
         default: return sync?0:10;
     }
@@ -1452,8 +1456,19 @@ static int decode_ssr1(rtcm_t *rtcm, int sys)
     }
     for (j=0;j<nsat&&i+121+np+ni+nj<=rtcm->len*8;j++) {
         prn     =getbitu(rtcm->buff,i,np)+offp; i+=np;
-        iode    =getbitu(rtcm->buff,i,ni);      i+=ni;
-        iodcrc  =getbitu(rtcm->buff,i,nj);      i+=nj;
+        /*iode    =getbitu(rtcm->buff,i,ni);      i+=ni;*/
+        /*iodcrc  =getbitu(rtcm->buff,i,nj);      i+=nj;*/
+        if (sys == SYS_BDS) {
+            iodcrc = getbitu(rtcm->buff,i,ni);      
+            i += ni;
+            iode =getbitu(rtcm->buff,i,nj);      
+            i += nj;
+        } else {
+            iode = getbitu(rtcm->buff,i,ni);      
+            i += ni;
+            iodcrc = getbitu(rtcm->buff,i,nj);      
+            i += nj;
+        }
         deph [0]=getbits(rtcm->buff,i,22)*1E-4; i+=22;
         deph [1]=getbits(rtcm->buff,i,20)*4E-4; i+=20;
         deph [2]=getbits(rtcm->buff,i,20)*4E-4; i+=20;
@@ -1619,6 +1634,8 @@ static int decode_ssr4(rtcm_t *rtcm, int sys)
     }
     if (cmode==IGS_SSR) {
         np=6; ni=8; nj=0;
+        if      (sys==SYS_BDS) offp=0;
+        else if (sys==SYS_SBS) offp=119;							  
     }
     for (j=0;j<nsat&&i+191+np+ni+nj<=rtcm->len*8;j++) {
         prn     =getbitu(rtcm->buff,i,np)+offp; i+=np;
@@ -1635,7 +1652,7 @@ static int decode_ssr4(rtcm_t *rtcm, int sys)
         dclk [1]=getbits(rtcm->buff,i,21)*1E-6; i+=21;
         dclk [2]=getbits(rtcm->buff,i,27)*2E-8; i+=27;
         
-        if ((sys==SYS_BDS||sys==SYS_GLO)&&prn==0) prn=64;
+        /*if ((sys==SYS_BDS||sys==SYS_GLO)&&prn==0) prn=64;*/
         if (!(sat=satno(sys,prn))) {
             trace(2,"rtcm3 %d satellite number error: prn=%d\n",type,prn);
             continue;
@@ -1647,7 +1664,7 @@ static int decode_ssr4(rtcm_t *rtcm, int sys)
         rtcm->ssr[sat-1].iodcrc=iodcrc;
         rtcm->ssr[sat-1].refd=refd;
 
-		if (sys == SYS_BDS &&!rtcm->ssr[sat - 1].iode) rtcm->ssr[sat - 1].iode = iodcrc;
+		/*if (sys == SYS_BDS &&!rtcm->ssr[sat - 1].iode) rtcm->ssr[sat - 1].iode = iodcrc;*/
         
         for (k=0;k<3;k++) {
             rtcm->ssr[sat-1].deph [k]=deph [k];
@@ -2082,7 +2099,9 @@ static void save_msm_obs(rtcm_t *rtcm, int sys, msm_h_t *h, const double *r,
         
 		/* frequency index for beidou */
 		if (sys == SYS_BDS) {
-			if (freq[i] == 2) freq[i] = 1; /* 2I 2Q to B1I */
+            if (freq[i] == 1) freq[i] = 11; /* set C1P to a large value */
+            else if (freq[i] == 3) freq[i] = 12; /* C5P to a large value */
+            else if (freq[i] == 2) freq[i] = 1; /* 2I 2Q to B1I */
 			else if (freq[i] == 5) freq[i] = 2; /* 7I to B2I */
 			else if (freq[i] == 4 ) freq[i] = 3; /* 6I 6Q 6X 6A to B3I */
 		}

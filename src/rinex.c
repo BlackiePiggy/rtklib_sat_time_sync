@@ -942,9 +942,18 @@ static void set_index(double ver, int sys, const char *opt,
         
         /* frequency index for beidou */
 		if (sys == SYS_BDS) {
-			if (ind->frq[i] == 2) ind->frq[i] = 1; /* 2I 2Q to B1I */
-			else if (ind->frq[i] == 5) ind->frq[i] = 2; /* 7I to B2I */
-			else if (ind->frq[i] == 4 ) ind->frq[i] = 3; /* 6I 6Q 6X 6A to B3I */
+			/*if (ind->frq[i] == 3 || ind->frq[i] == 10) ind->frq[i] = 5; /* change 5X 5D 5P to B2a*/
+			/*else if (ind->frq[i] == 5) ind->frq[i] = 6; /* 8X to B2ab */
+			/*else if (ind->frq[i] == 4 || ind->frq[i] == 8) ind->frq[i] = 3; /* 6I 6Q 6X 6A to B3I */
+			/*else if (ind->frq[i] == 1 || ind->frq[i] == 9) ind->frq[i] = 4; /* 1D 1P 1X 1A 1N to B1C */
+			/*else if (ind->frq[i] == 7) ind->frq[i] = 1; /* 2I 2Q to B1I */
+			/*else if (ind->frq[i] == 11) ind->frq[i] = 1; /* 2X */
+
+            if (ind->frq[i] == 1) ind->frq[i] = 11; /* set C1P to a large value */
+            else if (ind->frq[i] == 3) ind->frq[i] = 12; /* C5P to a large value */
+            else if (ind->frq[i] == 2) ind->frq[i] = 1; /* 2I 2Q to B1I */
+            else if (ind->frq[i] == 5) ind->frq[i] = 2; /* 7I to B2I */
+            else if (ind->frq[i] == 4) ind->frq[i] = 3; /* 6I 6Q 6X 6A to B3I */
 		}
 		if (sys == SYS_GPS || sys == SYS_QZS) {
 			if (ind->frq[i] == 11) ind->frq[i] = 2;/*2X*/

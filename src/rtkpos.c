@@ -357,13 +357,13 @@ static void outsolstat(rtk_t *rtk,const nav_t *nav)
         satno2id(i+1,id);
         for (j=0;j<nfreq;j++) {
             k=IB(i+1,j,&rtk->opt);
-            fprintf(fp_stat,"$SAT,%d,%.3f,%s,%d,%.1f,%.1f,%.4f,%.4f,%d,%.0f,%d,%d,%d,%d,%d,%d,%.2f,%.6f,%.5f,%.5f,%.5f,%.5f,%.5f,%.5f,%d,%d,%d,%.5f,%.5f\n",
+            fprintf(fp_stat,"$SAT,%d,%.3f,%s,%d,%.1f,%.1f,%.4f,%.4f,%d,%.0f,%d,%d,%d,%d,%d,%d,%.2f,%.6f,%.5f,%.5f,%.5f,%.5f,%.5f,%.5f,%d,%d,%d\n",
                     week,tow,id,j+1,ssat->azel[0]*R2D,ssat->azel[1]*R2D,
                     ssat->resp[j],ssat->resc[j],ssat->vsat[j],ssat->snr_rover[j]*0.25,
                     ssat->fix[j],ssat->slip[j]&3,ssat->lock[j],ssat->outc[j],
                     ssat->slipc[j],ssat->rejc[j],dgps?0:rtk->x[k],
                     dgps?0:rtk->P[k+k*rtk->nx],nav->lam[i][j],ssat->icbias[j],
-					ssat->mw, ssat->mwmean, ssat->gf, ssat->gfdiff, ssat->slipLLI[j], ssat->slipMW[j], ssat->slipGF[j], ssat->dion, ssat->vari); /*add mw, GF, slipGF;*/
+					ssat->mw, ssat->mwmean, ssat->gf, ssat->gfdiff, ssat->slipLLI[j], ssat->slipMW[j], ssat->slipGF[j]); /*add mw, GF, slipGF;*/
         }
     }
 }
@@ -666,7 +666,9 @@ static void detslp_ll(rtk_t *rtk, const obsd_t *obs, int i, int rcv)
 {
     unsigned int slip,LLI;
     int f,sat=obs[i].sat;
-    
+	char id[32];
+	satno2id(sat, id);
+
     trace(4,"detslp_ll: i=%d rcv=%d\n",i,rcv);
     
     for (f=0;f<rtk->opt.nf;f++) {
@@ -682,22 +684,22 @@ static void detslp_ll(rtk_t *rtk, const obsd_t *obs, int i, int rcv)
         /* detect slip by cycle slip flag in LLI */
         if (rtk->tt>=0.0) { /* forward */
             if (obs[i].LLI[f]&1) {
-                errmsg(rtk,"slip detected forward (sat=%2d rcv=%d F=%d LLI=%x)\n",
-                       sat,rcv,f+1,obs[i].LLI[f]);
+                errmsg(rtk,"slip detected forward (sat=%3d %3s rcv=%d F=%d LLI=%x)\n",
+                       sat,id,rcv,f+1,obs[i].LLI[f]);
             }
             slip=obs[i].LLI[f];
         }
         else { /* backward */
             if (LLI&1) {
-                errmsg(rtk,"slip detected backward (sat=%2d rcv=%d F=%d LLI=%x)\n",
-                       sat,rcv,f+1,LLI);
+                errmsg(rtk,"slip detected backward (sat=%3d %3s rcv=%d F=%d LLI=%x)\n",
+					sat, id, rcv, f + 1, LLI);
             }
             slip=LLI;
         }
         /* detect slip by parity unknown flag transition in LLI */
         if (((LLI&2)&&!(obs[i].LLI[f]&2))||(!(LLI&2)&&(obs[i].LLI[f]&2))) {
-            errmsg(rtk,"slip detected half-cyc (sat=%2d rcv=%d F=%d LLI=%x->%x)\n",
-                   sat,rcv,f+1,LLI,obs[i].LLI[f]);
+            errmsg(rtk,"slip detected half-cyc (sat=%3d %3s rcv=%d F=%d LLI=%x->%x)\n",
+				sat, id, rcv, f + 1, LLI, obs[i].LLI[f]);
             slip|=1;
         }
         /* save current LLI */
@@ -715,6 +717,8 @@ static void detslp_gf_L1L2(rtk_t *rtk, const obsd_t *obs, int i, int j,
 {
     int sat=obs[i].sat;
     double g0,g1;
+	char id[32];
+	satno2id(sat, id);
     
     trace(4,"detslp_gf_L1L2: i=%d j=%d\n",i,j);
     
@@ -727,7 +731,7 @@ static void detslp_gf_L1L2(rtk_t *rtk, const obsd_t *obs, int i, int j,
         rtk->ssat[sat-1].slip[0]|=1;
         rtk->ssat[sat-1].slip[1]|=1;
         
-        errmsg(rtk,"slip detected GF2_jump (sat=%2d GF_L1_L2=%.3f %.3f)\n",sat,g0,g1);
+        errmsg(rtk,"slip detected GF2_jump (sat=%3d %3s GF_L1_L2=%.3f %.3f)\n",sat,id,g0,g1);
     }
 }
 /* detect cycle slip by L1-L5 geometry free phase jump -----------------------*/
@@ -736,6 +740,8 @@ static void detslp_gf_L1L5(rtk_t *rtk, const obsd_t *obs, int i, int j,
 {
     int sat=obs[i].sat;
     double g0,g1;
+	char id[32];
+	satno2id(sat, id);
     
     trace(4,"detslp_gf_L1L5: i=%d j=%d\n",i,j);
     
@@ -748,7 +754,7 @@ static void detslp_gf_L1L5(rtk_t *rtk, const obsd_t *obs, int i, int j,
         rtk->ssat[sat-1].slip[0]|=1;
         rtk->ssat[sat-1].slip[2]|=1;
         
-        errmsg(rtk,"slip detected GF5_jump (sat=%2d GF_L1_L5=%.3f %.3f)\n",sat,g0,g1);
+        errmsg(rtk,"slip detected GF5_jump (sat=%3d %3s GF_L1_L5=%.3f %.3f)\n",sat,id,g0,g1);
     }
 }
 /* detect cycle slip by doppler and phase difference -------------------------*/
@@ -759,6 +765,8 @@ static void detslp_dop(rtk_t *rtk, const obsd_t *obs, int i, int rcv,
 #if 1
     int f,sat=obs[i].sat;
     double tt,dph,dpt,lam,thres;
+	char id[32];
+	satno2id(sat, id);
     
     trace(4,"detslp_dop: i=%d rcv=%d\n",i,rcv);
     
@@ -780,8 +788,8 @@ static void detslp_dop(rtk_t *rtk, const obsd_t *obs, int i, int rcv,
         
         rtk->ssat[sat-1].slip[f]|=1;
         
-        errmsg(rtk,"slip detected dop (sat=%2d rcv=%d L%d=%.3f %.3f thres=%.3f)\n",
-               sat,rcv,f+1,dph,dpt,thres);
+        errmsg(rtk,"slip detected dop (sat=%3d %3s rcv=%d L%d=%.3f %.3f thres=%.3f)\n",
+			sat, id, rcv, f + 1, dph, dpt, thres);
     }
 #endif
 }
